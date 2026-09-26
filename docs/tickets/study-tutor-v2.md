@@ -3,7 +3,7 @@ title: "Ticket breakdown — Study tutor v2"
 epic: docs/prd/study-tutor-v2.prd.md
 architecture: docs/prd/study-tutor-v2.architecture.md
 created: 2026-09-26
-status: sliced, not yet on GitHub (PRD Q6 open: no repo name, no remote)
+status: on GitHub, epic linardsb/study-tutor#1, tickets #2–#19
 ---
 
 # Ticket breakdown — Study tutor v2
