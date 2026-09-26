@@ -1,0 +1,44 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm check)",
+      "Bash(pnpm install)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm --filter:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(docker compose ps:*)",
+      "Bash(docker compose up -d:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr view:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Edit|MultiEdit|Write|NotebookEdit|Bash|Grep|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$CLAUDE_PROJECT_DIR/.claude/hooks/pre_tool_use.py\"; [ -f \"$f\" ] || f=\"$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.claude/hooks/pre_tool_use.py\"; uv run \"$f\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$CLAUDE_PROJECT_DIR/.claude/hooks/stop_check.py\"; [ -f \"$f\" ] || f=\"$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.claude/hooks/stop_check.py\"; uv run \"$f\""
+          }
+        ]
+      }
+    ]
+  }
+}

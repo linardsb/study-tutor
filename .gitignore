@@ -1,0 +1,7 @@
+# claude — personal overrides stay local
+.claude/settings.local.json
+.claude/last-gate.json
+
+# study data never ships in the repo
+data/
+.env
