@@ -273,6 +273,27 @@ code,
   font-weight: 700;
 }
 
+/* case page */
+.quiz .options label {
+  display: block;
+  padding: 0.25rem 0;
+}
+.instances li {
+  padding: 0.25rem 0;
+}
+.quiz .options input[type="radio"] {
+  width: auto;
+  margin: 0 0.3rem 0 0;
+}
+.quiz .instances {
+  margin: 0.4rem 0 0.8rem;
+  padding-left: 1.2rem;
+}
+.quiz .calibration {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
 /* copy buttons (show-me convention) */
 .copy {
   opacity: 0.35;

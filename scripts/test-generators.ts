@@ -1,20 +1,13 @@
 import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
-import { loadGenerators } from "../src/content/generators";
+import { lcg, loadGenerators } from "../src/content/generators";
 import { loadTopics, subjectDir } from "../src/content/pack";
 import type { Generated, Generator } from "../src/content/types";
 import { normaliseAnswer as norm } from "../src/marking/normalise";
 
-export const RUNS = 300;
+export { lcg };
 
-/** Seeded generator, so a failure can be reproduced from the seed printed with it. */
-export function lcg(seed: number): () => number {
-  let s = seed >>> 0;
-  return () => {
-    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
-    return s / 4294967296;
-  };
-}
+export const RUNS = 300;
 
 const UNIT =
   /\s*(cm³|cm²|m³|m²|cm|mm|km|kg|g\/cm³|kg\/m³|n\/m²|n\/cm²|m\/s²|m\/s|ml|litres|degrees|pounds|off|each|n|m|g|p)\.?$/i;

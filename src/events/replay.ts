@@ -26,8 +26,14 @@ export type Calibration = {
   unsureRight: number;
   unsureWrong: number;
 };
+export type CaseRecord = {
+  kind: "mistake" | "rule";
+  topic: string;
+  item: string | null;
+  bets: [1 | 2 | 3, boolean][]; // (bet, correct) in answer order: the first answer, then the re-ask if there was one
+};
 export type State = {
-  shape: 1; // bump when this type changes
+  shape: 2; // bump when this type changes
   lines: number; // log lines this state was built from, skipped lines included
   skipped: number; // lines replay could not read
   hash: string; // sha256 of those lines, so the check can tell a hand edit from a code change
@@ -39,6 +45,8 @@ export type State = {
     { topic: string; t: string; answer: string; seed?: number }
   >; // by item id
   calibration: Record<string, Calibration>; // ISO week → Sure/correct pairs (D7)
+  cases: Record<string, CaseRecord>; // London day the case was for → the day's answers (O5)
+  caseSeed: string | null; // topic a confident-wrong case sends back tomorrow; cleared by the next day's first answer
   tokens: Record<string, number>; // YYYY-MM → input + output
 };
 
@@ -131,6 +139,28 @@ const CASES: { [K in EventKey]: (s: State, e: EventByKey[K]) => void } = {
     const month = localDay(e.t).slice(0, 7);
     s.tokens[month] = (s.tokens[month] ?? 0) + e.input + e.output;
   },
+  // Keyed by e.day, not localDay(e.t): a case opened at 23:58 and answered at 00:02 belongs to the
+  // day it was picked for. The flame still counts the London day of t.
+  "case@1": (s, e) => {
+    topic(s, e.topic);
+    work(s, e.t);
+    const rec = s.cases[e.day];
+    const fresh = (): CaseRecord => ({
+      kind: e.kind,
+      topic: e.topic,
+      item: e.item ?? null,
+      bets: [[e.bet, e.correct]],
+    });
+    if (e.reask) {
+      // A re-ask with no first answer on record (hand edit) is kept as the day's only pair.
+      if (rec === undefined) s.cases[e.day] = fresh();
+      else rec.bets.push([e.bet, e.correct]);
+      return;
+    }
+    if (rec !== undefined) return; // the first answer of a day is the record; a repeat post changes nothing
+    s.cases[e.day] = fresh();
+    s.caseSeed = e.bet === 3 && !e.correct ? e.topic : null;
+  },
 };
 
 /** An empty map with no prototype, so an id such as `__proto__` or `constructor` is just a key. */
@@ -139,7 +169,7 @@ export const dict = <V>(): Record<string, V> => Object.create(null);
 /** Pure: the same lines always give the same state. Reads no clock and no file. */
 export function replay(lines: readonly string[]): State {
   const s: State = {
-    shape: 1,
+    shape: 2,
     lines: 0,
     skipped: 0,
     hash: "",
@@ -148,6 +178,8 @@ export function replay(lines: readonly string[]): State {
     flame: dict(),
     confidentWrong: dict(),
     calibration: dict(),
+    cases: dict(),
+    caseSeed: null,
     tokens: dict(),
   };
   const hash = createHash("sha256");

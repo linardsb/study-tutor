@@ -39,7 +39,14 @@
     "title": "Identifying graphs",
     "aliases": ["U980"],
     "prerequisites": [],
-    "tier": "F"
+    "tier": "F",
+    "concept": {
+      "rule": "The highest power of x decides the shape. The other numbers only move or stretch it.",
+      "distractors": [
+        "The number in front of x decides the shape.",
+        "The number on the end decides the shape."
+      ]
+    }
   },
   {
     "id": "1MA1/R11/pressure",
@@ -60,7 +67,14 @@
     "title": "Equations of parallel lines",
     "aliases": ["U377"],
     "prerequisites": ["1MA1/A12"],
-    "tier": "F"
+    "tier": "F",
+    "concept": {
+      "rule": "Parallel lines keep the same number in front of x. Only the number on the end changes.",
+      "distractors": [
+        "Parallel lines keep the same number on the end.",
+        "Parallel lines have numbers in front of x that add up to zero."
+      ]
+    }
   },
   {
     "id": "1MA1/P6",
@@ -102,7 +116,14 @@
     "title": "Direct proportion",
     "aliases": ["U721"],
     "prerequisites": [],
-    "tier": "F"
+    "tier": "F",
+    "concept": {
+      "rule": "Divide the cost by the number and you get the same answer every time.",
+      "distractors": [
+        "Take the number away from the cost and you get the same answer every time.",
+        "Each extra one adds one pound."
+      ]
+    }
   },
   {
     "id": "1MA1/G17/circle",

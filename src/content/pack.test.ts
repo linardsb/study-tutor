@@ -3,7 +3,13 @@ import { mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { normaliseAnswer } from "../marking/normalise";
-import { itemsFileName, loadTopics, subjectDir, toItemView } from "./pack";
+import {
+  itemsFileName,
+  loadItems,
+  loadTopics,
+  subjectDir,
+  toItemView,
+} from "./pack";
 import type { Item, ItemType } from "./types";
 
 const ITEM_TYPES: Record<ItemType, true> = {
@@ -45,6 +51,34 @@ test("topics.json: 21 rows, unique ids and aliases, ids follow the grammar, prer
       expect(p).not.toBe(t.id);
     }
   }
+  // Three concept topics (T7 Q3); each rule is one of three options with two distractors.
+  const concepts = topics.filter((t) => t.concept !== undefined);
+  expect(concepts.map((t) => t.id)).toEqual([
+    "1MA1/A12",
+    "1MA1/A9",
+    "1MA1/R10",
+  ]);
+  for (const t of concepts) {
+    const c = t.concept;
+    if (!c) throw new Error("filtered above");
+    expect(c.rule.length).toBeGreaterThan(0);
+    expect(c.distractors).toHaveLength(2);
+    for (const d of c.distractors) expect(d).not.toBe(c.rule);
+  }
+});
+
+test("loadItems: a topic's items, an empty list for a topic with no file, and a refusal for a file that is not a list of items", async () => {
+  const items = await loadItems("maths", "1MA1/R9/of-an-amount");
+  expect(items).toHaveLength(5);
+  for (const i of items) expect(i.topic).toBe("1MA1/R9/of-an-amount");
+  expect(await loadItems("maths", "1MA1/none")).toEqual([]);
+  const tmp = mkdtempSync(path.join(tmpdir(), "study-tutor-"));
+  mkdirSync(path.join(tmp, "content", "bad", "items"), { recursive: true });
+  const file = path.join(tmp, "content", "bad", "items", "1MA1-X1.json");
+  writeFileSync(file, JSON.stringify([{ id: 1 }]));
+  await expect(loadItems("bad", "1MA1/X1", tmp)).rejects.toThrow(
+    `${file}: not a list of items`,
+  );
 });
 
 test("items: one file per topic, 5 items each, 105 in all, every item shaped and its misconceptions never the answer", async () => {

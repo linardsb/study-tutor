@@ -1,9 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
+import { caseForDay, loadCasePack } from "./api/case";
 import { postEvent } from "./api/event";
 import { currentState } from "./api/state";
 import { loadTopics } from "./content/pack";
-import type { Topic } from "./content/types";
+import type { CasePack, Topic } from "./content/types";
+import { isDay } from "./events/types";
+import { localDay, utcNow } from "./mcp/clock";
 
 export const PORTS = [4731, 4732, 4733, 4734, 4735] as const;
 
@@ -11,6 +14,7 @@ export type ServerOptions = {
   root: string;
   dataDir: string;
   topics: readonly Topic[];
+  pack?: CasePack; // loaded on the first /api/case when absent (the tests' options predate it)
 };
 
 /** The folder holding app/, content/ and data/: beside the binary when compiled, the cwd under `bun run dev`. */
@@ -105,6 +109,30 @@ function getState(req: Request, dataDir: string): Response {
   }
 }
 
+/**
+ * Today's case, or the case for `?day=YYYY-MM-DD` (read-only; a manual check can reach a rule day).
+ * The clock is read once here and the day passed down, so caseForDay and everything under it stay pure.
+ */
+async function getCase(
+  req: Request,
+  dataDir: string,
+  root: string,
+  pack: CasePack | undefined,
+): Promise<Response> {
+  const refused = refuseForeign(req);
+  if (refused) return refused;
+  const asked = new URL(req.url).searchParams.get("day");
+  if (asked !== null && !isDay(asked))
+    return json(400, { error: "day must be YYYY-MM-DD" });
+  try {
+    const loaded = pack ?? (await loadCasePack("maths", root));
+    return json(200, caseForDay(dataDir, loaded, asked ?? localDay(utcNow())));
+  } catch (err) {
+    console.error(`Could not build today's case: ${(err as Error).message}`);
+    return json(500, { error: "Could not build today's case" });
+  }
+}
+
 async function postEventRoute(
   req: Request,
   dataDir: string,
@@ -124,7 +152,7 @@ async function postEventRoute(
 
 /** Binds 127.0.0.1 on the first free port in the list; `0` asks the OS for any free port. */
 export function startServer(ports: readonly number[], opts: ServerOptions) {
-  const { root, dataDir, topics } = opts;
+  const { root, dataDir, topics, pack } = opts;
   for (const port of ports) {
     try {
       return Bun.serve({
@@ -132,6 +160,7 @@ export function startServer(ports: readonly number[], opts: ServerOptions) {
         port,
         routes: {
           "/api/state": { GET: (req) => getState(req, dataDir) },
+          "/api/case": { GET: (req) => getCase(req, dataDir, root, pack) },
           "/api/event": {
             POST: (req) => postEventRoute(req, dataDir, topics),
           },
@@ -175,10 +204,12 @@ if (import.meta.main) {
       );
     }
     const topics = await loadTopics("maths", root);
+    const pack = await loadCasePack("maths", root);
     const server = startServer([...PORTS, 0], {
       root,
       dataDir: path.join(root, "data"),
       topics,
+      pack,
     });
     const url = `http://127.0.0.1:${server.port}/`;
     console.log(`Study tutor is running at ${url}`);
