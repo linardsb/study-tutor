@@ -112,11 +112,15 @@ const optStr = (x: unknown) => x === undefined || str(x);
 const optInt = (x: unknown) => x === undefined || int(x);
 const oneOf = (x: unknown, allowed: readonly string[]) =>
   str(x) && allowed.includes(x as string);
-/** A real YYYY-MM-DD: 2026-02-30 rolls to 2 March and is refused, the same check `t` gets below. */
-export const isDay = (x: unknown): x is string =>
-  str(x) &&
-  /^\d{4}-\d{2}-\d{2}$/.test(x) &&
-  new Date(`${x}T00:00:00Z`).toISOString().slice(0, 10) === x;
+/**
+ * A real YYYY-MM-DD: 2026-02-30 rolls to 2 March and is refused, the same check `t` gets below.
+ * 2026-13-01 gives an invalid Date, whose toISOString throws, so the NaN check comes first (PR #31 F2).
+ */
+export const isDay = (x: unknown): x is string => {
+  if (!str(x) || !/^\d{4}-\d{2}-\d{2}$/.test(x)) return false;
+  const d = new Date(`${x}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === x;
+};
 const outOf = (n: unknown, of: unknown) =>
   int(n) && int(of) && (n as number) <= (of as number);
 

@@ -93,13 +93,15 @@ test("bad lines are skipped and counted, never fatal", () => {
     `{"v":2,"t":"2026-10-05T16:21:00Z","type":"attempt","item":"x","topic":"1MA1/R9","correct":true,"sure":true,"answer":"1"}`,
     `{"v":1,"t":"2026-10-05T16:21:00Z","type":"login"}`,
     `{"v":1,"t":"2026-10-05T16:21:00Z","type":"attempt","item":"x","correct":true,"sure":true,"answer":"1"}`,
+    // day is an invalid Date (month 13): isDay threw and every state route was a 500 (PR #31 F2)
+    `{"v":1,"t":"2026-10-05T16:21:00Z","type":"case","day":"2026-13-01","kind":"rule","topic":"1MA1/A12","pick":"x","bet":1,"correct":true,"reask":false}`,
   ];
   const lines = [...SIX_WEEKS.slice(0, 10), ...bad, ...SIX_WEEKS.slice(10)];
   const s = replay(lines);
   expect(s.topics).toEqual(TOPICS);
   expect(s.xp).toEqual(XP);
-  expect(s.skipped).toBe(4);
-  expect(s.lines).toBe(37);
+  expect(s.skipped).toBe(5);
+  expect(s.lines).toBe(38);
 });
 
 test.each([...EVENT_KEYS])(

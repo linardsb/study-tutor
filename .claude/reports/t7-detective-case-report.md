@@ -55,6 +55,9 @@ never to a prompt.
   same 4 pre-existing `noDescendingSpecificity` warnings as `main` (observed; two new ones I introduced
   were removed by lowering the case selectors).
 - `bun test`: 148 pass, 0 fail across 18 files (observed, 18 consecutive runs; see Issues).
+- Review round 1 (PR #31, 2026-09-27): `bun run check` after the fixes is 149 pass, 0 fail, 62522 expect() calls,
+  4 Biome warnings (observed, 16:06:45Z). `Case.hint` was dropped (never rendered, F7); the rest is in
+  `.claude/reports/pr-31-review-fixes.md`.
 - `bun scripts/test-generators.ts`: all 6300 runs pass (observed).
 - `bun run check` as one command fails only on `scripts/__fixtures__/s2-working.svg` (`noSvgWithoutTitle`),
   an untracked file another session created today at 16:26. It is not on this branch. With that file

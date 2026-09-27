@@ -1041,3 +1041,9 @@ the ticket's 600 to 900.
 
 - 2026-09-27, at commit: Tasks 9, 12, 13, 14, 17 and 19 edited to what shipped (see the report's
   Deviations). No task superseded.
+- 2026-09-27, PR #31 review round 1: `Case.hint` (Task 13's type sketch, `buildCase` and `buildReask`
+  carrying `hint`) superseded, the field is dropped (F7, never rendered). Task 17's `load` builds the
+  `/api/case` URL from a shape-checked `day` rather than forwarding `location.search` (F1), renders the
+  re-ask only after the first answer's POST resolves (F5) and again after a reload while it is owed (F9).
+  Task 15's `?day=` wording: read-only on the server; the page posts against the returned day (F6).
+  Detail in `.claude/reports/pr-31-review-fixes.md`.

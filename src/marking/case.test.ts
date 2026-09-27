@@ -14,6 +14,7 @@ type Detective = {
     correct: boolean,
     reask: boolean,
   ) => Record<string, unknown>;
+  reaskOwed: (record: { bets: [number, boolean][] }) => boolean;
 };
 
 // The browser file sets a global, the way quiz.js does; nothing in it touches document at load.
@@ -34,6 +35,21 @@ test("calibrationLine: nothing before the first case, then the first, then the l
     scored: 2,
     n: 2,
   });
+});
+
+test("reaskOwed: only a lone confident miss on record brings the re-ask back after a reload (PR #31 F9)", () => {
+  expect(detective.reaskOwed({ bets: [[3, false]] })).toBe(true);
+  expect(detective.reaskOwed({ bets: [[3, true]] })).toBe(false);
+  expect(detective.reaskOwed({ bets: [[2, false]] })).toBe(false);
+  expect(
+    detective.reaskOwed({
+      bets: [
+        [3, false],
+        [1, true],
+      ],
+    }),
+  ).toBe(false);
+  expect(detective.reaskOwed({ bets: [] })).toBe(false);
 });
 
 test("eventFor: a mistake case carries its item, a rule case omits it, and both bodies are valid case@1 lines", () => {

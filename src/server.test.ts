@@ -338,7 +338,25 @@ test(
     expect(asked.status).toBe(200);
     expect(((await asked.json()) as { day: string }).day).toBe("2026-10-09");
     expect((await get("/api/case?day=2026-02-30")).status).toBe(400);
+    // An invalid Date, not a rolled one: toISOString threw and the route was a 500 (PR #31 F2).
+    expect((await get("/api/case?day=2026-13-01")).status).toBe(400);
     expect((await get("/api/case?day=today")).status).toBe(400);
+    const badDay = await get("/api/event", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        v: 1,
+        type: "case",
+        day: "2026-13-01",
+        kind: "rule",
+        topic: "1MA1/A12",
+        pick: "x",
+        bet: 1,
+        correct: true,
+        reask: false,
+      }),
+    });
+    expect(badDay.status).toBe(400);
     const foreign = await get("/api/case", {
       headers: { origin: "https://evil.example" },
     });

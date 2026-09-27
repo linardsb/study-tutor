@@ -44,6 +44,13 @@ export type CaseResponse = {
   calibration: { predicted: number; scored: number; n: number };
 };
 
+/** The source a record was built from; null for a mistake record with no item (a hand-edited re-ask alone), which has no case to rebuild. */
+function sourceOf(record: CaseRecord): CaseSource | null {
+  if (record.kind === "rule") return { kind: "rule", topic: record.topic };
+  if (record.item === null) return null;
+  return { kind: "mistake", topic: record.topic, item: record.item };
+}
+
 /** Today's case for the record in dataDir. The case is rebuilt from today's record when one exists, so the page can show the done state. */
 export function caseForDay(
   dataDir: string,
@@ -52,13 +59,8 @@ export function caseForDay(
 ): CaseResponse {
   const state = currentState(dataDir);
   const record = state.cases[day] ?? null;
-  // A mistake record with no item (a hand-edited re-ask alone) has no case to rebuild: done, nothing shown.
-  const source: CaseSource | null = record
-    ? record.kind === "rule"
-      ? { kind: "rule", topic: record.topic }
-      : record.item === null
-        ? null
-        : { kind: "mistake", topic: record.topic, item: record.item }
+  const source = record
+    ? sourceOf(record)
     : pickCase(day, state.caseSeed, casePool(pack));
   return {
     day,

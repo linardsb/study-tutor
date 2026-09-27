@@ -29,6 +29,30 @@
     };
   }
 
+  /* the line under the title: which of the two puzzles today is */
+  const AIMS = {
+    mistake:
+      "Kai has answered a question. Find the mistake, or say there is none. Three minutes.",
+    rule: "Three questions, three answers. Find the rule behind them. Three minutes.",
+  };
+
+  /* a re-ask is owed when the day's only answer on record was a confident miss: after a reload the
+     page shows it again instead of the done state alone (PR #31 F9) */
+  function reaskOwed(record) {
+    const first = record.bets[0];
+    return (
+      record.bets.length === 1 &&
+      first !== undefined &&
+      first[0] === 3 &&
+      first[1] === false
+    );
+  }
+
+  /* the working paragraph, or null on a rule case, where the working is the rule the feedback names */
+  function workingOf(c) {
+    return c.working === c.options[c.correct] ? null : el("p", "", c.working);
+  }
+
   /* the case@1 body the page posts; t is stamped by the server */
   function eventFor(day, c, pick, bet, correct, reask) {
     return {
@@ -113,8 +137,9 @@
     return r ? Number(r.value) : null;
   }
 
-  /* the done state: today's case was answered on an earlier load, so no inputs, the note and the working */
-  function renderDone(holder, r) {
+  /* the done state: today's case was answered on an earlier load, so no inputs, the note and the working.
+     `owed` says a re-ask renders under it, so the closing note waits for that one. */
+  function renderDone(holder, r, owed) {
     const c = r.case;
     if (!c) {
       holder.appendChild(el("p", "note", "Done for today."));
@@ -131,12 +156,15 @@
         `${right ? "You had it." : "Not this time."} ${c.options[c.correct]}`,
       ),
     );
-    const work = el("div", "working");
-    work.appendChild(el("p", "", c.working));
-    q.appendChild(work);
+    const working = workingOf(c);
+    if (working) {
+      const work = el("div", "working");
+      work.appendChild(working);
+      q.appendChild(work);
+    }
     q.appendChild(el("p", "calibration", calibrationLine(r.calibration)));
     holder.appendChild(q);
-    holder.appendChild(el("p", "note", "Back tomorrow."));
+    if (!owed) holder.appendChild(el("p", "note", "Back tomorrow."));
   }
 
   /* one case, or the re-ask under a heading. `state.cal` is shared so the second line counts the first answer. */
@@ -177,7 +205,7 @@
         return;
       }
       if (bet === null) {
-        fb.textContent = "How sure? 1, 2 or 3 first";
+        fb.textContent = "How sure? 1, 2 or 3 first.";
         return;
       }
       const correct = pick === c.correct;
@@ -186,37 +214,50 @@
       fb.textContent = correct
         ? `Right. You bet ${bet}.`
         : `Not this time. You bet ${bet}. ${c.options[c.correct]}`;
-      work.hidden = false;
-      work.appendChild(el("p", "", c.working));
+      const working = workingOf(c);
+      if (working) {
+        work.hidden = false;
+        work.appendChild(working);
+      }
       for (const input of q.querySelectorAll("input")) input.disabled = true;
       btn.disabled = true;
+      state.cal = bump(state.cal, bet, correct);
+      cal.hidden = false;
+      cal.textContent = calibrationLine(state.cal);
+      /* a confident miss: the same idea again now, once the first answer is on record, so the log
+         never holds a re-ask before its first answer (PR #31 F5); the server seeds tomorrow from the event */
       postEvent(
         eventFor(r.day, c, c.options[pick], bet, correct, isReask),
       ).then((saved) => {
         if (!saved) fb.textContent += NOT_SAVED;
+        if (saved && !isReask && bet === 3 && !correct && r.reask) {
+          render(holder, r.reask, r, state, true);
+        } else {
+          holder.appendChild(el("p", "note", "Back tomorrow."));
+        }
       });
-      state.cal = bump(state.cal, bet, correct);
-      cal.hidden = false;
-      cal.textContent = calibrationLine(state.cal);
-      /* a confident miss: the same idea again now; the server seeds tomorrow from the event */
-      if (!isReask && bet === 3 && !correct && r.reask) {
-        render(holder, r.reask, r, state, true);
-      } else {
-        holder.appendChild(el("p", "note", "Back tomorrow."));
-      }
     });
   }
 
   function load(holder) {
-    /* the page's query goes through unchanged, so ?day= reaches the route */
-    fetch(`/api/case${location.search}`)
+    /* only a well-formed ?day= reaches the route; anything else asks for today */
+    const day = new URLSearchParams(location.search).get("day");
+    const url =
+      day && /^\d{4}-\d{2}-\d{2}$/.test(day)
+        ? `/api/case?day=${day}`
+        : "/api/case";
+    fetch(url)
       .then((res) => {
         if (!res.ok) throw new Error(String(res.status));
         return res.json();
       })
       .then((r) => {
+        const aim = document.querySelector(".aim");
+        if (aim && r.case) aim.textContent = AIMS[r.case.kind];
         if (r.record) {
-          renderDone(holder, r);
+          const owed = Boolean(r.reask) && reaskOwed(r.record);
+          renderDone(holder, r, owed);
+          if (owed) render(holder, r.reask, r, { cal: r.calibration }, true);
           return;
         }
         if (!r.case) {
@@ -242,5 +283,5 @@
   }
 
   const root = typeof window === "undefined" ? globalThis : window;
-  root.detective = { calibrationLine, eventFor, bump };
+  root.detective = { calibrationLine, eventFor, bump, reaskOwed };
 })();

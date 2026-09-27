@@ -31,7 +31,6 @@ export type Case = {
   stem: string;
   figure?: string;
   scaffold?: string;
-  hint?: string;
   shown: string | null; // Kai's answer (mistake) or null (rule)
   instances: { stem: string; answer: string }[]; // three for a rule case, [] for a mistake case
   question: string; // "Which note goes to Kai?" or "What is the rule?"
@@ -110,18 +109,18 @@ export function pickCase(
 
 const dedupe = (xs: readonly string[]): string[] => [...new Set(xs)];
 
+/** Day order for YYYY-MM-DD keys; a bare sort() is a Sonar reliability bug (PR #31 F1). */
+function byDay(a: string, b: string): number {
+  if (a < b) return -1;
+  return a > b ? 1 : 0;
+}
+
 /** A planted mistake from an item-shaped source. The rng decides the option order and whether Kai was right. */
 function mistakeCase(
   topic: Topic,
   item: Pick<
     Item,
-    | "stem"
-    | "figure"
-    | "scaffold"
-    | "hint"
-    | "answers"
-    | "working"
-    | "misconceptions"
+    "stem" | "figure" | "scaffold" | "answers" | "working" | "misconceptions"
   >,
   itemId: string | null,
   rng: () => number,
@@ -157,7 +156,6 @@ function mistakeCase(
     stem: item.stem,
     ...(item.figure === undefined ? {} : { figure: item.figure }),
     ...(item.scaffold === undefined ? {} : { scaffold: item.scaffold }),
-    ...(item.hint === undefined ? {} : { hint: item.hint }),
     shown,
     instances: [],
     question: `Which note goes to ${KAI}?`,
@@ -250,7 +248,6 @@ export function buildReask(
         topic,
         {
           stem: g.stem,
-          hint: g.hint,
           answers: g.answers,
           working: g.working,
           misconceptions: wrong.map(([answer, message]) => ({
@@ -276,7 +273,7 @@ export function calibration(
   last = LAST,
 ): { predicted: number; scored: number; n: number } {
   const pairs = Object.keys(records)
-    .sort()
+    .sort(byDay)
     .flatMap((day) => records[day]?.bets ?? [])
     .slice(-last);
   let predicted = 0;
