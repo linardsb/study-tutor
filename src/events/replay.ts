@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import {
   afterLesson,
   afterRed,
@@ -29,6 +30,7 @@ export type State = {
   shape: 1; // bump when this type changes
   lines: number; // log lines this state was built from, skipped lines included
   skipped: number; // lines replay could not read
+  hash: string; // sha256 of those lines, so the check can tell a hand edit from a code change
   topics: Record<string, TopicState>;
   xp: { total: number; byWeek: Record<string, number> }; // ISO week → XP that week
   flame: Record<string, string[]>; // ISO week → distinct London days with real work
@@ -131,21 +133,27 @@ const CASES: { [K in EventKey]: (s: State, e: EventByKey[K]) => void } = {
   },
 };
 
+/** An empty map with no prototype, so an id such as `__proto__` or `constructor` is just a key. */
+export const dict = <V>(): Record<string, V> => Object.create(null);
+
 /** Pure: the same lines always give the same state. Reads no clock and no file. */
 export function replay(lines: readonly string[]): State {
   const s: State = {
     shape: 1,
     lines: 0,
     skipped: 0,
-    topics: {},
-    xp: { total: 0, byWeek: {} },
-    flame: {},
-    confidentWrong: {},
-    calibration: {},
-    tokens: {},
+    hash: "",
+    topics: dict(),
+    xp: { total: 0, byWeek: dict() },
+    flame: dict(),
+    confidentWrong: dict(),
+    calibration: dict(),
+    tokens: dict(),
   };
+  const hash = createHash("sha256");
   // File order, never sorted by t: a PC clock change can write an earlier t after a later one.
   for (const line of lines) {
+    hash.update(`${line}\n`);
     const event = parseEvent(line);
     if (event === null) {
       s.skipped++;
@@ -155,5 +163,6 @@ export function replay(lines: readonly string[]): State {
     (CASES[key] as (s: State, e: Event) => void)(s, event);
   }
   s.lines = lines.length;
+  s.hash = hash.digest("hex");
   return s;
 }

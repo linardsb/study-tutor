@@ -103,6 +103,7 @@ test(
 test(
   "confinement: ../ and absolute paths are refused",
   withTemp((dir, data) => {
+    fs.mkdirSync(data);
     expect(() => resolveInData(data, "../outside.jsonl")).toThrow(
       /outside the data folder/,
     );
@@ -151,6 +152,7 @@ test(
 test(
   "a name that starts with two dots stays inside",
   withTemp((_dir, data) => {
+    fs.mkdirSync(data);
     expect(resolveInData(data, "..notes")).toBe(path.join(data, "..notes"));
   }),
 );
@@ -213,5 +215,39 @@ test.skipIf(process.platform === "win32")(
     for (const name of ["events.jsonl", "state.json"]) {
       expect(fs.statSync(path.join(data, name)).mode & 0o777).toBe(0o600);
     }
+  }),
+);
+
+test(
+  "a byte-order mark on line 1 is not a skipped line",
+  withTemp((_dir, data) => {
+    fs.mkdirSync(data);
+    fs.writeFileSync(
+      path.join(data, "events.jsonl"),
+      `\uFEFF{"v":1,"t":"2026-10-05T15:00:00Z","type":"xp","amount":10,"reason":"attempt"}\n`,
+    );
+    expect(replay(readLines(data)).skipped).toBe(0);
+  }),
+);
+
+test(
+  "fields the event type does not have are not written",
+  withTemp((_dir, data) => {
+    const e = appendEvent(
+      data,
+      { ...ATTEMPT, correct_answer: "12" } as NewEvent,
+      AT,
+    );
+    expect(readLines(data)[0]).not.toContain("correct_answer");
+    expect(e).not.toHaveProperty("correct_answer");
+  }),
+);
+
+test(
+  "readers do not create the data folder",
+  withTemp((_dir, data) => {
+    expect(readLines(data)).toEqual([]);
+    expect(readStoredState(data)).toBeNull();
+    expect(fs.existsSync(data)).toBe(false);
   }),
 );

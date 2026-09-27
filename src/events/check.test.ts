@@ -62,6 +62,7 @@ test(
       fallen: [{ topic: "1MA1/N12", stored: 4, replayed: 3 }],
     });
     expect(fs.readFileSync(file).equals(bytes)).toBe(true);
+    expect(fs.existsSync(path.join(data, "state.prev.json"))).toBe(false);
   }),
 );
 
@@ -128,3 +129,70 @@ test(
     expect(readState(data).lines).toBe(33);
   }),
 );
+
+test(
+  "a topic named constructor does not stop the check",
+  withLog((data) => {
+    appendEvent(data, {
+      v: 1,
+      type: "retest",
+      topic: "constructor",
+      score: 1,
+      of: 1,
+      passed: true,
+    });
+    expect(replayCheck(data).ok).toBe(true);
+    expect(replayCheck(data).ok).toBe(true);
+  }),
+);
+
+test(
+  "a hand edit that keeps the line count rebuilds instead of blaming the build",
+  withLog((data) => {
+    replayCheck(data);
+    const edited = [...LINES];
+    edited[29] = (edited[29] as string).replace(
+      '"passed":true',
+      '"passed":false',
+    );
+    fs.writeFileSync(path.join(data, "events.jsonl"), `${edited.join("\n")}\n`);
+    const result = replayCheck(data);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.truncated).toBe(true);
+    expect(result.changes).toEqual([
+      "1MA1/R9: saved 3, now 1 (the log no longer matches the saved progress)",
+    ]);
+    expect(readState(data).topics["1MA1/R9"].rung).toBe(1);
+  }),
+);
+
+test(
+  "a stored line count that is not a whole number is not trusted",
+  withLog((data) => {
+    fs.writeFileSync(
+      path.join(data, "state.json"),
+      JSON.stringify({ ...replay(LINES), lines: -1 }),
+    );
+    const result = replayCheck(data);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.changes).toEqual([
+        "No saved progress to compare; rebuilt from the log.",
+      ]);
+    }
+  }),
+);
+
+test("no log and no saved progress: nothing is written", () => {
+  const dir = fs.realpathSync.native(
+    fs.mkdtempSync(path.join(os.tmpdir(), "st-check-")),
+  );
+  try {
+    const data = path.join(dir, "data");
+    expect(replayCheck(data).ok).toBe(true);
+    expect(fs.existsSync(data)).toBe(false);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

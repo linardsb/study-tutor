@@ -61,7 +61,7 @@ because the design accepts a pupil hand-editing the log (architecture "Gaming").
 
 `state.json` records how many log lines it was built from (`lines`). The startup check replays exactly
 that prefix with the new code and compares rungs, so a real failed re-test appended after the last state
-write never trips it. Only a code change that lowers a rung for the same events does.
+write never trips it. Only a code change that lowers a rung for the same events does. (PR #23 review M2: "same events" is checked by a sha256 of the prefix; a hand edit that keeps the line count rebuilds instead.)
 
 The ladder rule is v1's, read out of the donor (`~/Desktop/Matis_study_tutor/.claude/skills/study/SKILL.md:26`
 and `:71`, `intake.md:31`): `not started` → `learning` (lesson done) → `1 pass` → `2 passes` → `secure`;
@@ -435,7 +435,7 @@ ladder, never the reverse).
   export function writeState(dataDir: string, state: State): void
   ```
   `resolveInData`:
-  1. `fs.mkdirSync(dataDir, { recursive: true })`; `root = fs.realpathSync.native(dataDir)`.
+  1. `fs.mkdirSync(dataDir, { recursive: true })`; `root = fs.realpathSync.native(dataDir)`. (PR #23 review H1: the `mkdirSync` moved to the writers, so a read never creates `data/`.)
   2. `target = path.resolve(root, rel)`.
   3. `real = fs.realpathSync.native(target)`; on `ENOENT` only: if `fs.lstatSync(target, { throwIfNoEntry: false })`
      returns a value, the target is a dangling symlink → refuse; else
@@ -749,7 +749,7 @@ ladder, never the reverse).
   event, five topic ids, and `n` events drawn from: lesson `session` end, `attempt` (+ an `xp` 10),
   `retest` (pass with probability 0.7, + `xp` 20), `teachback`, `usage`. Each through `appendEvent(dir,
   event, clock)`, so the log is produced by the real writer. Prints the line count.
-- **VALIDATE**: `bun scripts/synth-events.ts --data "$T/data" --n 200 --seed 1 && wc -l "$T/data/events.jsonl"`
+- **VALIDATE**: `R=$PWD; cd "$T" && bun "$R/scripts/synth-events.ts" --data data --n 200 --seed 1 && wc -l data/events.jsonl` (PR #23 review H1: `--data` must resolve inside the current folder, so every script step below runs from inside `$T`)
   → `200` (an `xp` counts toward `n`); running it twice with the same seed into two fresh dirs gives
   byte-identical files (`cmp`).
 - **SATISFIES**: AC 9 (S5 needs 200 synthetic events).
@@ -760,7 +760,7 @@ ladder, never the reverse).
   committed yet, so `git checkout -- <file>` cannot revert an untracked file: before each code edit below,
   `cp <file> "$T/<name>.bak"`, and after the step `cp` it back; `git diff --stat` and `bun run check` green
   after step 3 prove the tree is restored.
-  1. `bun scripts/synth-events.ts --data "$T/data" --n 200 --seed 1`; `bun scripts/replay-check.ts --data "$T/data"`
+  1. From inside `$T`: `bun "$R/scripts/synth-events.ts" --data data --n 200 --seed 1`; `bun "$R/scripts/replay-check.ts" --data data`
      → exit 0, rebuilt. `cp "$T/data/state.json" "$T/state.v1.json"`.
   2. **Shape change, rungs and XP kept.** In the working tree, change the state shape: rename `flame` to
      `weeks`, add `retests: number` to `TopicState` (incremented in `retest@1`), `shape: 2`. Run
@@ -873,7 +873,7 @@ bun run check
 
 All steps use only what this ticket ships (`synth-events.ts`, `replay-check.ts`, `appendEvent`).
 
-1. `T=$(mktemp -d); bun scripts/synth-events.ts --data "$T/data" --n 200 --seed 1; bun scripts/replay-check.ts --data "$T/data"; echo $?`
+1. `R=$PWD; T=$(mktemp -d); cd "$T"; bun "$R/scripts/synth-events.ts" --data data --n 200 --seed 1; bun "$R/scripts/replay-check.ts" --data data; echo $?`
    → a rebuild line, `0`. `head -3 "$T/data/events.jsonl"` shows `{"v":1,"t":"…Z","type":…`.
 2. S5 steps 2–4 (Task 12), each with its exit code and `shasum` recorded.
 3. `ln -s /etc "$T/data/link"; bun -e 'import {resolveInData} from "./src/events/append"; resolveInData(process.argv[1], "link/passwd")' "$T/data"`

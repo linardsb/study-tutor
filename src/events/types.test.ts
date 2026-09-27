@@ -46,6 +46,16 @@ test.each([
     `{"v":1,"t":"2026-10-08T16:00:00Z","type":"xp","amount":0,"reason":"attempt"}`,
   ],
   [
+    "an impossible month",
+    VALID_ATTEMPT.replace("2026-10-03T17:42:10Z", "2026-13-01T10:00:00Z"),
+  ],
+  [
+    "a day that rolls over",
+    VALID_ATTEMPT.replace("2026-10-03T17:42:10Z", "2026-02-30T10:00:00Z"),
+  ],
+  ["a string version", VALID_ATTEMPT.replace('"v":1', '"v":"1"')],
+  ["an array type", VALID_ATTEMPT.replace('"attempt"', '["attempt"]')],
+  [
     "an intake with no topics",
     `{"v":1,"t":"2026-10-08T16:00:00Z","type":"intake","door":"sheet","topics":[]}`,
   ],

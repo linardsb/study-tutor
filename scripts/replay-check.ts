@@ -1,7 +1,7 @@
 import { replayCheck } from "../src/events/check";
+import { dataArg } from "./data-arg";
 
-const i = process.argv.indexOf("--data");
-const data = i === -1 ? "data" : (process.argv[i + 1] ?? "data");
+const data = dataArg();
 
 try {
   const result = replayCheck(data);

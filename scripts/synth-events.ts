@@ -1,5 +1,6 @@
 import { appendEvent } from "../src/events/append";
 import type { NewEvent } from "../src/events/types";
+import { dataArg } from "./data-arg";
 
 function arg(name: string, fallback: string): string {
   const i = process.argv.indexOf(`--${name}`);
@@ -18,7 +19,7 @@ function mulberry32(seed: number): () => number {
   };
 }
 
-const data = arg("data", "data");
+const data = dataArg();
 const n = Number(arg("n", "200"));
 const rand = mulberry32(Number(arg("seed", "1")));
 const TOPICS = ["1MA1/R9", "1MA1/N12", "1MA1/A5", "1MA1/G20", "1MA1/S4"];

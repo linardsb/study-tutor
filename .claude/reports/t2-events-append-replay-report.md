@@ -85,6 +85,7 @@ Mutations, both halves, `observed`:
 - `node_modules/.bin/tsc --noEmit`: clean.
 - `node_modules/.bin/biome check --write .`: 22 files checked, 11 reformatted (line wrapping only).
 - `bun run check`: 73 pass, 0 fail, 193 expect() calls, 7 files (`observed`, after the review fixes).
+- `bun run check` after the PR #23 review fixes: 91 pass, 0 fail, 234 expect() calls, 8 files (`observed`). See `.claude/reports/pr-23-review-fixes.md`.
 - `bun scripts/replay-check.ts --data <tmp with six-week fixture>`: prints the rebuild line, exit 0.
 - `synth-events.ts --n 200 --seed 1`: 200 lines; a second run into a fresh dir is byte-identical (`cmp`).
 - Level 4: step 1 as above (`head -3` shows `{"v":1,"t":"…Z","type":…`); step 2 is S5, in the architecture doc;
@@ -97,6 +98,7 @@ Mutations, both halves, `observed`:
 1. **`appendEvent` key order via `Object.assign`.** The plan's literal `{ v: event.v, t: "", ...event }` fails
    `tsc` with TS2783 ("'v' is specified more than once"). Now `Object.assign({ v: event.v, t: "" }, event)`,
    then `obj.t = now()`: same key order `v, t, type, …`, and the clock still wins (test 12, mutation (e)).
+   Superseded by PR #23 review L2: `appendEvent` now copies only the fields in `KEYS`, with `t` set from the clock.
 2. **Log opened `O_RDWR`, not `O_WRONLY`.** The plan reads the last byte through the append descriptor to
    check for a trailing newline, and `readSync` on a write-only fd throws `EBADF` (`observed`, tests 1–3 and
    13 red). `O_RDWR | O_APPEND` keeps writes at end-of-file; the two-writer test passes.

@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { utcNow } from "../mcp/clock";
 import type { State } from "./replay";
-import { type Event, type NewEvent, parseEvent } from "./types";
+import { type Event, KEYS, type NewEvent, parseEvent } from "./types";
 
 export const EVENTS_FILE = "events.jsonl";
 export const STATE_FILE = "state.json";
@@ -20,16 +20,18 @@ const WRITE =
   NOFOLLOW;
 const OWNER_ONLY = 0o600;
 
+const isMissing = (err: unknown) =>
+  (err as { code?: string }).code === "ENOENT";
+
 /** Resolves `rel` inside `dataDir`, following symlinks; throws if the result is outside `dataDir`. */
 export function resolveInData(dataDir: string, rel: string): string {
-  fs.mkdirSync(dataDir, { recursive: true });
   const root = fs.realpathSync.native(dataDir);
   const target = path.resolve(root, rel);
   let real: string;
   try {
     real = fs.realpathSync.native(target);
   } catch (err) {
-    if ((err as { code?: string }).code !== "ENOENT") throw err;
+    if (!isMissing(err)) throw err;
     // A dangling symlink: opening it would create its target, wherever that is.
     if (fs.lstatSync(target, { throwIfNoEntry: false }) !== undefined) {
       throw new Error(`Refused: ${rel} resolves outside the data folder`);
@@ -57,13 +59,20 @@ export function appendEvent(
   event: NewEvent,
   now: () => string = utcNow,
 ): Event {
+  fs.mkdirSync(dataDir, { recursive: true });
   const file = resolveInData(dataDir, EVENTS_FILE);
-  // Key order v, t, type, ... as in events.md; t is assigned last, so a caller's t never wins.
-  const obj: Record<string, unknown> = Object.assign(
-    { v: event.v, t: "" },
-    event,
-  );
-  obj.t = now();
+  // Key order v, t, type, ... as in events.md. Only the type's own fields are copied, so a
+  // caller's t never wins and a stray field (a correct answer) never reaches the log.
+  const obj: Record<string, unknown> = {
+    v: event.v,
+    t: now(),
+    type: event.type,
+  };
+  const own = KEYS[`${event.type}@${event.v}`] as readonly string[] | undefined;
+  for (const k of own ?? []) {
+    const value = (event as Record<string, unknown>)[k];
+    if (value !== undefined) obj[k] = value;
+  }
   const line = JSON.stringify(obj);
   const parsed = parseEvent(line);
   if (parsed === null) {
@@ -91,15 +100,16 @@ export function appendEvent(
 
 /** Non-empty lines of data/events.jsonl in file order; [] if the file does not exist yet. */
 export function readLines(dataDir: string): string[] {
-  const file = resolveInData(dataDir, EVENTS_FILE);
   let text: string;
   try {
-    text = fs.readFileSync(file, "utf8");
+    text = fs.readFileSync(resolveInData(dataDir, EVENTS_FILE), "utf8");
   } catch (err) {
-    if ((err as { code?: string }).code === "ENOENT") return [];
+    if (isMissing(err)) return [];
     throw err;
   }
+  // A Windows editor can save the log with a byte-order mark, which would spoil line 1.
   return text
+    .replace(/^\uFEFF/, "")
     .split("\n")
     .map((l) => (l.endsWith("\r") ? l.slice(0, -1) : l))
     .filter((l) => l.trim() !== "");
@@ -107,7 +117,13 @@ export function readLines(dataDir: string): string[] {
 
 /** Parsed data/state.json, or null if missing or not JSON. Shape is not trusted. */
 export function readStoredState(dataDir: string): unknown {
-  const file = resolveInData(dataDir, STATE_FILE);
+  let file: string;
+  try {
+    file = resolveInData(dataDir, STATE_FILE);
+  } catch (err) {
+    if (isMissing(err)) return null;
+    throw err;
+  }
   try {
     return JSON.parse(fs.readFileSync(file, "utf8"));
   } catch {
@@ -117,6 +133,7 @@ export function readStoredState(dataDir: string): unknown {
 
 /** Writes data/state.json atomically: temp file, fsync, rename. */
 export function writeState(dataDir: string, state: State): void {
+  fs.mkdirSync(dataDir, { recursive: true });
   const file = resolveInData(dataDir, STATE_FILE);
   const tmp = resolveInData(dataDir, `${STATE_FILE}.tmp`);
   const fd = fs.openSync(tmp, WRITE, OWNER_ONLY);
@@ -140,6 +157,7 @@ export function writeState(dataDir: string, state: State): void {
 
 /** Copies one data file to another, both confined to `dataDir`; no-op if `from` does not exist. */
 export function copyState(dataDir: string, from: string, to: string): void {
+  fs.mkdirSync(dataDir, { recursive: true });
   const src = resolveInData(dataDir, from);
   const dest = resolveInData(dataDir, to);
   if (!fs.existsSync(src)) return;

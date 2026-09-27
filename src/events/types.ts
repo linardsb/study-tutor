@@ -148,6 +148,25 @@ const FIELDS: { [K in EventKey]: (o: Obj) => boolean } = {
   "usage@1": (o) => str(o.job) && str(o.model) && int(o.input) && int(o.output),
 };
 
+type Own<K extends EventKey> = Exclude<keyof EventByKey[K], "v" | "t" | "type">;
+/** The fields each (type, v) may carry beyond v, t and type; append writes only these. */
+export const KEYS = {
+  "session@1": ["phase", "mode", "topic"],
+  "attempt@1": ["item", "topic", "correct", "sure", "answer", "seed"],
+  "retest@1": ["topic", "score", "of", "passed", "seed"],
+  "teachback@1": ["topic", "item", "marks", "of"],
+  "intake@1": ["door", "topics"],
+  "xp@1": ["amount", "reason"],
+  "squad@1": ["squad", "week", "topic", "score", "of"],
+  "photo@1": ["item", "topic", "file"],
+  "usage@1": ["job", "model", "input", "output"],
+} as const satisfies { [K in EventKey]: readonly Own<K>[] };
+// A field added to an event type and not to KEYS fails here, so append never drops it.
+type Missing = {
+  [K in EventKey]: Exclude<Own<K>, (typeof KEYS)[K][number]>;
+}[EventKey];
+const _complete: [Missing] extends [never] ? true : Missing = true;
+
 /** Every (type, v) the parser and replay know, in table order. */
 export const EVENT_KEYS = Object.keys(FIELDS) as readonly EventKey[];
 
@@ -162,7 +181,16 @@ export function parseEvent(line: string): Event | null {
   if (typeof o !== "object" || o === null || Array.isArray(o)) return null;
   const obj = o as Obj;
   if (!str(obj.t) || !T.test(obj.t as string)) return null;
-  const key = `${String(obj.type)}@${String(obj.v)}`;
+  // The regex lets 2026-13-01 through (Date gives NaN) and 2026-02-30 (Date rolls it to 2 March).
+  const d = new Date(obj.t as string);
+  if (
+    Number.isNaN(d.getTime()) ||
+    d.toISOString().slice(0, 19) !== (obj.t as string).slice(0, 19)
+  ) {
+    return null;
+  }
+  if (!str(obj.type) || !Number.isInteger(obj.v)) return null;
+  const key = `${obj.type}@${obj.v}`;
   if (!Object.hasOwn(FIELDS, key)) return null;
   return FIELDS[key as EventKey](obj) ? (obj as Event) : null;
 }

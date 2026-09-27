@@ -108,3 +108,42 @@ test.each([...EVENT_KEYS])(
     expect(replay(lines).skipped).toBe(0);
   },
 );
+
+test("a topic named constructor is its own topic", () => {
+  const s = replay([
+    `{"v":1,"t":"2026-10-08T16:00:00Z","type":"retest","topic":"constructor","score":1,"of":1,"passed":true}`,
+  ]);
+  const id: string = "constructor";
+  expect(s.topics[id]).toEqual({
+    rung: 2,
+    nextDue: "2026-10-18",
+    rag: null,
+  });
+});
+
+test("a topic or item named __proto__ pollutes nothing and is kept", () => {
+  try {
+    const s = replay([
+      `{"v":1,"t":"2026-10-08T16:00:00Z","type":"intake","door":"sheet","topics":[{"topic":"__proto__","rag":"R"}]}`,
+      `{"v":1,"t":"2026-10-08T16:00:00Z","type":"attempt","item":"__proto__","topic":"1MA1/R9","correct":false,"sure":true,"answer":"4"}`,
+    ]);
+    expect(({} as { rag?: unknown }).rag).toBeUndefined();
+    expect(Object.hasOwn(s.topics, "__proto__")).toBe(true);
+    expect(Object.hasOwn(s.confidentWrong, "__proto__")).toBe(true);
+    expect(JSON.stringify(s)).toContain(
+      '"__proto__":{"rung":0,"nextDue":null,"rag":"R"}',
+    );
+  } finally {
+    delete (Object.prototype as { rag?: unknown }).rag;
+  }
+});
+
+test("the hash covers exactly the lines replayed", () => {
+  const a = replay(SIX_WEEKS);
+  expect(a.hash).toMatch(/^[0-9a-f]{64}$/);
+  expect(replay(SIX_WEEKS).hash).toBe(a.hash);
+  expect(replay(SIX_WEEKS.slice(0, 32)).hash).not.toBe(a.hash);
+  const edited = [...SIX_WEEKS];
+  edited[0] = `${edited[0]} `;
+  expect(replay(edited).hash).not.toBe(a.hash);
+});
