@@ -28,4 +28,4 @@ Topic id is the exam-board specification statement (Edexcel `1MA1/...`, AQA `830
 
 ## Carry-over from v1
 
-The 21 lessons, 21 reference sheets and `generate.js` come from `~/Desktop/Matis_study_tutor/` (master, PRD Q1). `quiz.js` supplies Sure/Not sure and posting. The hand-written `.q` items were converted once into `items/` (T3) and stripped from the lessons (T4); `scripts/strip-lessons.test.ts` fails if a `.q` block or a `../assets` link comes back.
+The 21 lessons, 21 reference sheets and `generate.js` come from `~/Desktop/Matis_study_tutor/` (master, PRD Q1). `quiz.js` supplies Sure/Not sure and posting. The hand-written `.q` items were converted once into `items/` (T3) and stripped from the lessons (T4); `scripts/strip-lessons.test.ts` fails if a `.q` block in the quiz section, an `#explore` section or one of the rewritten v1 links comes back.

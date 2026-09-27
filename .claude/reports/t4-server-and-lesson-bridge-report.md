@@ -76,7 +76,7 @@ Level 4 (all `observed`, Bun 1.3.4, macOS x86_64, headless Chrome through `agent
    2b. Lesson 0018: five items each with its SVG (`aria-label`s "A cone with radius 6 cm…", …, "A sphere with radius 3 cm…"); `.solid` div empty; only `/content/maths/generators.js` and `/quiz.js` loaded.
 3. Practice: 21 topics listed with codes. Untick all, tick U349 and U687, Mixed 6 → status "2 topics in the pot.", six stems alternating percentage and ratio (no two in a row from one code). Answered item 1 ("Find 70% of 60.") with `1`, Sure → log line `item` `1MA1/R9/of-an-amount#gen`, `seed` 2168543902; `GEN.U349(quiz.lcg(2168543902)).stem` = "Find 70% of 60." (rebuild from seed works).
 4. Server killed with the practice page open; answered item 2 correctly → "Correct. Not saved. Check the tutor window is still open." Log byte-identical before and after.
-5. `dist/stage/mac/StudyTutor/StudyTutor-x64` run from `/tmp` (this Mac is Intel; the arm64 build gives "bad CPU type" here, as expected): console URL on 4731; lesson, items file and `quiz.js` all 200; POST attempt 201; `ls dist/stage/mac/StudyTutor/data` → `events.jsonl`, `state.json`; no `/tmp/data`. Windows zip not run (`expected`, same code path).
+5. `dist/stage/mac/StudyTutor/StudyTutor-x64` run from `/tmp` (this Mac is Intel; the arm64 build gives "bad CPU type" here, as expected): console URL on 4731; lesson, items file and `quiz.js` all 200; POST attempt 201; `ls dist/stage/mac/StudyTutor/data` → `events.jsonl`, `state.json`; no `/tmp/data`. Windows zip not run (`expected`, same code path). **Contradicted by PR #26 review F1:** `path.win32.normalize` read the guard's `//` as a UNC root, so the Windows build 404ed every lesson and served `data/`. Fixed in the review round (`staticPath`, tested under `path.win32`); see `.claude/reports/pr-26-review-fixes.md`.
 6. `POST /api/event` with `{"v":1,"type":"nope"}` → 400 `{"error":"Refused: not a valid nope v1 event"}`, no `data/` created.
 7. `bun scripts/strip-lessons.ts` → `0 files changed`.
 
@@ -99,7 +99,7 @@ Both `data/` folders the run created were removed afterwards.
 6. **`practice.html` crumb** says "Lessons" and links to `/`; the donor's said "Progress". The plan did not name
    the crumb; T6 owns progress and there is no such page yet. The lessons' own "Progress" crumb is untouched as
    the plan said.
-7. **Q3 follow-up ticket not opened.** The plan recommends a ticket "carry solids.js and read.js into app/".
+7. **Q3 follow-up ticket not opened.** The plan recommends a ticket "carry solids.js and read.js into app/". (PR #26 F4: the three `#explore` sections that needed `solids.js` are now stripped too, so no lesson tells the pupil to drag a shape that is not there.)
    Not created here; listed as a next step for the PR.
 
 Nothing in the plan's UX states was dropped: lesson items not loading ("The questions did not load…"), attempt
@@ -113,4 +113,5 @@ generators loaded…"), nothing ticked ("Tick at least one topic first.") are al
 - The pre-tool hook refuses `rm -rf`; cleanup used `rm` on the two files and `rmdir`.
 - Sonar: the static path is the only request-supplied path. The normalise-then-join line
   (`src/server.ts`, `path.join(root, folder, path.normalize(`/${rel}`))`) and the eight-path traversal test
-  answer a "path traversal" alert; say so in the PR body.
+  answer a "path traversal" alert; say so in the PR body. (Superseded: the line was POSIX-only, PR #26 F1;
+  the answer is now `staticPath` and its `path.win32` test.)
