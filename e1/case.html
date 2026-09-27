@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Today's case</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  /* the quiz item look, without the .quiz class so quiz.js leaves this item alone */
+  #case .q { background: var(--card); border: 1px solid var(--line); padding: .9rem 1rem; margin-bottom: .8rem; }
+  #case .q h2 { margin-top: 0; }
+  #case .stem { font-weight: 600; }
+  #case .options label, #case .bet label { display: block; padding: .25rem 0; }
+  #case .bet { margin: .6rem 0 .8rem; font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; font-size: .95rem; }
+  #case .bet label { display: inline-flex; align-items: center; gap: .3rem; margin-right: .9rem; }
+  #case input[type="radio"] { width: auto; margin: 0 .3rem 0 0; }
+  #case button.check { font: inherit; font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; padding: .35rem .8rem; border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 3px; cursor: pointer; }
+  #case button.check:disabled { opacity: .5; cursor: default; }
+  #case .feedback { margin: .6rem 0 0; font-weight: 600; }
+  #case .q.right { border-left: 4px solid var(--green); }
+  #case .q.right .feedback { color: var(--green); }
+  #case .q.wrong { border-left: 4px solid var(--red); }
+  #case .q.wrong .feedback { color: var(--red); }
+  #case .working { margin-top: .5rem; color: var(--muted); border-top: 1px dashed var(--line); padding-top: .5rem; }
+  #case .calibration { color: var(--muted); font-size: .95rem; }
+  #case .meta { color: var(--muted); font-size: .85rem; }
+</style>
+</head>
+<body>
+<main class="lesson practice">
+  <header>
+    <p class="crumb"><a href="map.html">Map</a> · case · Maths</p>
+    <h1>Today's case</h1>
+    <p class="aim">Jo has answered a question. Find the mistake, or say there is none. Three minutes.</p>
+  </header>
+
+  <section id="case"></section>
+
+  <footer>
+    <p>Nothing here is a prediction. A case a day; the map counts the week.</p>
+  </footer>
+</main>
+<script src="assets/progress-data.js"></script>
+<script src="assets/generate.js"></script>
+<script src="assets/quiz.js"></script>
+<script src="assets/case.js"></script>
+</body>
+</html>

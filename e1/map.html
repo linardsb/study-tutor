@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your map</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .due { background: var(--red-bg); border-left: 6px solid var(--red); padding: .8rem 1rem; margin: 0 0 1.5rem; }
+  .due b { color: var(--red); }
+  .empty { color: var(--muted); font-style: italic; }
+  .today { background: var(--card); border: 1px solid var(--line); border-left: 6px solid var(--accent); padding: .8rem 1rem; margin: 0 0 1.5rem; }
+  .today a { font-weight: 700; }
+  .card .level { display: block; color: var(--accent); font-size: .8rem; font-weight: 700; }
+  .stat .copy { margin-left: .3rem; }
+</style>
+</head>
+<body>
+<main class="progress">
+  <header>
+    <p class="crumb" id="crumb">Map · Matis · GCSE Foundation maths</p>
+    <h1>Your map</h1>
+  </header>
+  <div class="due" id="due" hidden></div>
+  <div class="stats" id="stats"></div>
+  <div class="today" id="today" hidden></div>
+  <div id="groups"></div>
+  <footer>
+    <p>The four bars on a card are the ladder: learning, 1 pass, 2 passes, secure. A bar fills when a cold re-test is passed. Green here means the school saw it right once. A topic is counted as secure after passing cold re-tests in this folder at 3, 10 and 30 days, and it still gets re-tested every 60 days. Nothing on this page is a prediction.</p>
+  </footer>
+</main>
+<script src="assets/progress-data.js"></script>
+<script src="assets/quiz.js"></script>
+<script src="assets/case.js"></script>
+<script>
+(function () {
+  'use strict';
+  var C = window.CASE;
+  var today = new Date();
+  var todayIso = C.iso(today);
+  var mondayIso = C.mondayOf(today);
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var dueBox = document.getElementById('due');
+
+  /* log the open, then check that a write reads back; a red note here is the E1 storage check */
+  var log = [];
+  var storageOk = true;
+  try {
+    var raw = localStorage.getItem('tutor:log');
+    log = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(log)) log = [];
+  } catch (err) {
+    log = [];
+    storageOk = false;
+  }
+  try {
+    log.push({ d: todayIso, mode: 'open-map' });
+    localStorage.setItem('tutor:log', JSON.stringify(log));
+    var probe = String(Date.now());
+    localStorage.setItem('tutor:probe', probe);
+    if (localStorage.getItem('tutor:probe') !== probe) storageOk = false;
+  } catch (err) {
+    storageOk = false;
+  }
+  if (!storageOk) {
+    dueBox.hidden = false;
+    dueBox.innerHTML = '<b>This browser is not saving your opens.</b> Ask Dad.';
+  }
+
+  var P = window.PROGRESS;
+  if (!P) { document.getElementById('groups').innerHTML = '<p class="empty">No data yet. Ask Claude for progress.</p>'; return; }
+
+  var rag = function (t) { return (t.latest || '').charAt(0); };
+  var colour = function (t) { return { R: 'r', A: 'a', G: 'g' }[rag(t)] || 'o'; };
+  var RUNGS = ['learning', '1 pass', '2 passes', 'secure'];
+  var rung = function (t) { return RUNGS.indexOf(t.stage) + 1; };
+
+  document.getElementById('crumb').textContent = 'Data from ' + esc(P.built) + ' · Matis · GCSE Foundation maths · viewed ' + todayIso;
+
+  /* stats: the flame, the cases, and the two-week count of opens that E1 reads */
+  var flame = C.flame(P.sessions, log, mondayIso, todayIso);
+  var cases = log.filter(function (e) { return e.mode === 'case'; }).length;
+  var sets = log.filter(function (e) { return e.mode === 'quiz'; }).length;
+  var opened = C.opens(log, todayIso, 14);
+  var e1Line = 'E1 ' + todayIso + ': opened on ' + opened.count + ' of 14 days (' + opened.dates.join(', ') + '), cases ' + cases + ', sets ' + sets;
+
+  var stat = function (big, label) { return '<div class="stat"><b>' + big + '</b><span>' + label + '</span></div>'; };
+  document.getElementById('stats').innerHTML =
+    stat(flame + ' of your ' + (P.weeklyTarget || 3), 'this week') +
+    stat(cases, cases === 1 ? 'case done' : 'cases done') +
+    stat(opened.count + ' of the last 14', '<span data-prompt="' + esc(e1Line) + '">days you opened this <button type="button" class="copy" aria-label="Copy the count for Dad"></button></span>');
+
+  var doneToday = log.some(function (e) { return e.mode === 'case' && e.d === todayIso; });
+  var todayBox = document.getElementById('today');
+  todayBox.hidden = false;
+  todayBox.innerHTML = '<a href="case.html">Today’s case</a> · ' + (doneToday ? 'done' : 'not yet') + ' · three minutes, find where Jo went wrong';
+
+  var ladder = function (t) {
+    var n = rung(t);
+    var bars = RUNGS.map(function (r, i) { return '<i' + (i < n ? ' class="on"' : '') + ' title="' + esc(r) + '"></i>'; }).join('');
+    return '<div class="ladder" role="img" aria-label="' + esc(t.stage) + ', rung ' + n + ' of 4">' + bars + '</div>';
+  };
+  var card = function (t, cls, level) {
+    var link = t.lessonFile ? '<a href="' + esc(t.lessonFile) + '">lesson</a>' : 'no lesson yet';
+    return '<div class="card ' + cls + '">' +
+      (level ? '<span class="level">Level ' + level + '</span>' : '') +
+      '<span class="code">' + esc(t.code) + '</span><span class="topic">' + esc(t.topic) + '</span>' + ladder(t) +
+      '<span class="meta">' + esc(t.stage) + ' · ' + link + '</span></div>';
+  };
+
+  var levels = P.topics.filter(function (t) { return typeof t.priority === 'number'; })
+    .sort(function (a, b) { return a.priority - b.priority; });
+  var greens = P.topics.filter(function (t) { return typeof t.priority !== 'number'; });
+
+  var promptList = '<ul class="prompts">' +
+    '<li class="link"><span><b><a href="practice.html">Practice page</a></b> · fresh numbers, any topic, no chat</span></li>' +
+    '</ul>';
+
+  document.getElementById('groups').innerHTML =
+    '<h2>Levels</h2>' +
+    (levels.length
+      ? '<div class="cards">' + levels.map(function (t, i) { return card(t, t.lessonFile ? colour(t) : 'o', i + 1); }).join('') + '</div>'
+      : '<p class="empty">Nothing here.</p>') +
+    promptList +
+    '<h2>Already green at school</h2>' +
+    (greens.length
+      ? '<div class="cards">' + greens.map(function (t) { return card(t, 'g', 0); }).join('') + '</div>'
+      : '<p class="empty">Nothing here.</p>');
+})();
+</script>
+</body>
+</html>

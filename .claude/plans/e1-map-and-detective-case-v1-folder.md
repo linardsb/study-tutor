@@ -301,6 +301,8 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
      ignores dates before `weekStart`.
   7. `opens` over a fixture of 14 days with entries on 5 dates returns 5.
   8. `third('You added 25 on.')` is `Jo added 25 on.`; `third('That is 10% of 120.')` is unchanged.
+  9. `hash()` is deterministic and unsigned and two dates differ; check 4 also asserts an unknown seed code
+     falls back to the date pick; check 6 also asserts `mondayOf()` on a Thursday and on a Monday.
   Summary and exit code as `test-generators.js` lines 118-131.
 - **PATTERN**: `.claude/tools/test-generators.js` in the v1 folder, whole file.
 - **IMPORTS**: `path`, `os`, `fs` only.
@@ -328,9 +330,10 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
      is `open-map`, `open-case`, `case` or `quiz` and `quiz` is a short string (`right, bet 3` /
      `wrong, bet 1` / `4/5` for quizzes). Read `tutor:seed` (a code, or absent). All reads in `try/catch`;
      on failure `log = []` and a line `This browser is not saving your cases. Ask Dad.` shows under the
-     heading (`.note` class from `practice.html`).
+     heading (`.note` class from `practice.html`). The same note shows if a later save throws.
   2. Append `{ d: today, mode: 'open-case' }` once per page load.
-  3. If the log has a `case` entry for today and no pending re-ask, render the done state: the stem, what
+  3. If the log has a `case` entry for today, render the done state, rebuilt with `todaysCase(PROGRESS, GEN,
+     today, entry.code)` from the first `case` entry of the day (the seed may already be cleared): the stem, what
      was shown, the correct option, the working, the calibration line, a lesson link when
      `PROGRESS.topics` has a `lessonFile` for the code, and `Back tomorrow. Map` as a link.
   4. Otherwise build today's case with `todaysCase(PROGRESS, GEN, today, seed)` and render:
@@ -351,6 +354,7 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
      the first with the heading `Same idea, new numbers.` built by `buildCase(GEN, code, hash(today +
      ':again'))`; its result logs as another `case` entry (same date; `flame` counts the day once).
      No bet on the re-ask beyond the same three radios; the point is the immediate retry.
+     Otherwise, and after the re-ask's own check, `Back tomorrow. Map` as a link under the case.
 - **PATTERN**: `practice.html` lines 66-97 for a page's IIFE and `#set` holder; `quiz.js` lines 244-283
   for the check flow; `progress.html` line 39 for `esc`.
 - **IMPORTS**: none; globals `PROGRESS`, `GEN`, `CASE`.
@@ -402,11 +406,11 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
      `This browser is not saving your opens. Ask Dad.` in the `.due` box (red, `progress.html` lines 8-9
      style). This is what the PC visit looks at (Task 11).
   2. Stats row (`stat()` copied from `progress.html` line 64): `flame` as `N of your M this week`
-     (`M = PROGRESS.weeklyTarget || 3`); `cases` as `N cases solved`; `opens` as `N of the last 14 days`
+     (`M = PROGRESS.weeklyTarget || 3`); `cases` as `N cases done` (`case done` when 1; wrong cases count too, so not "solved"); `opens` as `N of the last 14 days`
      with the label `days you opened this`; and a `<span data-prompt="...">` with a `.copy` button whose
      prompt is the E1 line: `E1 <today>: opened on N of 14 days (<dates>), cases C, sets Q` (the
      "Copy for Dad" line).
-  3. `Today's case` box: a link to `case.html`, with `done` or `not yet` from the log.
+  3. `Today's case` box: a link to `case.html`, with `done` or `not yet` from the log, and the tag line `three minutes, find where Jo went wrong`.
   4. Levels: `PROGRESS.topics` with a numeric `priority`, sorted ascending, each as a `.card` with the
      level number (`Level 1`), the topic name, the code, the ladder (copy `ladder()` from `progress.html`
      lines 72-76), and `lesson` / `no lesson yet` (`.o` grey card when no `lessonFile`). Colour class from
@@ -450,7 +454,7 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
 
 ### UPDATE $V1/README-for-Matis.md
 
-- **IMPLEMENT**: after the numbered list, a new section `## Without Claude` with three lines: double-click
+- **IMPLEMENT**: before `## If something odd happens` (the paragraphs after the numbered list continue it), a new section `## Without Claude` with three lines: double-click
   `Open map.bat` for the map; `Open case.bat` for today's case, three minutes; `practice.html` for fresh
   questions. One sentence: the map counts the days you open it, and Dad reads that count, nothing else.
 - **PATTERN**: the file's own register (short, "Dad", imperative).
@@ -572,7 +576,7 @@ All performable with the shipped files and the 2026-09-26 data. `$V1` is the v1 
 same steps repeat on the PC in Edge.
 
 1. `open "$V1/map.html"` in Chrome. 27 level cards, 17 green cards, flame `0 of your 3 this week`,
-   `0 of the last 14 days` becomes `1 of the last 14 days` on reload (today's open counts).
+   `1 of the last 14 days` on the first open (the open is logged before the count is taken).
 2. Click `Today's case`. A case renders with Jo's first step, Jo's answer, 2 to 5 options, three bet
    radios. Click Check with nothing picked: `Pick one first.` Pick an option, no bet: the bet refusal.
 3. Pick the wrong option deliberately with bet 1, Check: feedback names the correct option, the working
@@ -753,4 +757,8 @@ up (no `.test.` in the name), which is intended: it reads a folder outside the r
 
 ## AMENDMENTS
 
-(none yet)
+- 2026-09-27, implementation: Level 4 step 7 ran by shadowing `localStorage` with a throwing getter in scratch
+  copies of both pages (headless Chrome hung on exit, as the spike notes predicted); the Chrome site-data setting
+  was not toggled. Step 11's clipboard paste was not performed; the `data-prompt` line was read instead.
+- 2026-09-27, implementation: Task 11 (PC install), the install date in `e1/README.md` and the issue #2 comment
+  are open until the PC visit. Report: `.claude/reports/e1-map-and-detective-case-v1-folder-report.md`.
