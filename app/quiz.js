@@ -20,7 +20,7 @@
       .replace(/\s+/g, "")
       .replace(/^\+/, "")
       .replace(/^(-?)0+(\d)/, "$1$2")
-      .replace(/^(-?)\./, "$10.")
+      .replace(/^(-?)\./, (_, sign) => `${sign}0.`)
       .replace(/(\.\d*?)0+$/, "$1")
       .replace(/\.$/, "");
   }
@@ -206,9 +206,13 @@
     section.appendChild(btn);
   }
 
+  let quizCount = 0;
+
   function initQuiz(section, items) {
     if (!section || section.dataset.inited || !items.length) return;
     section.dataset.inited = "1";
+    /* a lesson quiz and its fresh set share a data-code; the count keeps their radio groups apart */
+    const quizN = ++quizCount;
 
     /* the "Try it" intro: the first paragraph that is a direct child, before .score exists */
     let intro = null;
@@ -270,7 +274,7 @@
       let posted = false;
 
       /* Sure / Not sure, injected here so item markup never carries it */
-      const name = `sure-${section.dataset.code || "q"}-${idx}`;
+      const name = `sure-${section.dataset.code || "q"}-${quizN}-${idx}`;
       const conf = document.createElement("span");
       conf.className = "confidence";
       conf.innerHTML =

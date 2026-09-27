@@ -4,7 +4,13 @@ import os from "node:os";
 import path from "node:path";
 import { loadTopics } from "./content/pack";
 import { isoWeek, localDay } from "./mcp/clock";
-import { openBrowser, type ServerOptions, startServer } from "./server";
+import {
+  openBrowser,
+  refuseForeign,
+  type ServerOptions,
+  startServer,
+  staticPath,
+} from "./server";
 
 // The repo root: pack.test.ts reads content/maths the same way.
 const root = process.cwd();
@@ -66,7 +72,7 @@ test(
 
       const page = await fetch(`http://127.0.0.1:${second.port}/`);
       expect(page.status).toBe(200);
-      expect(page.headers.get("content-type")).toBe("text/html;charset=utf-8");
+      expect(page.headers.get("content-type")).toStartWith("text/html");
       const html = await page.text();
       expect(html).toContain("Study tutor");
       expect(html).toContain("/practice.html");
@@ -94,17 +100,14 @@ test(
   withServer(async (get) => {
     const js = await get("/quiz.js");
     expect(js.status).toBe(200);
-    expect(js.headers.get("content-type")).toBe(
-      "text/javascript;charset=utf-8",
-    );
+    // The rule is "typed by extension"; the charset suffix is Bun's formatting, not this code's.
+    expect(js.headers.get("content-type")).toStartWith("text/javascript");
     const css = await get("/style.css");
     expect(css.status).toBe(200);
-    expect(css.headers.get("content-type")).toBe("text/css;charset=utf-8");
+    expect(css.headers.get("content-type")).toStartWith("text/css");
     const json = await get("/content/maths/topics.json");
     expect(json.status).toBe(200);
-    expect(json.headers.get("content-type")).toBe(
-      "application/json;charset=utf-8",
-    );
+    expect(json.headers.get("content-type")).toStartWith("application/json");
     const lesson = await get(
       "/content/maths/lessons/0001-U349-percentage-of-an-amount.html",
     );
@@ -138,6 +141,121 @@ test(
     fs.mkdirSync(opts.dataDir);
     fs.writeFileSync(path.join(opts.dataDir, "events.jsonl"), "{}\n");
     expect((await get("/data/events.jsonl")).status).toBe(404);
+  }),
+);
+
+test("staticPath: the same guard holds under the Windows path rules, where normalise read a leading // as a UNC root (PR #26 F1)", () => {
+  // Decoded `rel` for the eight traversal requests above, plus the review's own table.
+  for (const p of [path.win32, path.posix]) {
+    const root = p === path.win32 ? "C:\\StudyTutor" : "/StudyTutor";
+    const under = (folder: string, ...rest: string[]) =>
+      p.join(root, folder, ...rest);
+    expect(staticPath(root, "app", "/quiz.js", p)).toBe(
+      under("app", "quiz.js"),
+    );
+    expect(staticPath(root, "content", "/maths/topics.json", p)).toBe(
+      under("content", "maths", "topics.json"),
+    );
+    expect(staticPath(root, "app", "/index.html", p)).toBe(
+      under("app", "index.html"),
+    );
+    for (const rel of [
+      "/../package.json",
+      "/../data/events.jsonl",
+      "/../../x.txt",
+      "/../src/server.ts",
+      "/maths/../../src/server.ts",
+      "/..\\data/events.jsonl",
+      "/",
+      "",
+    ]) {
+      expect(staticPath(root, "app", rel, p), `${p.sep} ${rel}`).toBeNull();
+      expect(staticPath(root, "content", rel, p), `${p.sep} ${rel}`).toBeNull();
+    }
+  }
+});
+
+test(
+  "api: a foreign Origin, a foreign Host or a non-JSON POST body is refused and nothing is written (PR #26 F3)",
+  withServer(async (get, _dir, opts) => {
+    const attempt = JSON.stringify({
+      v: 1,
+      type: "attempt",
+      item: "1MA1/R9/of-an-amount#1",
+      topic: "U349",
+      correct: true,
+      sure: true,
+      answer: "9",
+    });
+    // The simple request a drive-by page can send without a preflight.
+    const plain = await get("/api/event", {
+      method: "POST",
+      headers: { "content-type": "text/plain", origin: "https://evil.example" },
+      body: attempt,
+    });
+    expect(plain.status).toBe(403);
+    const typed = await get("/api/event", {
+      method: "POST",
+      headers: { "content-type": "text/plain" },
+      body: attempt,
+    });
+    expect(typed.status).toBe(415);
+    const state = await get("/api/state", {
+      headers: { origin: "https://evil.example" },
+    });
+    expect(state.status).toBe(403);
+    expect(fs.existsSync(opts.dataDir)).toBe(false);
+
+    // Host is checked in the function: fetch does not let a test set it (DNS rebinding shape).
+    const at = (headers: Record<string, string>, method = "GET") =>
+      refuseForeign(
+        new Request("http://127.0.0.1:4731/api/state", { method, headers }),
+      );
+    expect(at({ host: "attacker.example" })?.status).toBe(403);
+    expect(
+      at({ host: "attacker.example", origin: "http://attacker.example" })
+        ?.status,
+    ).toBe(403);
+    expect(
+      at({ host: "127.0.0.1:4731", origin: "http://127.0.0.1:4731" }),
+    ).toBeNull();
+    expect(
+      at({ host: "localhost:4731", origin: "http://localhost:4731" }),
+    ).toBeNull();
+    expect(
+      at({ host: "127.0.0.1:4731", origin: "http://localhost:4731" })?.status,
+    ).toBe(403);
+    expect(at({ host: "127.0.0.1:4731" })).toBeNull(); // curl: no Origin
+    expect(
+      at(
+        {
+          host: "127.0.0.1:4731",
+          "content-type": "application/json; charset=utf-8",
+        },
+        "POST",
+      ),
+    ).toBeNull();
+
+    // The tutor's own page: same-origin Origin on a JSON POST is accepted.
+    const own = await get("/api/event", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: `http://127.0.0.1:${new URL((await get("/")).url).port}`,
+      },
+      body: attempt,
+    });
+    expect(own.status).toBe(201);
+  }),
+);
+
+test(
+  "api: a record that cannot be read is a JSON 500, not Bun's error page (PR #26 F6)",
+  withServer(async (get, _dir, opts) => {
+    fs.mkdirSync(path.join(opts.dataDir, "events.jsonl"), { recursive: true });
+    const res = await get("/api/state");
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ error: "Could not read the record" });
   }),
 );
 

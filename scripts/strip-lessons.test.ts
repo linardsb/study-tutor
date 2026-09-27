@@ -9,6 +9,12 @@ const topics = await loadTopics("maths");
 const fixture = `<!doctype html>
 <link rel="stylesheet" href="../assets/style.css">
 <p class="crumb"><a href="../progress.html">Progress</a> · U349</p>
+  <section id="explore">
+    <h2>The ball and its tin</h2>
+    <p>Drag the ball to turn it.</p>
+    <div class="solid" data-solid="sphere" data-r="3"></div>
+  </section>
+
 <section id="quiz" class="quiz" data-code="U349">
     <h2>Try it</h2>
     <p>Answer from memory.</p>
@@ -29,6 +35,7 @@ const fixture = `<!doctype html>
   </section>
 <footer><a href="../reference/U349-percentage-of-an-amount.html">U349</a></footer>
 <script src="../assets/read.js"></script>
+<script src="../assets/solids.js"></script>
 <script src="../assets/generate.js"></script>
 <script src="../assets/quiz.js"></script>
 `;

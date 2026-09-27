@@ -610,6 +610,11 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
   is what makes the join safe. On Windows `path.normalize("/..\\x")` is `\x` and the join still lands
   under `base` (`expected`). `Bun.file(dir).exists()` is false, so `/content/maths/lessons/` is 404, not a
   listing.
+  **Retracted by PR #26 review F1 (`observed`, `path.win32`):** `rel` already starts with `/`, so `normalize`
+  receives `//…`, which `path.win32` reads as a UNC root. `/maths/topics.json` gains a trailing `\` (404) and
+  `/../data/events.jsonl` lands at `root\data\events.jsonl` (served). Shipped instead: `staticPath` splits on
+  `/`, refuses `..` and `\` segments, joins, and asserts the result is under `root/folder`; tested under
+  `path.win32` and `path.posix` on every OS.
 - **GOTCHA**: `routes` is typed in `@types/bun` 1.4.2 (`serve.d.ts:672`, `observed`). A method not in
   the route object reaches `fetch`, which answers 405 for anything but GET/HEAD (so `POST /api/state` is
   405) and 404 for a GET of a route path that has no file under `app/`. Good enough; no explicit 405 per
@@ -619,6 +624,7 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
 - **GOTCHA**: `dataDir` is `root/data`, never a request-supplied path. The only user-supplied path in this
   file is the static `pathname`, guarded above. A Sonar "path traversal" alert on the static path is
   answered by the normalise-then-join line and the four traversal tests; say so in the PR body.
+  (Superseded: the answer is `staticPath` and its `path.win32` test, PR #26 F1.)
 - **GOTCHA**: `tsc` under `verbatimModuleSyntax`: `import type` for `Topic`. Biome
   `organizeImports` orders the import block; run `bunx biome check --write src/server.ts` once.
 - **VALIDATE**: `bunx tsc --noEmit` clean; Task 9's tests.
@@ -906,6 +912,7 @@ Performable with what this ticket ships: the server, the pages, the pack, an emp
    directly from another cwd: `cd /tmp && <path>/StudyTutor-arm64`). The browser opens; open a lesson;
    answer one; `ls dist/stage/mac/StudyTutor/data` shows the log beside the binary. Windows zip: not run
    here (`expected`, same code path; `appRoot` Windows detection is `expected` from the docs).
+   (The "same code path" claim was wrong: the code is the same, the platform `path` is not. PR #26 F1.)
 6. `curl -s -X POST localhost:<port>/api/event -d '{"v":1,"type":"nope"}' -H 'content-type: application/json'`
    → 400 `{"error":"Refused: not a valid nope v1 event"}`; `wc -l data/events.jsonl` unchanged.
 7. `bun scripts/strip-lessons.ts` → `0 files changed`.
@@ -1035,7 +1042,7 @@ either side without the other goes red.
 
 **Sonar:** the static path is the one user-controlled path; the PR body names the normalise-then-join line
 and `server.test.ts` 2 as the answer to a "path traversal" alert, the way PR #23's fixes report did for
-`--data`.
+`--data`. (Superseded by `staticPath`, PR #26 F1.)
 
 ## AMENDMENTS
 
