@@ -7,13 +7,13 @@
    failures list, a per-code summary, exit 1 on any failure. */
 'use strict';
 
-const path = require('path');
-const os = require('os');
-const fs = require('fs');
+const path = require('node:path');
+const os = require('node:os');
+const fs = require('node:fs');
 
 const V1 = process.env.V1 || path.join(os.homedir(), 'Desktop', 'Matis_study_tutor');
 const CASE_PATHS = [path.join(__dirname, 'assets', 'case.js'), path.join(__dirname, '..', '..', 'assets', 'case.js')];
-const casePath = CASE_PATHS.filter(p => fs.existsSync(p))[0];
+const casePath = CASE_PATHS.find(p => fs.existsSync(p));
 if (!casePath) { console.log('case.js not found next to this test'); process.exit(1); }
 
 require(path.join(V1, 'assets', 'generate.js'));
@@ -23,21 +23,22 @@ const GEN = globalThis.GEN;
 const PROGRESS = globalThis.PROGRESS;
 const C = globalThis.CASE;
 
-/* copied from test-generators.js: quiz.js is private to its IIFE and touches document at load */
+/* norm and tail from test-generators.js, same behaviour (replaceAll and a function replacer for
+   Sonar): quiz.js is private to its IIFE and touches document at load */
 function norm(s) {
   return String(s)
     .toLowerCase()
     .replace(/[£€$]/g, '')
-    .replace(/π/g, 'pi')
-    .replace(/²/g, '2')
-    .replace(/³/g, '3')
+    .replaceAll('π', 'pi')
+    .replaceAll('²', '2')
+    .replaceAll('³', '3')
     .replace(/[°º]/g, '')
     .replace(/\bdeg(rees)?\b/g, '')
-    .replace(/,/g, '')
+    .replaceAll(',', '')
     .replace(/\s+/g, '')
     .replace(/^\+/, '')
     .replace(/^(-?)0+(\d)/, '$1$2')
-    .replace(/^(-?)\./, '$10.')
+    .replace(/^(-?)\./, (m, sign) => sign + '0.')
     .replace(/(\.\d*?)0+$/, '$1')
     .replace(/\.$/, '');
 }
@@ -78,16 +79,20 @@ for (const code of pool) {
     const isNowhere = c.options[c.correct] === C.NOWHERE;
     if (isNowhere !== c.isRight) f(`options[correct] is the nowhere string ${isNowhere} while isRight is ${c.isRight}`);
     if (c.isRight) sawRight = true; else sawWrong = true;
-    if (!c.isRight) {
-      /* the shown wrong answer must not be a right one, by the same normalisation quiz.js applies.
-         buildCase rolls again on an empty wrong map (seed + k * 7919), so find the roll it kept. */
-      let spec = null;
-      for (let k = 0; k < 8; k += 1) {
-        spec = GEN[code](C.lcg((seed + k * 7919) >>> 0));
-        if (Object.keys(spec.wrong || {}).length) break;
-      }
+    /* buildCase rolls again on an empty wrong map (seed + k * 7919), so find the roll it kept */
+    let spec = null;
+    for (let k = 0; k < 8; k += 1) {
+      spec = GEN[code](C.lcg((seed + k * 7919) >>> 0));
+      if (Object.keys(spec.wrong || {}).length) break;
+    }
+    if (c.isRight) {
+      if (c.shown !== spec.answers[0]) f(`shown "${c.shown}" is not answers[0] while isRight`);
+    } else {
+      /* the shown wrong answer must not be a right one, by the same normalisation quiz.js applies,
+         and the correct option must be the message for the key that was shown */
       const accepted = (spec.answers || []).map(norm);
-      if (accepted.indexOf(norm(c.shown)) !== -1) f(`shown "${c.shown}" is a right answer while isRight is false`);
+      if (accepted.includes(norm(c.shown))) f(`shown "${c.shown}" is a right answer while isRight is false`);
+      if (c.options[c.correct] !== C.third(spec.wrong[c.shown])) f(`correct option is not the message for shown "${c.shown}"`);
     }
     c.options.forEach(o => { if (SECOND_PERSON.test(o)) f(`option speaks to the pupil: "${o}"`); });
     if (c.unit === 'text') {
@@ -123,7 +128,7 @@ for (const code of pool) {
   for (let i = 0; i < 30; i += 1) {
     const dateIso = C.iso(d);
     const c = C.todaysCase(PROGRESS, GEN, dateIso, 'U349');
-    if (!c || c.code !== 'U349') fail(`todaysCase ${dateIso} with seed U349 gave ${c && c.code}`);
+    if (!c || c.code !== 'U349') fail(`todaysCase ${dateIso} with seed U349 gave ${c?.code}`);
     d.setDate(d.getDate() + 1);
   }
   const off = C.todaysCase(PROGRESS, GEN, '2026-09-28', 'U000');
@@ -176,8 +181,21 @@ assert(C.third('That is 10% of 120.') === 'That is 10% of 120.', 'third: no pron
 assert(C.third('Check your units; you halved it.') === "Check Jo's units; Jo halved it.", 'third: your -> Jo\'s, you -> Jo');
 
 /* 9. the hash is stable and unsigned */
-assert(C.hash('2026-09-28') === C.hash('2026-09-28') && C.hash('a') >= 0, 'hash: deterministic, unsigned');
-assert(C.hash('2026-09-28') !== C.hash('2026-09-29'), 'hash: two dates differ');
+{
+  const h1 = C.hash('2026-09-28');
+  const h2 = C.hash('2026-09-28');
+  assert(h1 === h2 && C.hash('a') >= 0, 'hash: deterministic, unsigned');
+  assert(h1 !== C.hash('2026-09-29'), 'hash: two dates differ');
+}
+
+/* 10. parseLog: a corrupt or non-list value is an empty log, never a throw */
+{
+  const good = [{ d: '2026-09-27', mode: 'open-map' }];
+  assert(JSON.stringify(C.parseLog(JSON.stringify(good))) === JSON.stringify(good), 'parseLog: a stored list comes back');
+  assert(C.parseLog('{bad').length === 0, 'parseLog: corrupt JSON is an empty log');
+  assert(C.parseLog('{"a":1}').length === 0, 'parseLog: a non-list is an empty log');
+  assert(C.parseLog(null).length === 0 && C.parseLog('').length === 0, 'parseLog: missing is an empty log');
+}
 
 const lines = [];
 lines.push(`codes in the pool: ${pool.length}   runs each: ${RUNS}`);

@@ -762,3 +762,8 @@ up (no `.test.` in the name), which is intended: it reads a folder outside the r
   was not toggled. Step 11's clipboard paste was not performed; the `data-prompt` line was read instead.
 - 2026-09-27, implementation: Task 11 (PC install), the install date in `e1/README.md` and the issue #2 comment
   are open until the PC visit. Report: `.claude/reports/e1-map-and-detective-case-v1-folder-report.md`.
+- 2026-09-27, PR #20 review round 1 (`.claude/reports/pr-20-review-fixes.md`): Task 5 step 1's `tutor:probe` is
+  removed right after the read-back, so AC #3 holds as written. `opens()` keeps "any entry" but the label is
+  `days you used this` and the E1 line `used on N of 14 days`, since a finished set logs too. The case page
+  says `The hint Jo had:` not `Jo's first step:`, because `hint` is written to the reader. A corrupt
+  `tutor:log` goes through `CASE.parseLog` on both pages (Edge Cases: "treated as empty" now true on `case.html`).

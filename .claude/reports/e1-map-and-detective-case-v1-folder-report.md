@@ -14,7 +14,7 @@ files.
 
 ## Tasks completed
 
-- Case logic and DOM wiring → `e1/assets/case.js` (CREATE, 380 lines)
+- Case logic and DOM wiring → `e1/assets/case.js` (CREATE, 376 lines at `e1604a9`; review round 1 changed it, see below)
 - Test, 300 seeds per code plus fixtures → `e1/test-case.js` (CREATE)
 - Case page → `e1/case.html` (CREATE)
 - Finish log → `e1/assets/quiz.js` (CREATE: v1 copy plus seven lines; `diff | grep -c '^>'` = 7, observed)
@@ -87,6 +87,16 @@ Size: 876 lines across the six main files plus 7 in `quiz.js` and 4 in the launc
 - **D11. PC install (Task 11), the install date in `e1/README.md` and the issue #2 comment are not done.** They need the PC. `e1/README.md` carries the steps; the report status is PARTIAL for this reason only.
 
 UX states per surface: map loading (static, none), empty (`No data yet.`, built), error (red storage note, built); case loading (none), empty (`No data yet.` and `No case today.`, built), error (storage note, built). Offline is not applicable on `file://`.
+
+## Review round 1 (PR #20, 2026-09-27)
+
+Fixes report: `.claude/reports/pr-20-review-fixes.md`. What changed against the text above:
+
+- `Jo's first step:` is now `The hint Jo had:` on the case page (F6); steps 2 and 60 above were observed with the old label.
+- The E1 line reads `used on N of 14 days` and the stat label `days you used this` (F5); step 11 above was observed with `opened on`.
+- The map removes `tutor:probe` after the read-back, so the "store only `tutor:log` and `tutor:seed`" claim in the summary now holds (F3).
+- A corrupt `tutor:log` is parsed by `CASE.parseLog` on both pages: the case page saves again and the map no longer shows the red note on that open (F2).
+- Line counts at `e1604a9` in this report and the PR body are superseded by the fixes report's table.
 
 ## Issues encountered
 

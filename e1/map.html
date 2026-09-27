@@ -45,22 +45,22 @@
   /* log the open, then check that a write reads back; a red note here is the E1 storage check */
   var log = [];
   var storageOk = true;
+  var raw = null;
   try {
-    var raw = localStorage.getItem('tutor:log');
-    log = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(log)) log = [];
-  } catch (err) {
-    log = [];
-    storageOk = false;
+    raw = localStorage.getItem('tutor:log');
+  } catch {
+    storageOk = false; /* no storage: the red note below says so */
   }
+  log = C.parseLog(raw); /* a corrupt log is empty, and the write below overwrites it */
   try {
     log.push({ d: todayIso, mode: 'open-map' });
     localStorage.setItem('tutor:log', JSON.stringify(log));
     var probe = String(Date.now());
     localStorage.setItem('tutor:probe', probe);
     if (localStorage.getItem('tutor:probe') !== probe) storageOk = false;
-  } catch (err) {
-    storageOk = false;
+    localStorage.removeItem('tutor:probe');
+  } catch {
+    storageOk = false; /* no storage: the red note below says so */
   }
   if (!storageOk) {
     dueBox.hidden = false;
@@ -77,18 +77,18 @@
 
   document.getElementById('crumb').textContent = 'Data from ' + esc(P.built) + ' · Matis · GCSE Foundation maths · viewed ' + todayIso;
 
-  /* stats: the flame, the cases, and the two-week count of opens that E1 reads */
+  /* stats: the flame, the cases, and the two-week count of days used that E1 reads */
   var flame = C.flame(P.sessions, log, mondayIso, todayIso);
   var cases = log.filter(function (e) { return e.mode === 'case'; }).length;
   var sets = log.filter(function (e) { return e.mode === 'quiz'; }).length;
   var opened = C.opens(log, todayIso, 14);
-  var e1Line = 'E1 ' + todayIso + ': opened on ' + opened.count + ' of 14 days (' + opened.dates.join(', ') + '), cases ' + cases + ', sets ' + sets;
+  var e1Line = 'E1 ' + todayIso + ': used on ' + opened.count + ' of 14 days (' + opened.dates.join(', ') + '), cases ' + cases + ', sets ' + sets;
 
   var stat = function (big, label) { return '<div class="stat"><b>' + big + '</b><span>' + label + '</span></div>'; };
   document.getElementById('stats').innerHTML =
     stat(flame + ' of your ' + (P.weeklyTarget || 3), 'this week') +
     stat(cases, cases === 1 ? 'case done' : 'cases done') +
-    stat(opened.count + ' of the last 14', '<span data-prompt="' + esc(e1Line) + '">days you opened this <button type="button" class="copy" aria-label="Copy the count for Dad"></button></span>');
+    stat(opened.count + ' of the last 14', '<span data-prompt="' + esc(e1Line) + '">days you used this <button type="button" class="copy" aria-label="Copy the count for Dad"></button></span>');
 
   var doneToday = log.some(function (e) { return e.mode === 'case' && e.d === todayIso; });
   var todayBox = document.getElementById('today');

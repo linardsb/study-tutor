@@ -1,4 +1,4 @@
-/* Daily detective case: a fresh-number question, a fictional pupil's first step and answer, and the
+/* Daily detective case: a fresh-number question, the hint a fictional pupil had and Jo's answer, and the
    question "where did Jo go wrong?". No dependencies. Works from file:// on any OS.
    Invariant: the answer and the working reach the page only inside the check handler, after a pick
    and a bet. The only store is localStorage under the tutor: prefix; nothing is written to disk.
@@ -130,6 +130,17 @@
     return null;
   }
 
+  /* the stored log, or an empty one when the value is missing, corrupt or not a list */
+  function parseLog(raw) {
+    if (!raw) return [];
+    try {
+      var v = JSON.parse(raw);
+      return Array.isArray(v) ? v : [];
+    } catch (err) {
+      return [];
+    }
+  }
+
   /* entries are { bet, right }; the sums behind "you bet B and won W" */
   function calibration(entries) {
     var bet = 0, won = 0;
@@ -177,6 +188,7 @@
     buildCase: buildCase,
     todaysCase: todaysCase,
     calibration: calibration,
+    parseLog: parseLog,
     flame: flame,
     opens: opens
   };
@@ -202,15 +214,15 @@
   /* wrong-answer keys spell pi as "pi"; the stem writes π */
   function show(s) { return String(s).replace(/(\d)pi\b/g, '$1π'); }
 
+  /* a corrupt log is empty, not a storage failure: the next save overwrites it */
+  var raw = null;
   try {
-    var raw = localStorage.getItem('tutor:log');
-    log = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(log)) log = [];
+    raw = localStorage.getItem('tutor:log');
     seed = localStorage.getItem('tutor:seed');
   } catch (err) {
     storageOk = false;
-    log = [];
   }
+  log = parseLog(raw);
 
   function save() {
     if (!storageOk) return;
@@ -275,7 +287,7 @@
     holder.innerHTML = c0
       ? '<div class="q done ' + esc(picked) + '">' +
         '<p class="stem">' + esc(c0.stem) + '</p>' +
-        '<p>Jo’s first step: ' + esc(c0.firstStep) + '</p>' +
+        '<p>The hint Jo had: ' + esc(c0.firstStep) + '</p>' +
         '<p>Jo’s answer: <b>' + esc(show(c0.shown)) + '</b></p>' +
         '<p class="feedback">' + (picked === 'right' ? 'You had it. ' : 'Not this time. ') + esc(c0.options[c0.correct]) + '</p>' +
         '<div class="working"><p>Working: ' + esc(c0.working) + '</p></div>' +
@@ -299,7 +311,7 @@
     q.innerHTML =
       (heading ? '<h2>' + esc(heading) + '</h2>' : '') +
       '<p class="stem">' + esc(c.stem) + '</p>' +
-      '<p>Jo’s first step: ' + esc(c.firstStep) + '</p>' +
+      '<p>The hint Jo had: ' + esc(c.firstStep) + '</p>' +
       '<p>Jo’s answer: <b>' + esc(show(c.shown)) + '</b></p>' +
       '<p>Where did Jo go wrong?</p>' +
       '<div class="options">' + radios + '</div>' +

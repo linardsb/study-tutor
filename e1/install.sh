@@ -9,8 +9,15 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 V1="${1:-$HOME/Desktop/Matis_study_tutor}"
 
 for need in "$V1/assets/generate.js" "$V1/assets/progress-data.js"; do
-  if [ ! -f "$need" ]; then
+  if [[ ! -f "$need" ]]; then
     echo "refusing: $need is missing, so $V1 is not the tutor folder" >&2
+    exit 1
+  fi
+done
+
+for tool in bun node; do
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    echo "refusing: $tool is not installed and the tests below need it" >&2
     exit 1
   fi
 done
@@ -19,8 +26,9 @@ mkdir -p "$V1/.claude/tools"
 
 copied=()
 copy() {
-  cp "$HERE/$1" "$V1/$2"
-  copied+=("$2")
+  local src="$1" dst="$2"
+  cp "$HERE/$src" "$V1/$dst"
+  copied+=("$dst")
 }
 copy map.html map.html
 copy case.html case.html
