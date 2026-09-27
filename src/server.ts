@@ -4,6 +4,7 @@ import { postEvent } from "./api/event";
 import { currentState } from "./api/state";
 import { loadTopics } from "./content/pack";
 import type { Topic } from "./content/types";
+import { runStdio } from "./mcp/server";
 
 export const PORTS = [4731, 4732, 4733, 4734, 4735] as const;
 
@@ -175,14 +176,27 @@ if (import.meta.main) {
       );
     }
     const topics = await loadTopics("maths", root);
-    const server = startServer([...PORTS, 0], {
-      root,
-      dataDir: path.join(root, "data"),
-      topics,
-    });
+    const dataDir = path.join(root, "data");
+    const server = startServer([...PORTS, 0], { root, dataDir, topics });
     const url = `http://127.0.0.1:${server.port}/`;
-    console.log(`Study tutor is running at ${url}`);
-    openBrowser(url);
+    if (Bun.argv.includes("--mcp")) {
+      // stdout carries JSON-RPC only; the harness closing stdin ends the session.
+      console.error(`Study tutor MCP server; lessons at ${url}`);
+      const out = Bun.stdout.writer();
+      await runStdio(
+        Bun.stdin.stream(),
+        (line) => {
+          out.write(`${line}\n`);
+          out.flush();
+        },
+        { root, dataDir, subject: "maths", topics, origin: url.slice(0, -1) },
+      );
+      await out.end(); // a stdout pipe can be asynchronous; the last reply must reach the harness
+      server.stop(true); // nothing else holds the event loop, so the process exits 0 (plan D9)
+    } else {
+      console.log(`Study tutor is running at ${url}`);
+      openBrowser(url);
+    }
   } catch (err) {
     console.error(`Could not start: ${(err as Error).message}`);
     process.exit(1);

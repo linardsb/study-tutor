@@ -73,6 +73,22 @@ test(
 );
 
 test(
+  "stray fields inside an intake row never reach the log",
+  withTemp((_dir, data) => {
+    const intake = {
+      v: 1,
+      type: "intake",
+      door: "interview",
+      topics: [{ topic: "U687", rag: "R", answers: ["3:4"], blob: "x" }],
+    } as unknown as NewEvent;
+    appendEvent(data, intake, AT);
+    expect(JSON.parse(readLines(data)[0] as string).topics).toEqual([
+      { topic: "U687", rag: "R" },
+    ]);
+  }),
+);
+
+test(
   "a log with no trailing newline keeps both lines whole",
   withTemp((_dir, data) => {
     fs.mkdirSync(data);
@@ -259,5 +275,50 @@ test(
       appendEvent(data, { v: 1, type: "attempt" } as NewEvent, AT),
     ).toThrow("Refused");
     expect(fs.existsSync(data)).toBe(false);
+  }),
+);
+
+const photo = (file: string): NewEvent => ({
+  v: 1,
+  type: "photo",
+  item: "1MA1/R4#1",
+  topic: "1MA1/R4",
+  file,
+});
+
+for (const file of ["../outside.jpg", "/etc/passwd", "link/x.jpg"]) {
+  test(
+    `photo: ${file} is outside data, refused, and nothing is written`,
+    withTemp((dir, data) => {
+      fs.mkdirSync(data);
+      const outside = path.join(dir, "outside");
+      fs.mkdirSync(outside);
+      fs.symlinkSync(outside, path.join(data, "link"));
+      expect(() => appendEvent(data, photo(file), AT)).toThrow(/Refused/);
+      expect(fs.existsSync(path.join(data, "events.jsonl"))).toBe(false);
+    }),
+  );
+}
+
+test(
+  "photo: with no data folder yet the event is refused and data is not created",
+  withTemp((_dir, data) => {
+    expect(() =>
+      appendEvent(data, photo("intake/2026-10-14-1800.jpg"), AT),
+    ).toThrow(/Refused/);
+    expect(fs.existsSync(data)).toBe(false);
+  }),
+);
+
+test(
+  "photo: a file inside data appends",
+  withTemp((_dir, data) => {
+    fs.mkdirSync(path.join(data, "intake"), { recursive: true });
+    const e = appendEvent(data, photo("intake/2026-10-14-1800.jpg"), AT);
+    expect(e).toMatchObject({
+      type: "photo",
+      file: "intake/2026-10-14-1800.jpg",
+    });
+    expect(readLines(data)).toHaveLength(1);
   }),
 );
