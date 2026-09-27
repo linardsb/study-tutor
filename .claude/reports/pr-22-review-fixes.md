@@ -57,7 +57,7 @@ Sweep at `1c2abd1`, `grep -rn` over `.claude/plans/t3-maths-content-pack.md`, `.
 
 ## Needs a human look
 
-- **SonarCloud** re-runs on the push. The complexity numbers above are hand counts; if Sonar still flags `checkOne`, that is round 2. Cycle 1 of at most 3.
+- **SonarCloud** on the pushed branch: `SonarCloud Code Analysis pass` (`observed`, `gh pr checks 22` after the push, 22 s). Remaining annotations are all warning level: `replace` → `replaceAll` notes on `normalise.ts` and `text()`, two regex notes on `test-generators.ts`. Cycle 1 of 3; no second cycle needed.
 - **`loadTopics` root test uses `process.chdir`** inside `bun test`, restored in `finally`. Bun runs the five test files in one process in sequence, so no other file sees the temp cwd; if the suite is ever run with file-level parallelism, this test is the one to revisit.
 
 ## Pushed
