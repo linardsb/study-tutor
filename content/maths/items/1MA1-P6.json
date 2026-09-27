@@ -81,7 +81,7 @@
     "figure": "<svg viewBox=\"0 0 300 150\" width=\"100%\" style=\"max-width:300px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"13\" aria-label=\"A frequency tree. 50 splits into Year 11, 30, and Year 10, 20. Year 11 splits into walk 12 and other 18. Year 10 splits into walk 8 and other 12\">\n        <text x=\"20\" y=\"80\" font-weight=\"700\">50</text>\n        <line x1=\"45\" y1=\"74\" x2=\"100\" y2=\"40\" stroke=\"#5f5f5a\"/><line x1=\"45\" y1=\"80\" x2=\"100\" y2=\"115\" stroke=\"#5f5f5a\"/>\n        <text x=\"105\" y=\"44\">Year 11: 30</text><text x=\"105\" y=\"119\">Year 10: 20</text>\n        <line x1=\"185\" y1=\"36\" x2=\"225\" y2=\"20\" stroke=\"#5f5f5a\"/><line x1=\"185\" y1=\"42\" x2=\"225\" y2=\"60\" stroke=\"#5f5f5a\"/>\n        <line x1=\"185\" y1=\"111\" x2=\"225\" y2=\"95\" stroke=\"#5f5f5a\"/><line x1=\"185\" y1=\"117\" x2=\"225\" y2=\"135\" stroke=\"#5f5f5a\"/>\n        <text x=\"230\" y=\"24\" fill=\"#2b5797\">walk 12</text><text x=\"230\" y=\"64\" fill=\"#5f5f5a\">other 18</text>\n        <text x=\"230\" y=\"99\" fill=\"#2b5797\">walk 8</text><text x=\"230\" y=\"139\" fill=\"#5f5f5a\">other 12</text>\n      </svg>",
     "hint": "Can a student be in both Year 11 and Year 10? If not, there is no overlap.",
     "answers": ["20"],
-    "working": "This is a frequency tree (U558), not a Venn diagram. The two year groups do not overlap, so nothing is counted twice. Walkers: 12 + 8 = 20.",
+    "working": "This is a frequency tree, not a Venn diagram. The two year groups do not overlap, so nothing is counted twice. Walkers: 12 + 8 = 20.",
     "misconceptions": [
       {
         "answer": "40",

@@ -77,7 +77,7 @@
     "stem": "A TV costs £320. What is 35% of the price?",
     "hint": "No increase or decrease here. Stop at the percentage.",
     "answers": ["112"],
-    "working": "This is U349, percentage of an amount, with nothing added or taken away. 10% of 320 = 32, so 30% = 96. 5% = 16. 35% = 96 + 16 = 112. £112.",
+    "working": "This is percentage of an amount, with nothing added or taken away. 10% of 320 = 32, so 30% = 96. 5% = 16. 35% = 96 + 16 = 112. £112.",
     "misconceptions": [
       {
         "answer": "208",

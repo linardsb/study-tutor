@@ -77,7 +77,7 @@
     "stem": "A force of 600 N presses on an area of 3 m². Find the pressure, in N/m2.",
     "hint": "Same triangle, new letters. Force sits where mass does.",
     "answers": ["200", "200 N/m2", "200N/m^2"],
-    "working": "This is the U527 triangle: F on top, P beside A. Cover P and F is left over A, so 600 ÷ 3 = 200. The pressure is 200 N/m².",
+    "working": "This is the pressure, force and area triangle: F on top, P beside A. Cover P and F is left over A, so 600 ÷ 3 = 200. The pressure is 200 N/m².",
     "misconceptions": [
       {
         "answer": "1800",

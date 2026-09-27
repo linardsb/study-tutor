@@ -37,7 +37,7 @@
     "misconceptions": [
       {
         "answer": "30",
-        "message": "½ is sin 30°, but you used A and H, so it is cos. cos 60° = ½."
+        "message": "½ is sin 30°, but you used A and H, so it is cos: find which angle has cos ½."
       },
       {
         "answer": "0.5",
@@ -61,7 +61,7 @@
     "misconceptions": [
       {
         "answer": "60",
-        "message": "½ is cos 60°, but you have O and H, so it is sin. sin 30° = ½."
+        "message": "½ is cos 60°, but you have O and H, so it is sin: find which angle has sin ½."
       },
       {
         "answer": "0.5",
@@ -79,9 +79,9 @@
     "type": "cloze",
     "stem": "Find the side marked x.",
     "figure": "<svg viewBox=\"0 0 240 135\" width=\"100%\" style=\"max-width:240px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A right-angled triangle with a 60° angle at the bottom left, hypotenuse 8 cm, and the bottom side next to the angle marked x\"><title>A right-angled triangle with a 60° angle at the bottom left, hypotenuse 8 cm, and the bottom side next to the angle marked x</title><polygon points=\"20,110 180,110 180,25\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><polyline points=\"168,110 168,98 180,98\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><path d=\"M 46 110 A 26 26 0 0 0 43 97\" fill=\"none\" stroke=\"#2b5797\" stroke-width=\"1.5\"/><text x=\"50\" y=\"104\" fill=\"#2b5797\" font-weight=\"700\">60°</text><text x=\"62\" y=\"52\" fill=\"#1d1d1b\" font-weight=\"700\">8 cm</text><text x=\"185\" y=\"72\" fill=\"#1d1d1b\" font-weight=\"700\"></text><text x=\"100\" y=\"126\" text-anchor=\"middle\" fill=\"#1d1d1b\" font-weight=\"700\">x</text></svg>",
-    "hint": "One side and the angle given, a side wanted. That is U283: cos 60° = x ÷ 8.",
+    "hint": "One side and the angle given, a side wanted. That is find a side: cos 60° = x ÷ 8.",
     "answers": ["4", "4cm"],
-    "working": "Not an angle: this is find a side, U283. Have H, want A, so CAH. cos 60° = x ÷ 8, and cos 60° = ½. x = 8 × ½ = 4 cm.",
+    "working": "Not an angle: this is find a side. Have H, want A, so CAH. cos 60° = x ÷ 8, and cos 60° = ½. x = 8 × ½ = 4 cm.",
     "misconceptions": [
       {
         "answer": "16",

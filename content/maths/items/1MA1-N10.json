@@ -77,7 +77,7 @@
     "stem": "Find 35% of £60.",
     "hint": "10% of 60 is 6. Build 35% from that.",
     "answers": ["21"],
-    "working": "This is U349, percentage of an amount. 10% of 60 = 6. 30% = 18. 5% = 3. 35% = 18 + 3 = 21. So £21.",
+    "working": "This is percentage of an amount. 10% of 60 = 6. 30% = 18. 5% = 3. 35% = 18 + 3 = 21. So £21.",
     "misconceptions": [
       {
         "answer": "25",
