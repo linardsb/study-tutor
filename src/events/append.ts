@@ -74,6 +74,16 @@ export function appendEvent(
     const value = (event as Record<string, unknown>)[k];
     if (value !== undefined) obj[k] = value;
   }
+  // The same rule one level down: an intake row keeps only topic and rag.
+  if (obj.type === "intake" && Array.isArray(obj.topics))
+    obj.topics = obj.topics.map((r: unknown) =>
+      r !== null && typeof r === "object"
+        ? {
+            topic: (r as Record<string, unknown>).topic,
+            rag: (r as Record<string, unknown>).rag,
+          }
+        : r,
+    );
   const line = JSON.stringify(obj);
   const parsed = parseEvent(line);
   if (parsed === null) {

@@ -195,6 +195,17 @@ test("the --mcp process answers on a clean stdout and exits 0 when stdin closes"
     { jsonrpc: "2.0", method: "notifications/initialized" },
     req(2, "tools/list"),
     req(3, "tools/call", { name: "clock", arguments: {} }),
+    req(4, "tools/call", { name: "read_state", arguments: { topic: "U687" } }),
+    // Refused by validation (rag "X"), so the run leaves the repo's data/ as it was.
+    req(5, "tools/call", {
+      name: "write_event",
+      arguments: {
+        v: 1,
+        type: "intake",
+        door: "interview",
+        topics: [{ topic: "U687", rag: "X" }],
+      },
+    }),
   ];
   for (const l of lines) proc.stdin.write(`${JSON.stringify(l)}\n`);
   await proc.stdin.end();
@@ -209,6 +220,8 @@ test("the --mcp process answers on a clean stdout and exits 0 when stdin closes"
     .filter((l) => l !== "")
     .map((l) => JSON.parse(l) as Reply & { jsonrpc: string });
   for (const r of replies) expect(r.jsonrpc).toBe("2.0");
-  expect(replies.map((r) => r.id)).toEqual([1, 2, 3]);
+  expect(replies.map((r) => r.id)).toEqual([1, 2, 3, 4, 5]);
+  expect(replies[3]?.result?.isError).toBe(false);
+  expect(replies[4]?.result?.isError).toBe(true);
   expect(stderr).toContain("lessons at http://127.0.0.1:");
 }, 15_000);

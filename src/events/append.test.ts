@@ -73,6 +73,22 @@ test(
 );
 
 test(
+  "stray fields inside an intake row never reach the log",
+  withTemp((_dir, data) => {
+    const intake = {
+      v: 1,
+      type: "intake",
+      door: "interview",
+      topics: [{ topic: "U687", rag: "R", answers: ["3:4"], blob: "x" }],
+    } as unknown as NewEvent;
+    appendEvent(data, intake, AT);
+    expect(JSON.parse(readLines(data)[0] as string).topics).toEqual([
+      { topic: "U687", rag: "R" },
+    ]);
+  }),
+);
+
+test(
   "a log with no trailing newline keeps both lines whole",
   withTemp((_dir, data) => {
     fs.mkdirSync(data);

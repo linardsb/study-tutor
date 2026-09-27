@@ -806,3 +806,7 @@ thousand lines per call is well inside D3's budget.
     Claude Code declined to send the attempt, so the server refusal was shown by raw JSON-RPC to the
     compiled binary. The pupil attempt was posted by `curl` to `sleep 8 | StudyTutor-x64 --mcp` instead of
     a normal start with a browser and Ctrl+C.
+- 2026-09-27 (PR #30 review round 1, `.claude/reports/pr-30-review-fixes.md`): the allowlist refusal
+  test sends a valid fixture body per type and matches the exact message (M1); `appendEvent` reduces each
+  intake row to `{ topic, rag }` (L1); the spawned `--mcp` test also calls `read_state` and a refused
+  `write_event` (L2).

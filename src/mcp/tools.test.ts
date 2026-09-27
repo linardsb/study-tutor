@@ -160,13 +160,21 @@ test(
 );
 
 test(
-  "allowlist: every type not MCP-writable is refused with nothing written",
+  "allowlist: a valid event of every type not MCP-writable is refused with nothing written",
   withTemp(async (_dir, ctx) => {
     for (const type of EVENT_TYPES.filter((t) => !MCP_WRITABLE[t])) {
-      const r = await call("write_event", { v: 1, type, topic: "U687" }, ctx);
-      expect(r).toMatchObject({
+      // A well-formed body, so only the allowlist can refuse it, not appendEvent's validation.
+      const line = fs
+        .readFileSync(
+          path.join(root, "src/events/__fixtures__", `${type}.v1.jsonl`),
+          "utf8",
+        )
+        .split("\n")[0] as string;
+      const { t: _t, ...body } = JSON.parse(line);
+      const r = await call("write_event", body, ctx);
+      expect(r).toEqual({
         ok: false,
-        error: expect.stringMatching(/^Refused/),
+        error: `Refused: ${type} events are written by the tutor's own pages, not by a tool`,
       });
     }
     expect(fs.existsSync(ctx.dataDir)).toBe(false);

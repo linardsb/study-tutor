@@ -11,7 +11,7 @@ The binary gains `--mcp`: it runs the HTTP server as before and speaks MCP (JSON
 The answer stays withheld until an attempt event exists, by three facts in code:
 
 1. `read_state` serves `toItemView(item)` for every item whose id is not in `attemptedItems(readLines(dataDir))` (exact id). Tests: no attempt, one attempt unlocks `#1` only, `#gen` unlocks nothing, no `"answers"` key across all 21 topics on an empty log.
-2. `write_event` writes only types with `MCP_WRITABLE[type] === true` (`session`, `intake`). `attempt` is refused before `postEvent` runs. Tests: allowlist loop over `EVENT_TYPES`, attempt refused with nothing written, and the refusal over JSON-RPC.
+2. `write_event` writes only types with `MCP_WRITABLE[type] === true` (`session`, `intake`). `attempt` is refused before `postEvent` runs. Tests: allowlist loop over `EVENT_TYPES`, each sending a valid fixture body and matching the exact refusal (PR #30 M1), attempt refused with nothing written, and the refusal over JSON-RPC.
 3. `open_lesson` returns a URL, `clock` a time, and `write_event` the stored `session`/`intake` event. None of these carries an answer field.
 
 Scope (plan D6): the guard covers the MCP surface. S3 ran with `--tools ""`, so Claude Code had no file or fetch tool of its own. A family's own harness with such tools can read `content/maths/items/*.json`, which holds answers because the lesson page marks in the browser; the architecture accepts this. The in-app loop (T9) has only the four tools, so the product path is fully guarded. Full text: `.claude/reports/s3-mcp-seam.md`, "Scope of the guard".
@@ -49,9 +49,9 @@ Mutation checks (observed):
 
 - `bunx tsc --noEmit`: clean (observed)
 - `bunx biome check .`: clean (observed, part of `bun run check`)
-- `bun test src/mcp src/events/append.test.ts src/content/pack.test.ts`: 56 pass, 0 fail, 5 files (observed)
+- `bun test src/mcp src/events/append.test.ts src/content/pack.test.ts`: 56 pass, 0 fail, 5 files (observed); 57 after the PR #30 round-1 fixes (observed)
 - `for i in 1 2 3 4 5; do bun test src/mcp/server.test.ts || break; done`: 8 pass × 5 (observed)
-- `bun run check`: 157 pass, 0 fail, 17 files (observed, rerun after the reports were written)
+- `bun run check`: 157 pass, 0 fail, 17 files (observed, rerun after the reports were written); 158 after the PR #30 round-1 fixes, one test added in `append.test.ts` (observed)
 - Level 4 manual 1: `initialize` + `tools/call clock` piped into `bun src/server.ts --mcp` → two JSON lines on stdout, `lessons at http://127.0.0.1:4731/` on stderr, `exit 0` (observed)
 - Level 4 manual 2: S3 runs on the compiled binary, see the S3 report
 
