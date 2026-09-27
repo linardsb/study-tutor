@@ -9,7 +9,7 @@ const PAGE = `<!doctype html>
 </head>
 <body>
 <h1>Study tutor</h1>
-<p>It works. Close this window when you are done, and close the black window to stop.</p>
+<p>It works. When you are done, close this tab, then close the window that started the tutor.</p>
 </body>
 </html>
 `;
@@ -30,12 +30,16 @@ export function startServer(ports: readonly number[]) {
     try {
       return Bun.serve({ hostname: "127.0.0.1", port, fetch: handle });
     } catch (err) {
-      if ((err as { code?: string }).code !== "EADDRINUSE") throw err;
+      // Windows answers with EACCES, not EADDRINUSE, for a port inside a Hyper-V or WSL
+      // excluded range; step past that too. Port 0 failing is not a ladder case.
+      const code = (err as { code?: string }).code;
+      if (port === 0 || (code !== "EADDRINUSE" && code !== "EACCES")) throw err;
     }
   }
   throw new Error(`No free port in ${ports.join(", ")}`);
 }
 
+/** Best effort: the URL is already on the console, so a missing opener is not an error. */
 export function openBrowser(url: string): void {
   const cmd =
     process.platform === "darwin"
@@ -43,7 +47,11 @@ export function openBrowser(url: string): void {
       : process.platform === "win32"
         ? ["cmd", "/c", "start", "", url]
         : ["xdg-open", url];
-  Bun.spawn(cmd, { stdio: ["ignore", "ignore", "ignore"] });
+  try {
+    Bun.spawn(cmd, { stdio: ["ignore", "ignore", "ignore"] });
+  } catch {
+    // no opener on PATH
+  }
 }
 
 if (import.meta.main) {

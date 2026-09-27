@@ -57,7 +57,7 @@ for (const stage of Object.values(STAGE))
 for (const { target, outfile } of TARGETS) {
   console.log(`Compiling ${target}`);
   run([
-    "bun",
+    process.execPath,
     "build",
     "--compile",
     `--target=${target}`,

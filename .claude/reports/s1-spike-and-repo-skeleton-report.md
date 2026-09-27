@@ -23,21 +23,22 @@ doc carries an S1 result with the dev-Mac observations and three `pending` legs,
 
 ## Tests added
 
-`src/server.test.ts`, one test, 9 assertions: first port taken by `first`; `second` lands on `base + 1`;
-`/` is 200 with `text/html; charset=utf-8` and contains "Study tutor"; `/nope` is 404; `startServer([base])`
-throws `No free port`; `startServer([base, 0]).port` is neither 0 nor `base`. Result: 1 pass, 0 fail
-(`observed`, `bun test` 2026-09-27).
+`src/server.test.ts`, two tests, 12 assertions (figures updated after the PR #21 round 1 fixes: M1 lets the
+OS pick the anchor port, L5 adds the opener test): `first` binds port 0 and the OS-chosen port is the anchor; `second`
+steps past it; `/` is 200 with `text/html; charset=utf-8` and contains "Study tutor"; `/nope` is 404; `startServer([base])`
+throws `No free port`; `startServer([base, 0]).port` is neither 0 nor `base`; `openBrowser` does not throw with the platform
+set to linux and no `xdg-open` on PATH. Result: 2 pass, 0 fail (`observed`, `bun test` 2026-09-27, round 1 fixes).
 
 ## Validation results
 
 All `observed` on 2026-09-27, macOS 15.7.3 Intel, Bun 1.3.4, TypeScript 7.0.2, Biome 2.5.14:
 
-- `bun run check`: tsc clean, Biome "Checked 7 files, no fixes", 1 pass 0 fail, exit 0.
+- `bun run check`: tsc clean, Biome "Checked 7 files, no fixes", 2 pass 0 fail, 12 expect() calls, exit 0 (`observed` after the PR #21 round 1 fixes).
 - `bun src/server.ts`: `Study tutor is running at http://127.0.0.1:4731/`; curl `/` 200, `/nope` 404;
   `lsof` shows the listener on `127.0.0.1:4731` only.
 - `bun run build`: three compiles plus two ad hoc re-signs in about 9.5 s (runtimes already cached);
-  `dist/StudyTutor-windows.zip` 41,128,211 bytes (`StudyTutor.exe` 115,691,608, `Start.bat`, `README.txt`);
-  `dist/StudyTutor-mac.zip` 46,808,601 bytes (`StudyTutor-arm64` 59,867,200, `StudyTutor-x64` 65,995,184 after the ad hoc re-sign,
+  `dist/StudyTutor-windows.zip` 41,127,839 bytes (round 1 fixes; 41,128,211 at `db8388b`) (`StudyTutor.exe` 115,691,608, `Start.bat`, `README.txt`);
+  `dist/StudyTutor-mac.zip` 46,808,746 bytes (round 1 fixes; 46,808,601 at `db8388b`) (`StudyTutor-arm64` 59,867,200, `StudyTutor-x64` 65,995,184 after the ad hoc re-sign,
   `Start.command` 755, `README.txt`); both extract to one `StudyTutor/` folder.
 - Extracted mac zip in a scratch folder: `./StudyTutor/Start.command` picked the x64 binary, printed the
   URL, curl 200.

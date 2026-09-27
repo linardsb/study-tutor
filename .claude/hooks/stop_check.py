@@ -20,6 +20,7 @@ Escape hatches, all fail-open:
 """
 
 import json
+import shutil
 import subprocess
 import sys
 
@@ -56,6 +57,11 @@ def main() -> None:
             sys.exit(0)  # already blocked once this turn — never loop
 
         if not dirty_code_files():
+            sys.exit(0)
+
+        # shell=True turns a missing bun into returncode 127, not an exception,
+        # so the fail-open promise above needs this check to hold.
+        if shutil.which("bun") is None:
             sys.exit(0)
 
         result = subprocess.run(

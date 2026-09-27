@@ -190,7 +190,10 @@ export function startServer(ports: readonly number[]) {
     try {
       return Bun.serve({ hostname: "127.0.0.1", port, fetch: handle });
     } catch (err) {
-      if ((err as { code?: string }).code !== "EADDRINUSE") throw err;
+      // Windows answers with EACCES, not EADDRINUSE, for a port inside a Hyper-V or WSL
+      // excluded range; step past that too. Port 0 failing is not a ladder case.
+      const code = (err as { code?: string }).code;
+      if (port === 0 || (code !== "EADDRINUSE" && code !== "EACCES")) throw err;
     }
   }
   throw new Error(`No free port in ${ports.join(", ")}`);
@@ -290,8 +293,8 @@ Darwin `observed` (the sketch opened a tab); win32 `expected`.
 - **IMPLEMENT**: `PORTS`, `startServer(ports)`, `openBrowser(url)` and the `import.meta.main` block as
   under Patterns. `handle(req)`: `/` returns the inline page with
   `content-type: text/html; charset=utf-8`; everything else 404 `Not found`. The page: `<!doctype html>`,
-  `lang="en-GB"`, title `Study tutor`, an `h1` `Study tutor` and one line, `It works. Close this window
-  when you are done, and close the black window to stop.` The main block: `startServer([...PORTS, 0])`,
+  `lang="en-GB"`, title `Study tutor`, an `h1` `Study tutor` and one line, `It works. When you are done, close this tab,
+  then close the window that started the tutor.` The main block: `startServer([...PORTS, 0])`,
   `console.log(\`Study tutor is running at ${url}\`)`, then `openBrowser(url)`. If `startServer` throws,
   print `Could not start: ${message}` and `process.exit(1)`.
 - **PATTERN**: Patterns to Follow (all `observed`).
@@ -306,16 +309,16 @@ Darwin `observed` (the sketch opened a tab); win32 `expected`.
 
 ### CREATE `src/server.test.ts`
 
-- **IMPLEMENT**: one test with `bun:test`. Pick `base = 20000 + Math.floor(Math.random() * 30000)`.
-  `first = startServer([base])`; `second = startServer([base, base + 1])`; expect `second.port` to be
-  `base + 1`; `fetch` `/` on it → 200, `content-type` is `text/html; charset=utf-8` and body contains `Study tutor`;
+- **IMPLEMENT**: one test with `bun:test`. Let the OS pick the anchor: `first = startServer([0])`, `base = first.port`
+  (PR #21 review M1: a random base overlaps the ephemeral range and can already be taken).
+  `second = startServer([base, base + 1, 0])`; expect `second.port` to be neither `base` nor `0`; `fetch` `/` on it → 200, `content-type` is `text/html; charset=utf-8` and body contains `Study tutor`;
   `fetch` `/nope` → 404;
   `startServer([base])` throws `No free port`; `startServer([base, 0]).port` is neither `0` nor `base`.
   Stop all three with `stop(true)`.
 - **PATTERN**: the sketch under Patterns passed with the first four assertions (`observed`, 1 pass).
 - **GOTCHA**: never use a port from `PORTS` in the test; the dev server may be running on it. The `port: 0`
   case proves the last-resort fallback, which is the Q11 answer.
-- **VALIDATE**: `bun run check` (tsc, Biome and `1 pass`)
+- **VALIDATE**: `bun run check` (tsc, Biome and `2 pass`: the ladder test and the opener test from PR #21 review L5)
 - **SATISFIES**: AC #1, AC #2
 
 ### CREATE `launchers/Start.bat`, `launchers/Start.command`, `launchers/README.txt`
@@ -350,7 +353,7 @@ Darwin `observed` (the sketch opened a tab); win32 `expected`.
   ```
 
   `README.txt` (ten lines, plain text, parent register): extract the zip; open `Start.command` (Mac) or
-  `Start.bat` (Windows); the browser opens by itself; close the black window to stop. Mac: if it says the
+  `Start.bat` (Windows); the browser opens by itself; close the window that started the tutor to stop. Mac: if it says the
   file cannot be verified, click Done, open System Settings, Privacy & Security, scroll to Security, click
   Open Anyway, then open `Start.command` again. Windows: if it says Windows protected your PC, click More
   info, then Run anyway.
@@ -586,7 +589,7 @@ legs.
 - **Q6 (worst-case ordering).** The parent double-clicks `Start.command` a second time while the first
   binary is still running (the Terminal window from the first run is open). Worst case: the second run
   takes 4732 and opens a second tab; nothing breaks, two windows are open. Acceptable for S1; T11's docs
-  say "close the black window to stop".
+  say "close the window that started the tutor".
 - **Q7 (worst case, Windows).** The Windows PC has Smart App Control on (new Windows 11 installs may). The
   `.bat` is blocked with no Run anyway. Recorded as a dead end for that machine; the fallback is
   double-clicking `StudyTutor.exe`, which SmartScreen allows through More info → Run anyway
@@ -633,3 +636,5 @@ legs.
 - 2026-09-27 — After implementation (report `.claude/reports/s1-spike-and-repo-skeleton-report.md`): Task 1's `.gitattributes` scoped to `launchers/*.bat`; Task 3 asserts the `content-type` header; Task 5 re-signs both mac binaries ad hoc and checks for `codesign`; Task 7's dev-Mac dialog count is `pending` with the `spctl` verdict recorded instead. The plan's `Signature=adhoc` observation (Task 4 GOTCHA) held for the arm64 build only.
 
 - 2026-09-27 — Q1–Q4 decided by Linards on the plan's recommendations: heredoc edit of the stop hook, keep the `xattr -d` line in `Start.command`, both mac binaries in one zip, launchers under `launchers/`. No task changes.
+
+- 2026-09-27 — PR #21 review round 1 (`.claude/code-reviews/pr-21-review.md`, fixes in `.claude/reports/pr-21-review-fixes.md`): Task 2's ladder steps on `EACCES` too and rethrows only for port 0; Task 3's test lets the OS pick the anchor port and adds an opener test; the page and README say "the window that started the tutor", not "black window"; `openBrowser` swallows a missing opener; `scripts/build.ts` spawns `process.execPath`; `Start.command` checks `cd`; `tsconfig.json` gains `include`; the stop hook exits 0 when `bun` is missing; the "damaged" claim in the S1 result is tagged `expected`.

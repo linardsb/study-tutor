@@ -26,5 +26,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false
-  }
+  },
+  // Widen when app/ and content/ land. e1/ is the v1 donor and stays out.
+  "include": ["src", "scripts"]
 }
