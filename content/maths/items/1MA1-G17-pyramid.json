@@ -1,0 +1,124 @@
+[
+  {
+    "id": "1MA1/G17/pyramid#1",
+    "topic": "1MA1/G17/pyramid",
+    "type": "cloze",
+    "stem": "Find the surface area of this square-based pyramid. The first steps are done. Finish it.",
+    "figure": "<svg viewBox=\"0 0 180 130\" width=\"100%\" style=\"max-width:180px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A square-based pyramid with base 10 cm and slant height 12 cm marked on the front face\"><title>A square-based pyramid with base 10 cm and slant height 12 cm marked on the front face</title><polygon points=\"20,105 120,105 160,80 60,80\" fill=\"#efeeea\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><polygon points=\"20,105 120,105 90,12\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><line x1=\"120\" y1=\"105\" x2=\"160\" y2=\"80\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><line x1=\"160\" y1=\"80\" x2=\"90\" y2=\"12\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><line x1=\"60\" y1=\"80\" x2=\"90\" y2=\"12\" stroke=\"#1d1d1b\" stroke-width=\"1\" stroke-dasharray=\"4 3\"/><line x1=\"70\" y1=\"105\" x2=\"90\" y2=\"12\" stroke=\"#2b5797\" stroke-width=\"2\" stroke-dasharray=\"5 3\"/><text x=\"70\" y=\"123\" text-anchor=\"middle\" fill=\"#1d1d1b\">10 cm</text><text x=\"20\" y=\"52\" fill=\"#2b5797\" stroke=\"#ffffff\" stroke-width=\"3\" paint-order=\"stroke\">12 cm</text></svg>",
+    "scaffold": "Step 1, base: 10 × 10 = 100. Step 2, one triangle: ½ × 10 × 12 = 60. Step 3, four triangles: 4 × 60 = 240. Step 4, add: …",
+    "hint": "Base plus the four triangles.",
+    "answers": ["340", "340cm2", "340 cm^2"],
+    "working": "Step 1, base: 10 × 10 = 100. Step 2, one triangle: ½ × 10 × 12 = 60. Step 3, four triangles: 4 × 60 = 240. Step 4, add: 100 + 240 = 340. Step 5, 340 cm².",
+    "misconceptions": [
+      {
+        "answer": "240",
+        "message": "That is the four triangles. Add the base, 100."
+      },
+      {
+        "answer": "160",
+        "message": "You added one triangle. There are four, 240."
+      },
+      {
+        "answer": "580",
+        "message": "You forgot the ½ in the triangle. Four triangles are 240, not 480."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G17/pyramid#2",
+    "topic": "1MA1/G17/pyramid",
+    "type": "cloze",
+    "stem": "Find the surface area of this square-based pyramid. The first steps are done. Finish it.",
+    "figure": "<svg viewBox=\"0 0 180 130\" width=\"100%\" style=\"max-width:180px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A square-based pyramid with base 4 cm and slant height 7 cm marked on the front face\"><title>A square-based pyramid with base 4 cm and slant height 7 cm marked on the front face</title><polygon points=\"20,105 120,105 160,80 60,80\" fill=\"#efeeea\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><polygon points=\"20,105 120,105 90,12\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><line x1=\"120\" y1=\"105\" x2=\"160\" y2=\"80\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><line x1=\"160\" y1=\"80\" x2=\"90\" y2=\"12\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><line x1=\"60\" y1=\"80\" x2=\"90\" y2=\"12\" stroke=\"#1d1d1b\" stroke-width=\"1\" stroke-dasharray=\"4 3\"/><line x1=\"70\" y1=\"105\" x2=\"90\" y2=\"12\" stroke=\"#2b5797\" stroke-width=\"2\" stroke-dasharray=\"5 3\"/><text x=\"70\" y=\"123\" text-anchor=\"middle\" fill=\"#1d1d1b\">4 cm</text><text x=\"20\" y=\"52\" fill=\"#2b5797\" stroke=\"#ffffff\" stroke-width=\"3\" paint-order=\"stroke\">7 cm</text></svg>",
+    "scaffold": "Step 1, base: 4 × 4 = 16. Step 2, one triangle: ½ × 4 × 7 = 14. …",
+    "hint": "Four triangles, then add the base.",
+    "answers": ["72", "72cm2", "72 cm^2"],
+    "working": "Step 1, base: 4 × 4 = 16. Step 2, one triangle: ½ × 4 × 7 = 14. Step 3, four triangles: 4 × 14 = 56. Step 4, add: 16 + 56 = 72. Step 5, 72 cm².",
+    "misconceptions": [
+      {
+        "answer": "30",
+        "message": "You added one triangle. Multiply 14 by 4 first."
+      },
+      {
+        "answer": "56",
+        "message": "That is the four triangles. Add the base, 16."
+      },
+      {
+        "answer": "128",
+        "message": "You forgot the ½. One triangle is 14, so four are 56."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G17/pyramid#3",
+    "topic": "1MA1/G17/pyramid",
+    "type": "cloze",
+    "stem": "Find the surface area of this square-based pyramid.",
+    "figure": "<svg viewBox=\"0 0 180 130\" width=\"100%\" style=\"max-width:180px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A square-based pyramid with base 8 cm and slant height 5 cm marked on the front face\"><title>A square-based pyramid with base 8 cm and slant height 5 cm marked on the front face</title><polygon points=\"20,105 120,105 160,80 60,80\" fill=\"#efeeea\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><polygon points=\"20,105 120,105 90,12\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><line x1=\"120\" y1=\"105\" x2=\"160\" y2=\"80\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><line x1=\"160\" y1=\"80\" x2=\"90\" y2=\"12\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><line x1=\"60\" y1=\"80\" x2=\"90\" y2=\"12\" stroke=\"#1d1d1b\" stroke-width=\"1\" stroke-dasharray=\"4 3\"/><line x1=\"70\" y1=\"105\" x2=\"90\" y2=\"12\" stroke=\"#2b5797\" stroke-width=\"2\" stroke-dasharray=\"5 3\"/><text x=\"70\" y=\"123\" text-anchor=\"middle\" fill=\"#1d1d1b\">8 cm</text><text x=\"20\" y=\"52\" fill=\"#2b5797\" stroke=\"#ffffff\" stroke-width=\"3\" paint-order=\"stroke\">5 cm</text></svg>",
+    "hint": "Base first: 8 × 8.",
+    "answers": ["144", "144cm2", "144 cm^2"],
+    "working": "Step 1: 8 × 8 = 64. Step 2: ½ × 8 × 5 = 20. Step 3: 4 × 20 = 80. Step 4: 64 + 80 = 144. Step 5: 144 cm².",
+    "misconceptions": [
+      {
+        "answer": "80",
+        "message": "That is the four triangles. Add the base, 64."
+      },
+      {
+        "answer": "224",
+        "message": "You forgot the ½. One triangle is 20, not 40."
+      },
+      {
+        "answer": "84",
+        "message": "You added one triangle. There are four."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G17/pyramid#4",
+    "topic": "1MA1/G17/pyramid",
+    "type": "cloze",
+    "stem": "A cube has edges of 5 cm. Find its surface area.",
+    "figure": "<svg viewBox=\"0 0 150 120\" width=\"100%\" style=\"max-width:150px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A cube with one edge marked 5 cm\"><title>A cube with one edge marked 5 cm</title><polygon points=\"20,40 90,40 90,110 20,110\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><polygon points=\"20,40 50,14 120,14 90,40\" fill=\"#efeeea\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><polygon points=\"90,40 120,14 120,84 90,110\" fill=\"#d9d7d0\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><text x=\"55\" y=\"124\" text-anchor=\"middle\" fill=\"#1d1d1b\">5 cm</text></svg>",
+    "hint": "No triangles here. Count the faces.",
+    "answers": ["150", "150cm2", "150 cm^2"],
+    "working": "Not a pyramid: a cube has six square faces. One face: 5 × 5 = 25. Six faces: 6 × 25 = 150 cm².",
+    "misconceptions": [
+      {
+        "answer": "125",
+        "message": "That is the volume, 5 × 5 × 5. Surface area is the faces added up."
+      },
+      {
+        "answer": "25",
+        "message": "That is one face. A cube has six."
+      },
+      {
+        "answer": "100",
+        "message": "That is four faces. Count the top and bottom too."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G17/pyramid#5",
+    "topic": "1MA1/G17/pyramid",
+    "type": "cloze",
+    "stem": "A tent is a square-based pyramid with base 3 m and slant height 4 m. It is 3.7 m tall at the middle. Canvas covers the four sloping faces only, not the floor. How many m² of canvas is that?",
+    "figure": "<svg viewBox=\"0 0 180 130\" width=\"100%\" style=\"max-width:180px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A square-based pyramid with base 3 m and slant height 4 m marked on the front face, and a perpendicular height of 3.7 m up the middle\"><title>A square-based pyramid with base 3 m and slant height 4 m marked on the front face, and a perpendicular height of 3.7 m up the middle</title><polygon points=\"20,105 120,105 160,80 60,80\" fill=\"#efeeea\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><polygon points=\"20,105 120,105 90,12\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><line x1=\"120\" y1=\"105\" x2=\"160\" y2=\"80\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><line x1=\"160\" y1=\"80\" x2=\"90\" y2=\"12\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><line x1=\"60\" y1=\"80\" x2=\"90\" y2=\"12\" stroke=\"#1d1d1b\" stroke-width=\"1\" stroke-dasharray=\"4 3\"/><line x1=\"70\" y1=\"105\" x2=\"90\" y2=\"12\" stroke=\"#2b5797\" stroke-width=\"2\" stroke-dasharray=\"5 3\"/><text x=\"70\" y=\"123\" text-anchor=\"middle\" fill=\"#1d1d1b\">3 m</text><text x=\"20\" y=\"52\" fill=\"#2b5797\" stroke=\"#ffffff\" stroke-width=\"3\" paint-order=\"stroke\">4 m</text><line x1=\"90\" y1=\"92\" x2=\"90\" y2=\"12\" stroke=\"#5f5f5a\" stroke-width=\"1.2\" stroke-dasharray=\"3 3\"/><text x=\"112\" y=\"72\" fill=\"#5f5f5a\" stroke=\"#ffffff\" stroke-width=\"3\" paint-order=\"stroke\">3.7 m</text></svg>",
+    "hint": "No base. Four triangles, slant height 4.",
+    "answers": ["24", "24m2", "24 m^2"],
+    "working": "No base this time. Step 2: ½ × 3 × 4 = 6. Step 3: 4 × 6 = 24. Step 5: 24 m². The 3.7 m height is not used.",
+    "misconceptions": [
+      {
+        "answer": "33",
+        "message": "You counted the floor. The canvas covers the sloping faces only."
+      },
+      {
+        "answer": "22.2",
+        "message": "You used the height of the tent, 3.7. The triangle's height is the slant, 4."
+      },
+      {
+        "answer": "48",
+        "message": "You forgot the ½. One face is 6, not 12."
+      }
+    ]
+  }
+]

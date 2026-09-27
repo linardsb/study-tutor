@@ -1,0 +1,164 @@
+[
+  {
+    "id": "1MA1/G17/cone#1",
+    "topic": "1MA1/G17/cone",
+    "type": "cloze",
+    "stem": "Find the volume of this cone in terms of pi. The first steps are done. Finish it.",
+    "figure": "<svg viewBox=\"0 0 170 130\" width=\"100%\" style=\"max-width:170px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A cone with radius 6 cm and perpendicular height 5 cm\"><title>A cone with radius 6 cm and perpendicular height 5 cm</title><polygon points=\"80,12 30,100 130,100\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><ellipse cx=\"80\" cy=\"100\" rx=\"50\" ry=\"14\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><line x1=\"80\" y1=\"12\" x2=\"80\" y2=\"100\" stroke=\"#2b5797\" stroke-width=\"2\" stroke-dasharray=\"5 3\"/><circle cx=\"80\" cy=\"100\" r=\"2.5\" fill=\"#1d1d1b\"/><text x=\"84\" y=\"84\" fill=\"#2b5797\" stroke=\"#ffffff\" stroke-width=\"3\" paint-order=\"stroke\">5 cm</text><line x1=\"80\" y1=\"100\" x2=\"130\" y2=\"100\" stroke=\"#2b5797\" stroke-width=\"2\"/><text x=\"105\" y=\"126\" text-anchor=\"middle\" fill=\"#2b5797\">6 cm</text></svg>",
+    "scaffold": "Step 1, r = 6. Step 2, 6 × 6 = 36. Step 3, 36 × 5 = 180. Step 4, 180 ÷ 3 = 60. Step 5, 60 × π = …",
+    "hint": "60 times π.",
+    "answers": [
+      "60pi",
+      "60 pi",
+      "60*pi",
+      "60xpi",
+      "pi*60",
+      "60pi cm3",
+      "60pi cm^3",
+      "60*pi cm3",
+      "60*pi cm^3"
+    ],
+    "working": "Step 1, r = 6. Step 2, 6 × 6 = 36. Step 3, 36 × 5 = 180. Step 4, 180 ÷ 3 = 60. Step 5, 60 × π = 60π. Step 6, 60π cm³.",
+    "misconceptions": [
+      {
+        "answer": "180pi",
+        "message": "You skipped the ÷ 3. That is the cylinder, three times too big."
+      },
+      {
+        "answer": "60",
+        "message": "You dropped the π. Write the number times π, like 60pi."
+      },
+      {
+        "answer": "20pi",
+        "message": "You doubled the radius. Square it: 6 × 6."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G17/cone#2",
+    "topic": "1MA1/G17/cone",
+    "type": "cloze",
+    "stem": "Find the volume of this cone in terms of pi. The first steps are done. Finish it.",
+    "figure": "<svg viewBox=\"0 0 170 130\" width=\"100%\" style=\"max-width:170px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A cone with radius 2 cm and perpendicular height 6 cm\"><title>A cone with radius 2 cm and perpendicular height 6 cm</title><polygon points=\"80,12 30,100 130,100\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><ellipse cx=\"80\" cy=\"100\" rx=\"50\" ry=\"14\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><line x1=\"80\" y1=\"12\" x2=\"80\" y2=\"100\" stroke=\"#2b5797\" stroke-width=\"2\" stroke-dasharray=\"5 3\"/><circle cx=\"80\" cy=\"100\" r=\"2.5\" fill=\"#1d1d1b\"/><text x=\"84\" y=\"84\" fill=\"#2b5797\" stroke=\"#ffffff\" stroke-width=\"3\" paint-order=\"stroke\">6 cm</text><line x1=\"80\" y1=\"100\" x2=\"130\" y2=\"100\" stroke=\"#2b5797\" stroke-width=\"2\"/><text x=\"105\" y=\"126\" text-anchor=\"middle\" fill=\"#2b5797\">2 cm</text></svg>",
+    "scaffold": "Step 1, r = 2. Step 2, 2 × 2 = 4. Step 3, 4 × 6 = 24. …",
+    "hint": "24 ÷ 3, then times π.",
+    "answers": [
+      "8pi",
+      "8 pi",
+      "8*pi",
+      "8xpi",
+      "pi*8",
+      "8pi cm3",
+      "8pi cm^3",
+      "8*pi cm3",
+      "8*pi cm^3"
+    ],
+    "working": "Step 1, r = 2. Step 2, 2 × 2 = 4. Step 3, 4 × 6 = 24. Step 4, 24 ÷ 3 = 8. Step 5, 8 × π = 8π. Step 6, 8π cm³.",
+    "misconceptions": [
+      {
+        "answer": "24pi",
+        "message": "You skipped the ÷ 3. Divide 24 by 3 first."
+      },
+      {
+        "answer": "8",
+        "message": "You dropped the π. Write the number times π, like 8pi."
+      },
+      {
+        "answer": "24",
+        "message": "You skipped the ÷ 3 and dropped the π."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G17/cone#3",
+    "topic": "1MA1/G17/cone",
+    "type": "cloze",
+    "stem": "A cone has base diameter 10 cm, perpendicular height 3 cm and slant height 5.8 cm. Find its volume in terms of pi.",
+    "figure": "<svg viewBox=\"0 0 170 130\" width=\"100%\" style=\"max-width:170px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A cone with base diameter 10 cm and perpendicular height 3 cm, slant height 5.8 cm along the sloping edge\"><title>A cone with base diameter 10 cm and perpendicular height 3 cm, slant height 5.8 cm along the sloping edge</title><polygon points=\"80,12 30,100 130,100\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><ellipse cx=\"80\" cy=\"100\" rx=\"50\" ry=\"14\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><line x1=\"80\" y1=\"12\" x2=\"80\" y2=\"100\" stroke=\"#2b5797\" stroke-width=\"2\" stroke-dasharray=\"5 3\"/><circle cx=\"80\" cy=\"100\" r=\"2.5\" fill=\"#1d1d1b\"/><text x=\"84\" y=\"84\" fill=\"#2b5797\" stroke=\"#ffffff\" stroke-width=\"3\" paint-order=\"stroke\">3 cm</text><line x1=\"30\" y1=\"100\" x2=\"130\" y2=\"100\" stroke=\"#2b5797\" stroke-width=\"2\"/><text x=\"80\" y=\"126\" text-anchor=\"middle\" fill=\"#2b5797\">10 cm</text><text x=\"128\" y=\"50\" fill=\"#5f5f5a\" stroke=\"#ffffff\" stroke-width=\"3\" paint-order=\"stroke\">5.8 cm</text></svg>",
+    "hint": "Halve the diameter. Ignore the slant.",
+    "answers": [
+      "25pi",
+      "25 pi",
+      "25*pi",
+      "25xpi",
+      "pi*25",
+      "25pi cm3",
+      "25pi cm^3",
+      "25*pi cm3",
+      "25*pi cm^3"
+    ],
+    "working": "Step 1: r = 10 ÷ 2 = 5. Step 2: 25. Step 3: 25 × 3 = 75. Step 4: 75 ÷ 3 = 25. Step 5: 25 × π = 25π. Step 6: 25π cm³. The slant height, 5.8, is not used.",
+    "misconceptions": [
+      {
+        "answer": "100pi",
+        "message": "You used 10 as the radius. Halve the diameter: r = 5."
+      },
+      {
+        "answer": "75pi",
+        "message": "You skipped the ÷ 3. Divide 75 by 3."
+      },
+      {
+        "answer": "25",
+        "message": "You dropped the π. Write the number times π, like 25pi."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G17/cone#4",
+    "topic": "1MA1/G17/cone",
+    "type": "cloze",
+    "stem": "A sphere has radius 3 cm. Find its volume in terms of pi.",
+    "figure": "<svg viewBox=\"0 0 130 120\" width=\"100%\" style=\"max-width:130px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A sphere with radius 3 cm marked from the centre to the edge\"><title>A sphere with radius 3 cm marked from the centre to the edge</title><circle cx=\"62\" cy=\"60\" r=\"46\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><ellipse cx=\"62\" cy=\"60\" rx=\"46\" ry=\"14\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.2\" stroke-dasharray=\"4 3\"/><circle cx=\"62\" cy=\"60\" r=\"2.5\" fill=\"#1d1d1b\"/><line x1=\"62\" y1=\"60\" x2=\"108\" y2=\"60\" stroke=\"#2b5797\" stroke-width=\"2\"/><text x=\"86\" y=\"40\" text-anchor=\"middle\" fill=\"#2b5797\">3 cm</text></svg>",
+    "hint": "A sphere is not a cone. Cube the radius, then the 4/3.",
+    "answers": [
+      "36pi",
+      "36 pi",
+      "36*pi",
+      "36xpi",
+      "pi*36",
+      "36pi cm3",
+      "36pi cm^3",
+      "36*pi cm3",
+      "36*pi cm^3"
+    ],
+    "working": "Not a cone: this is a sphere, U617. r³ = 27. 27 ÷ 3 = 9, then 9 × 4 = 36. V = 36 × π = 36π cm³.",
+    "misconceptions": [
+      {
+        "answer": "9pi",
+        "message": "You divided by 3 as for a cone. A sphere is 4/3 × r³: divide by 3, then multiply by 4."
+      },
+      {
+        "answer": "27pi",
+        "message": "That is πr³. The 4/3 is missing."
+      },
+      {
+        "answer": "36",
+        "message": "You dropped the π. Write the number times π, like 36pi."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G17/cone#5",
+    "topic": "1MA1/G17/cone",
+    "type": "cloze",
+    "stem": "A pile of sand is a cone with base diameter 6 m and perpendicular height 4 m. Taking π as 3, find its volume in m³.",
+    "figure": "<svg viewBox=\"0 0 170 130\" width=\"100%\" style=\"max-width:170px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A cone with base diameter 6 m and perpendicular height 4 m\"><title>A cone with base diameter 6 m and perpendicular height 4 m</title><polygon points=\"80,12 30,100 130,100\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><ellipse cx=\"80\" cy=\"100\" rx=\"50\" ry=\"14\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><line x1=\"80\" y1=\"12\" x2=\"80\" y2=\"100\" stroke=\"#2b5797\" stroke-width=\"2\" stroke-dasharray=\"5 3\"/><circle cx=\"80\" cy=\"100\" r=\"2.5\" fill=\"#1d1d1b\"/><text x=\"84\" y=\"84\" fill=\"#2b5797\" stroke=\"#ffffff\" stroke-width=\"3\" paint-order=\"stroke\">4 m</text><line x1=\"30\" y1=\"100\" x2=\"130\" y2=\"100\" stroke=\"#2b5797\" stroke-width=\"2\"/><text x=\"80\" y=\"126\" text-anchor=\"middle\" fill=\"#2b5797\">6 m</text></svg>",
+    "hint": "Halve the diameter first.",
+    "answers": ["36", "36m3", "36 m^3"],
+    "working": "Step 1: r = 6 ÷ 2 = 3. Step 2: 9. Step 3: 9 × 4 = 36. Step 4: 36 ÷ 3 = 12. Step 5: 12 × 3 = 36. Step 6: 36 m³.",
+    "misconceptions": [
+      {
+        "answer": "144",
+        "message": "You used 6 as the radius. Halve the diameter: r = 3."
+      },
+      {
+        "answer": "12",
+        "message": "That is r²h ÷ 3. Now multiply by π, which is 3 here."
+      },
+      {
+        "answer": "108",
+        "message": "You skipped the ÷ 3. Divide 36 by 3 before the π."
+      }
+    ]
+  }
+]

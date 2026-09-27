@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>U377 Equations of parallel lines</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="lesson">
+  <nav class="sections" aria-label="Sections"><a href="#picture">Picture</a><a href="#worked">Example</a><a href="#method">Method</a><a href="#watch">Watch out</a><a href="#quiz">Try it</a></nav>
+  <header>
+    <p class="crumb"><a href="../progress.html">Progress</a> · U377 · Maths · Foundation · Paper 1 (no calculator)</p>
+    <h1>Equations of parallel lines</h1>
+    <p class="aim">By the end you can spot parallel lines from their equations, and write the equation of a parallel line.</p>
+  </header>
+
+  <section id="picture">
+    <p>Parallel lines (lines that never meet) have the same steepness. In y = mx + c that means the same m. Only c, where the line crosses the y-axis, is different.</p>
+    <svg viewBox="0 0 260 232" width="100%" style="max-width:260px;display:block;margin:.5rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" aria-label="Axes with two parallel lines, y = 2x + 1 crossing the y-axis at 1 and y = 2x minus 3 crossing at minus 3">
+      <line x1="10" y1="120" x2="250" y2="120" stroke="#d9d7d0" stroke-width="1.5"/>
+      <line x1="110" y1="10" x2="110" y2="226" stroke="#d9d7d0" stroke-width="1.5"/>
+      <line x1="60" y1="210" x2="160" y2="10" stroke="#2b5797" stroke-width="2.5"/>
+      <line x1="80" y1="210" x2="170" y2="30" stroke="#c8372d" stroke-width="2.5"/>
+      <circle cx="110" cy="110" r="4" fill="#2b5797"/>
+      <circle cx="110" cy="150" r="4" fill="#c8372d"/>
+      <text x="96" y="106" text-anchor="end" fill="#2b5797">c = 1</text>
+      <text x="96" y="156" text-anchor="end" fill="#c8372d">c = −3</text>
+      <text x="166" y="16" fill="#2b5797">y = 2x + 1</text>
+      <text x="176" y="38" fill="#c8372d">y = 2x − 3</text>
+    </svg>
+    <p class="caption">Both lines go up 2 for every 1 across, so m = 2 for both. They cross the y-axis at different places.</p>
+  </section>
+
+  <section id="worked">
+    <h2>Worked example</h2>
+    <div class="example">
+      <p><b>Write the equation of the line parallel to y = 2x + 1 that passes through (3, 10).</b><br>
+         <b>Step 1</b>, it is already in the form y = mx + c.<br>
+         <b>Step 2</b>, read m: the number in front of x is 2.<br>
+         <b>Step 4</b>, keep m and leave c open: y = 2x + c.<br>
+         <b>Step 5</b>, put in x = 3 and y = 10: 10 = 2 × 3 + c, so 10 = 6 + c and c = 4.<br>
+         The line is <b>y = 2x + 4</b>.</p>
+      <p><b>Is y = 3x + 2 parallel to 2y = 6x − 4?</b><br>
+         <b>Step 1</b>, rearrange the second one. Divide everything by 2: y = 3x − 2.<br>
+         <b>Step 2</b>, read m from each: 3 and 3.<br>
+         <b>Step 3</b>, same m, so <b>yes, parallel</b>.</p>
+    </div>
+  </section>
+
+  <section id="method">
+    <h2>The method</h2>
+    <ol>
+      <li>Write each line as y = mx + c. Rearrange first if y is not on its own.</li>
+      <li>Read m, the number in front of x, minus sign included.</li>
+      <li>Same m means parallel. Different m means not parallel.</li>
+      <li>To write a parallel line, keep m and change c.</li>
+      <li>Through a point? Put its x and y into y = mx + c, then solve for c.</li>
+    </ol>
+
+    <details class="why">
+      <summary>Why does the number in front of x decide whether two lines are parallel?</summary>
+      <p>m is how far y goes up for each 1 across. Same m, same climb, so the gap never changes. c only slides the line up or down.</p>
+    </details>
+
+    <details class="another">
+      <summary>Another way to see it</summary>
+      <p>Read each line as a table. y = 2x + 1 gives 1, 3, 5, 7. y = 2x − 3 gives −3, −1, 1, 3. Both jump by 2 and the gap stays 4.</p>
+      <svg viewBox="0 0 300 78" width="100%" style="max-width:300px;display:block;margin:.5rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" aria-label="A table with x from 0 to 3, a row for y = 2x + 1 reading 1, 3, 5, 7 and a row for y = 2x minus 3 reading minus 3, minus 1, 1, 3">
+        <rect x="1" y="1" width="298" height="76" fill="#ffffff" stroke="#1d1d1b"/>
+        <line x1="1" y1="26" x2="299" y2="26" stroke="#d9d7d0"/><line x1="1" y1="51" x2="299" y2="51" stroke="#d9d7d0"/>
+        <line x1="100" y1="1" x2="100" y2="77" stroke="#1d1d1b"/>
+        <text x="10" y="19">x</text><text x="125" y="19" text-anchor="middle">0</text><text x="175" y="19" text-anchor="middle">1</text><text x="225" y="19" text-anchor="middle">2</text><text x="275" y="19" text-anchor="middle">3</text>
+        <text x="10" y="44" fill="#2b5797">y = 2x + 1</text><text x="125" y="44" text-anchor="middle">1</text><text x="175" y="44" text-anchor="middle">3</text><text x="225" y="44" text-anchor="middle">5</text><text x="275" y="44" text-anchor="middle">7</text>
+        <text x="10" y="69" fill="#c8372d">y = 2x − 3</text><text x="125" y="69" text-anchor="middle">−3</text><text x="175" y="69" text-anchor="middle">−1</text><text x="225" y="69" text-anchor="middle">1</text><text x="275" y="69" text-anchor="middle">3</text>
+      </svg>
+      <p class="caption">Same jump of 2 in each row.</p>
+      <p>The table stops matching for a line like 2y = 4x + 6. Rearrange to y = 2x + 3 first.</p>
+    </details>
+  </section>
+
+  <section id="watch">
+    <details open>
+      <summary><h2>Watch out</h2></summary>
+      <div class="watch">
+        <p>Rearrange before you read m. In 2y = 4x + 6 the gradient is 2, not 4, because y = 2x + 3.</p>
+        <p>y = 3x + 2 and y = −3x + 2 are not parallel. A matching c means nothing. m has to match.</p>
+      </div>
+    </details>
+  </section>
+
+  <section id="quiz" class="quiz" data-code="U377">
+    <h2>Try it</h2>
+    <p>Answer from memory, no calculator. Write equations like y=4x+7. The working appears only after you check.</p>
+
+    <div class="q" data-a="eT00eCs3fDR4Kzd8eT03KzR4" data-wrong="eT03eCsxPVlvdSBzd2FwcGVkIG0gYW5kIGMuIG0gc3RheXMgNDsgb25seSBjIGNoYW5nZXMsIHRvIDcufHk9NHgrMT1UaGF0IGlzIHRoZSBvcmlnaW5hbCBsaW5lLiBDaGFuZ2UgYyB0byA3Lnx5PXgrNz1Zb3UgZHJvcHBlZCB0aGUgNC4gUGFyYWxsZWwgbWVhbnMgdGhlIHNhbWUgbS4=">
+      <p class="stem">1. Write the equation of a line parallel to y = 4x + 1 that crosses the y-axis at 7. The first steps are done.</p>
+      <svg viewBox="0 0 200 150" width="100%" style="max-width:200px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" aria-label="Axes with the line y = 4x + 1 drawn and a point marked at 7 on the y-axis">
+        <line x1="10" y1="110" x2="190" y2="110" stroke="#d9d7d0" stroke-width="1.5"/>
+        <line x1="70" y1="6" x2="70" y2="144" stroke="#d9d7d0" stroke-width="1.5"/>
+        <line x1="45" y1="140" x2="105" y2="20" stroke="#2b5797" stroke-width="2.5"/>
+        <circle cx="70" cy="100" r="3.5" fill="#2b5797"/>
+        <text x="108" y="24" fill="#2b5797">y = 4x + 1</text>
+        <text x="60" y="104" text-anchor="end" fill="#2b5797">1</text>
+        <circle cx="70" cy="40" r="4" fill="#c8372d"/>
+        <text x="60" y="44" text-anchor="end" fill="#c8372d">7</text>
+      </svg>
+      <div class="working faded"><p>Step 2: m = 4. Step 4: keep m, so y = 4x + c. Crossing the y-axis at 7 means c = 7. So the line is …</p></div>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Put c = 7 into y = 4x + c.</p>
+      <div class="working" hidden><p>Step 2: m = 4. Step 4: keep m, so y = 4x + c. Crossing the y-axis at 7 means c = 7. So the line is y = 4x + 7.</p></div>
+    </div>
+
+    <div class="q" data-a="eT0yeCs0fDJ4KzR8eT00KzJ4" data-wrong="eT0yeCsxNj1Zb3UgYWRkZWQgNiBpbnN0ZWFkIG9mIHRha2luZyBpdCBhd2F5LiAxMCA9IDYgKyBjLCBzbyBjID0gMTAg4oiSIDYufHk9MngtNz1UaGF0IGlzIHRoZSBvcmlnaW5hbCBsaW5lLiBJdHMgYyBkb2VzIG5vdCB0YWtlIGl0IHRocm91Z2ggKDMsIDEwKS58eT0yeCsxMD1Zb3UgdXNlZCB0aGUgeS12YWx1ZSBhcyBjLiBjIGlzIHdoYXQgaXMgbGVmdCBhZnRlciB0YWtpbmcgMiDDlyAzIGF3YXkgZnJvbSAxMC4=">
+      <p class="stem">2. Write the equation of the line parallel to y = 2x − 7 that passes through (3, 10). The first steps are done.</p>
+      <svg viewBox="0 0 200 150" width="100%" style="max-width:200px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" aria-label="Axes with the line y = 2x minus 7 drawn and the point (3, 10) marked above it">
+        <line x1="10" y1="100" x2="190" y2="100" stroke="#d9d7d0" stroke-width="1.5"/>
+        <line x1="50" y1="6" x2="50" y2="144" stroke="#d9d7d0" stroke-width="1.5"/>
+        <line x1="40" y1="142" x2="150" y2="32" stroke="#2b5797" stroke-width="2.5"/>
+        <text x="120" y="26" fill="#2b5797">y = 2x − 7</text>
+        <circle cx="86" cy="20" r="4" fill="#c8372d"/>
+        <text x="94" y="18" fill="#c8372d">(3, 10)</text>
+        <line x1="60" y1="130" x2="100" y2="90" stroke="#5f5f5a" stroke-width="1" stroke-dasharray="3 3"/>
+      </svg>
+      <div class="working faded"><p>Step 2: m = 2. Step 4: keep m, so y = 2x + c. Step 5: put in x = 3 and y = 10: 10 = 2 × 3 + c. …</p></div>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>2 × 3 is 6. What has to be added to 6 to make 10?</p>
+      <div class="working" hidden><p>Step 2: m = 2. Step 4: keep m, so y = 2x + c. Step 5: put in x = 3 and y = 10: 10 = 2 × 3 + c. So 10 = 6 + c and c = 4. The line is y = 2x + 4.</p></div>
+    </div>
+
+    <div class="q" data-a="YnwoYil8eT01eCszfDV4KzM=" data-wrong="YT1TYW1lIG51bWJlcnMsIHN3YXBwZWQgcm91bmQuIEluIChhKSBtIGlzIDIsIG5vdCA1LnxjPVNhbWUgYyBkb2VzIG5vdCBtYWtlIGxpbmVzIHBhcmFsbGVsLiBtIGhhcyB0byBtYXRjaCwgYW5kIOKIkjUgaXMgbm90IDUu">
+      <p class="stem">3. Which line is parallel to y = 5x − 2? (a) y = 2x − 5, (b) y = 5x + 3, (c) y = −5x − 2. Type a, b or c.</p>
+      <svg viewBox="0 0 220 150" width="100%" style="max-width:220px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" aria-label="Axes with y = 5x minus 2 dashed and three lines a, b and c: a is less steep, b is parallel to the dashed line, c slopes the other way">
+        <line x1="10" y1="90" x2="210" y2="90" stroke="#d9d7d0" stroke-width="1.5"/>
+        <line x1="110" y1="6" x2="110" y2="144" stroke="#d9d7d0" stroke-width="1.5"/>
+        <line x1="88" y1="140" x2="128" y2="20" stroke="#5f5f5a" stroke-width="2" stroke-dasharray="5 3"/>
+        <text x="130" y="18" fill="#5f5f5a">y = 5x − 2</text>
+        <line x1="30" y1="140" x2="170" y2="35" stroke="#2b5797" stroke-width="2"/><text x="172" y="36" fill="#2b5797">a</text>
+        <line x1="60" y1="140" x2="100" y2="20" stroke="#2e8b57" stroke-width="2"/><text x="102" y="18" fill="#2e8b57">b</text>
+        <line x1="70" y1="20" x2="110" y2="140" stroke="#c8372d" stroke-width="2"/><text x="112" y="140" fill="#c8372d">c</text>
+      </svg>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Read the number in front of x in each one.</p>
+      <div class="working" hidden><p>Gradients: 2, 5 and −5. Only (b) has gradient 5, the same as y = 5x − 2.</p></div>
+    </div>
+
+    <div class="q" data-a="YXwoYSl8eT0zeC00fDN4LTQ=" data-wrong="Yj1Zb3UgbWF0Y2hlZCB0aGUgMi4gT24gdGhpcyBncmFwaCB0aGUgMiBpcyBjLCB3aGVyZSB0aGUgbGluZSBjcm9zc2VzLiBQYXJhbGxlbCBuZWVkcyB0aGUgc2FtZSBtLCB3aGljaCBpcyAzLnxjPVRoZSBsaW5lIG9uIHRoZSBncmFwaCBnb2VzIHVwLCBzbyBtIGlzIDMsIG5vdCDiiJIzLg==">
+      <p class="stem">4. The graph shows a line. Which equation is parallel to it: (a) y = 3x − 4, (b) y = 2x + 3, (c) y = −3x + 2? Type a, b or c.</p>
+      <svg viewBox="0 0 200 160" width="100%" style="max-width:200px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" aria-label="A grid with a line through (0, 2) and (1, 5). The rise of 3 for 1 across is marked">
+        <g stroke="#e9e7e0" stroke-width="1">
+          <line x1="20" y1="20" x2="20" y2="150"/><line x1="50" y1="20" x2="50" y2="150"/><line x1="80" y1="20" x2="80" y2="150"/><line x1="110" y1="20" x2="110" y2="150"/><line x1="140" y1="20" x2="140" y2="150"/><line x1="170" y1="20" x2="170" y2="150"/>
+          <line x1="20" y1="20" x2="170" y2="20"/><line x1="20" y1="40" x2="170" y2="40"/><line x1="20" y1="60" x2="170" y2="60"/><line x1="20" y1="80" x2="170" y2="80"/><line x1="20" y1="100" x2="170" y2="100"/><line x1="20" y1="120" x2="170" y2="120"/><line x1="20" y1="140" x2="170" y2="140"/>
+        </g>
+        <line x1="20" y1="140" x2="170" y2="140" stroke="#1d1d1b" stroke-width="1.5"/>
+        <line x1="50" y1="20" x2="50" y2="150" stroke="#1d1d1b" stroke-width="1.5"/>
+        <line x1="30" y1="140" x2="90" y2="20" stroke="#2b5797" stroke-width="2.5"/>
+        <circle cx="50" cy="100" r="3.5" fill="#2b5797"/><circle cx="80" cy="40" r="3.5" fill="#2b5797"/>
+        <text x="40" y="104" text-anchor="end">2</text>
+        <text x="44" y="44" text-anchor="end">5</text>
+        <text x="76" y="154" text-anchor="middle">1</text>
+        <text x="46" y="154" text-anchor="middle">0</text>
+        <line x1="50" y1="100" x2="80" y2="100" stroke="#c8372d" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <line x1="80" y1="100" x2="80" y2="40" stroke="#c8372d" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <text x="86" y="74" fill="#c8372d">up 3</text>
+        <text x="58" y="112" fill="#c8372d">1 across</text>
+      </svg>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>How far does the line go up for each 1 across? That is m.</p>
+      <div class="working" hidden><p>This is U980, reading a graph. From (0, 2) to (1, 5) the line goes up 3 for 1 across, so m = 3. It crosses at 2, so the line is y = 3x + 2. Parallel needs m = 3: (a) y = 3x − 4.</p></div>
+    </div>
+
+    <div class="q" data-a="Qz0zbisxNXwzbisxNXxDPTE1KzNu" data-wrong="Qz04bisxMD1Zb3UgYWRkZWQgdGhlIDUgdG8gdGhlIDMuIFRoZSBjaGFyZ2UgcGVyIGdpZ2FieXRlIGlzIHRoZSBncmFkaWVudCBhbmQgaXQgc3RheXMgMy58Qz0zbis1PVlvdSByZXBsYWNlZCAxMCB3aXRoIDUuIEl0IGlzIMKjNSBtb3JlLCBzbyAxMCArIDUgPSAxNS58Qz0zbis1MD1Zb3UgbXVsdGlwbGllZCAxMCBieSA1LiBJdCBpcyDCozUgbW9yZSwgbm90IGZpdmUgdGltZXMu">
+      <p class="stem">5. Phone plan A costs C = 3n + 10 pounds a month, where n is the gigabytes used. Plan B charges the same per gigabyte but £5 more each month. Write the equation for plan B.</p>
+      <svg viewBox="0 0 220 150" width="100%" style="max-width:220px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" aria-label="Axes with n along the bottom and C up the side. Plan A is a line starting at 10. Plan B is a dashed parallel line starting higher, marked with a question mark">
+        <line x1="30" y1="130" x2="210" y2="130" stroke="#1d1d1b" stroke-width="1.5"/>
+        <line x1="30" y1="10" x2="30" y2="130" stroke="#1d1d1b" stroke-width="1.5"/>
+        <text x="200" y="145" fill="#5f5f5a">n</text>
+        <text x="12" y="20" fill="#5f5f5a">C</text>
+        <line x1="30" y1="100" x2="190" y2="40" stroke="#2b5797" stroke-width="2.5"/>
+        <text x="192" y="40" fill="#2b5797">A</text>
+        <text x="26" y="104" text-anchor="end">10</text>
+        <line x1="30" y1="85" x2="190" y2="25" stroke="#c8372d" stroke-width="2.5" stroke-dasharray="5 3"/>
+        <text x="192" y="24" fill="#c8372d">B</text>
+        <text x="26" y="89" text-anchor="end" fill="#c8372d">?</text>
+      </svg>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Same price per gigabyte means the same m. Only the monthly charge, c, moves.</p>
+      <div class="working" hidden><p>Same price per gigabyte means the same gradient, 3. £5 more a month moves c from 10 to 15. C = 3n + 15. On a graph the two plans are parallel lines.</p></div>
+    </div>
+  </section>
+
+  <section id="teach-back">
+    <h2>Teach it back</h2>
+    <p>A friend missed today. Explain how to write the line parallel to y = 5x + 2 through (2, 13). Every step. Say it to Claude.</p>
+  </section>
+
+  <section id="source">
+    <details open>
+      <summary><h2>Where this comes from</h2></summary>
+      <p>Sparx Maths: search <b>U377</b> in Independent Learning. Corbettmaths: on the <a href="https://corbettmaths.com/contents/">contents page</a> find "Parallel lines" (the equations one, not angles).</p>
+    </details>
+  </section>
+
+  <footer>
+    <p>Stuck? Tell Claude which step. Cheat sheet: <a href="../reference/U377-equations-of-parallel-lines.html">U377</a>. Question 4 is U980 identifying graphs, reading m off a drawn line.</p>
+  </footer>
+</main>
+<script src="../assets/read.js"></script>
+<script src="../assets/generate.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

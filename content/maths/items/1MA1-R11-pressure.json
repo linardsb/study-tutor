@@ -1,0 +1,124 @@
+[
+  {
+    "id": "1MA1/R11/pressure#1",
+    "topic": "1MA1/R11/pressure",
+    "type": "cloze",
+    "stem": "A force of 800 N presses on an area of 4 m². Find the pressure. The first steps are done.",
+    "figure": "<svg viewBox=\"0 0 170 92\" width=\"100%\" style=\"max-width:170px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"A downward arrow of 800 newtons pressing on a base of area 4 square metres\">\n        <line x1=\"85\" y1=\"8\" x2=\"85\" y2=\"46\" stroke=\"#c8372d\" stroke-width=\"2.5\"/>\n        <polygon points=\"85,54 79,42 91,42\" fill=\"#c8372d\"/>\n        <text x=\"95\" y=\"30\" fill=\"#c8372d\">800 N</text>\n        <rect x=\"20\" y=\"56\" width=\"130\" height=\"22\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/>\n        <text x=\"85\" y=\"72\" text-anchor=\"middle\" fill=\"#1d1d1b\">area 4 m²</text>\n      </svg>",
+    "scaffold": "Cover P, so F is left over A. That means 800 ÷ 4. …",
+    "hint": "Do the division, then write the unit.",
+    "answers": ["200", "200 N/m2"],
+    "working": "Cover P, so F is left over A. That means 800 ÷ 4. The pressure is 200 N/m².",
+    "misconceptions": [
+      {
+        "answer": "3200",
+        "message": "You multiplied. Covering P leaves F over A, which means divide."
+      },
+      {
+        "answer": "0.005",
+        "message": "You divided 4 by 800. Force goes on top."
+      },
+      {
+        "answer": "796",
+        "message": "You subtracted. The triangle never adds or subtracts."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R11/pressure#2",
+    "topic": "1MA1/R11/pressure",
+    "type": "cloze",
+    "stem": "The pressure on a floor is 30 N/m² and the area is 5 m². Find the force. The first step is done.",
+    "figure": "<svg viewBox=\"0 0 170 80\" width=\"100%\" style=\"max-width:170px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"A floor patch of area 5 square metres with a pressure of 30 newtons per square metre on it\">\n        <rect x=\"20\" y=\"30\" width=\"130\" height=\"30\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/>\n        <text x=\"85\" y=\"50\" text-anchor=\"middle\" fill=\"#1d1d1b\">area 5 m²</text>\n        <text x=\"85\" y=\"20\" text-anchor=\"middle\" fill=\"#2b5797\">pressure 30 N/m²</text>\n        <text x=\"85\" y=\"76\" text-anchor=\"middle\" fill=\"#c8372d\">force = ?</text>\n      </svg>",
+    "scaffold": "Cover F. P and A are left side by side, so multiply. …",
+    "hint": "Multiply the pressure by the area.",
+    "answers": ["150", "150 N"],
+    "working": "Cover F. P and A are left side by side, so multiply. That means 30 × 5. The force is 150 N.",
+    "misconceptions": [
+      {
+        "answer": "6",
+        "message": "You divided 30 by 5. Covering F leaves P beside A, which means multiply."
+      },
+      {
+        "answer": "0.17",
+        "message": "You divided 5 by 30. Covering F means multiply."
+      },
+      {
+        "answer": "35",
+        "message": "You added. The triangle never adds or subtracts."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R11/pressure#3",
+    "topic": "1MA1/R11/pressure",
+    "type": "cloze",
+    "stem": "A force of 90 N gives a pressure of 15 N/m². Find the area.",
+    "figure": "<svg viewBox=\"0 0 170 92\" width=\"100%\" style=\"max-width:170px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"A downward arrow of 90 newtons on a surface of unknown area, with a pressure of 15 newtons per square metre\">\n        <line x1=\"85\" y1=\"8\" x2=\"85\" y2=\"46\" stroke=\"#c8372d\" stroke-width=\"2.5\"/>\n        <polygon points=\"85,54 79,42 91,42\" fill=\"#c8372d\"/>\n        <text x=\"95\" y=\"30\" fill=\"#c8372d\">90 N</text>\n        <rect x=\"20\" y=\"56\" width=\"130\" height=\"22\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\" stroke-dasharray=\"5 3\"/>\n        <text x=\"85\" y=\"72\" text-anchor=\"middle\" fill=\"#1d1d1b\">area = ?</text>\n        <text x=\"85\" y=\"90\" text-anchor=\"middle\" fill=\"#2b5797\">pressure 15 N/m²</text>\n      </svg>",
+    "hint": "Cover A on the triangle. What is left?",
+    "answers": ["6", "6 m2"],
+    "working": "Cover A, so F is left over P. That means 90 ÷ 15. The area is 6 m².",
+    "misconceptions": [
+      {
+        "answer": "1350",
+        "message": "You multiplied 90 by 15. Covering A leaves F over P, which means divide."
+      },
+      {
+        "answer": "0.167",
+        "message": "You divided 15 by 90. Force goes on top."
+      },
+      {
+        "answer": "75",
+        "message": "You subtracted. The triangle never adds or subtracts."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R11/pressure#4",
+    "topic": "1MA1/R11/pressure",
+    "type": "cloze",
+    "stem": "A metal block has a mass of 240 g and a volume of 30 cm³. Find its density, in g/cm3.",
+    "figure": "<svg viewBox=\"0 0 170 92\" width=\"100%\" style=\"max-width:170px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"A cuboid block labelled mass 240 grams and volume 30 cubic centimetres\">\n        <polygon points=\"30,30 110,30 140,14 60,14\" fill=\"#efeeea\" stroke=\"#1d1d1b\"/>\n        <polygon points=\"110,30 140,14 140,58 110,74\" fill=\"#d9d7d0\" stroke=\"#1d1d1b\"/>\n        <rect x=\"30\" y=\"30\" width=\"80\" height=\"44\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\"/>\n        <text x=\"70\" y=\"58\" text-anchor=\"middle\" fill=\"#1d1d1b\">240 g</text>\n        <text x=\"85\" y=\"90\" text-anchor=\"middle\" fill=\"#2b5797\">volume 30 cm³</text>\n      </svg>",
+    "hint": "This is the same triangle with different letters. Which one goes on top?",
+    "answers": ["8", "8 g/cm3"],
+    "working": "Density uses the U910 triangle: M on top, D beside V. Cover D and M is left over V, so 240 ÷ 30 = 8 g/cm³.",
+    "misconceptions": [
+      {
+        "answer": "7200",
+        "message": "You multiplied mass by volume. Density is mass ÷ volume."
+      },
+      {
+        "answer": "0.125",
+        "message": "You divided volume by mass. Mass goes on top."
+      },
+      {
+        "answer": "270",
+        "message": "You added. The triangle never adds or subtracts."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R11/pressure#5",
+    "topic": "1MA1/R11/pressure",
+    "type": "cloze",
+    "stem": "A book presses with 12 N on a face of area 300 cm². Someone covers P, divides 12 ÷ 300 to get 0.04, and writes 0.04 N/m². Which step number did they get wrong?",
+    "figure": "<svg viewBox=\"0 0 170 80\" width=\"100%\" style=\"max-width:170px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"A book resting on a face of area 300 square centimetres, pressing down with 12 newtons\">\n        <line x1=\"85\" y1=\"6\" x2=\"85\" y2=\"30\" stroke=\"#c8372d\" stroke-width=\"2.5\"/>\n        <polygon points=\"85,38 79,26 91,26\" fill=\"#c8372d\"/>\n        <text x=\"95\" y=\"22\" fill=\"#c8372d\">12 N</text>\n        <rect x=\"30\" y=\"40\" width=\"110\" height=\"18\" fill=\"#efeeea\" stroke=\"#1d1d1b\" stroke-width=\"2\"/>\n        <text x=\"85\" y=\"74\" text-anchor=\"middle\" fill=\"#1d1d1b\">face area 300 cm²</text>\n      </svg>",
+    "hint": "The number is right. Read the method list again and look at the last step.",
+    "answers": ["5", "step 5"],
+    "working": "Step 5 is the unit. The area was given in cm², so the pressure is 0.04 N/cm², not N/m². Everything before that was right.",
+    "misconceptions": [
+      {
+        "answer": "2",
+        "message": "Step 2 covered the right letter, P."
+      },
+      {
+        "answer": "3",
+        "message": "Step 3 read the triangle correctly: F over A means divide."
+      },
+      {
+        "answer": "4",
+        "message": "Step 4 did the division correctly. Look at what they wrote after the number."
+      }
+    ]
+  }
+]

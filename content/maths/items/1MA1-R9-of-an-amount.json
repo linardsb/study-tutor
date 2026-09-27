@@ -1,0 +1,119 @@
+[
+  {
+    "id": "1MA1/R9/of-an-amount#1",
+    "topic": "1MA1/R9/of-an-amount",
+    "type": "cloze",
+    "stem": "Find 20% of 45. The first step is done. Finish it.",
+    "scaffold": "10% of 45 = 4.5. …",
+    "hint": "20% is two lots of 10%.",
+    "answers": ["9"],
+    "working": "10% of 45 = 4.5. 20% = 2 × 4.5 = 9.",
+    "misconceptions": [
+      {
+        "answer": "4.5",
+        "message": "That is 10% of 45. You need two lots of it."
+      },
+      {
+        "answer": "2.25",
+        "message": "That is 45 divided by 20. Per cent means out of 100, so find 10% first."
+      },
+      {
+        "answer": "22.5",
+        "message": "That is half of 45, which is 50%. You want 20%."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R9/of-an-amount#2",
+    "topic": "1MA1/R9/of-an-amount",
+    "type": "cloze",
+    "stem": "Find 15% of 60. The first step is done. Finish it.",
+    "scaffold": "10% of 60 = 6. …",
+    "hint": "Halve your 10% to get 5%.",
+    "answers": ["9"],
+    "working": "10% of 60 = 6. 5% = half of 6 = 3. 15% = 6 + 3 = 9.",
+    "misconceptions": [
+      {
+        "answer": "6",
+        "message": "That is 10% of 60. The 5% still has to go on."
+      },
+      {
+        "answer": "36",
+        "message": "You halved 60 for the 5%. 5% is half of your 10%, not half of the amount."
+      },
+      {
+        "answer": "4",
+        "message": "That is 60 divided by 15. Build 15% from 10% and 5% instead."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R9/of-an-amount#3",
+    "topic": "1MA1/R9/of-an-amount",
+    "type": "cloze",
+    "stem": "Find 65% of 200.",
+    "hint": "10% of 200 is 20.",
+    "answers": ["130"],
+    "working": "10% of 200 = 20. 60% = 6 × 20 = 120. 5% = 10. 65% = 120 + 10 = 130.",
+    "misconceptions": [
+      {
+        "answer": "120",
+        "message": "That is 60% of 200. The last 5% is still to add."
+      },
+      {
+        "answer": "65",
+        "message": "You have copied the percentage down. 65% of 200 is much bigger than 65."
+      },
+      {
+        "answer": "20",
+        "message": "You stopped at 10%. Keep going until you have 65%."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R9/of-an-amount#4",
+    "topic": "1MA1/R9/of-an-amount",
+    "type": "cloze",
+    "stem": "A phone costs £240. The price goes up by 15%. What is the new price, in pounds?",
+    "hint": "Find 15% of 240 first, then decide what to do with it.",
+    "answers": ["276"],
+    "working": "10% of 240 = 24. 5% = 12. 15% = 24 + 12 = 36. The price goes up, so 240 + 36 = £276.",
+    "misconceptions": [
+      {
+        "answer": "36",
+        "message": "That is the increase on its own. The question asks for the new price."
+      },
+      {
+        "answer": "204",
+        "message": "You took the 15% off. The price goes up, so add it on."
+      },
+      {
+        "answer": "24",
+        "message": "That is 10% of 240. Find 15%, then add it to 240."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R9/of-an-amount#5",
+    "topic": "1MA1/R9/of-an-amount",
+    "type": "cloze",
+    "stem": "A jacket costs £40. In a sale it is 17.5% off. How much money is taken off, in pounds?",
+    "hint": "10% of 40 is 4. Halve it, then halve again.",
+    "answers": ["7"],
+    "working": "10% of 40 = 4. 5% = 2. 2.5% = 1. 17.5% = 4 + 2 + 1 = £7 off. The sale price would be £33, but the question asked what came off.",
+    "misconceptions": [
+      {
+        "answer": "33",
+        "message": "That is the sale price. The question asks how much came off."
+      },
+      {
+        "answer": "6",
+        "message": "You have 10% and 5%. The last 2.5% is half of the 5%."
+      },
+      {
+        "answer": "4",
+        "message": "You stopped at 10%. There is 7.5% more to find."
+      }
+    ]
+  }
+]

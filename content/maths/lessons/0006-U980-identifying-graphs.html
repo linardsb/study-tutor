@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>U980 Identifying graphs</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="lesson">
+  <nav class="sections" aria-label="Sections"><a href="#picture">Picture</a><a href="#method">Method</a><a href="#worked">Example</a><a href="#watch">Watch out</a><a href="#quiz">Try it</a></nav>
+  <header>
+    <p class="crumb"><a href="../progress.html">Progress</a> · U980 · Maths · Foundation · Paper 1 (no calculator)</p>
+    <h1>Identifying graphs</h1>
+    <p class="aim">By the end you can match an equation to its graph, and read gradient and intercept by eye.</p>
+  </header>
+
+  <section id="picture">
+    <p>Four shapes cover nearly every Foundation question. The highest power of x (the small number above the x) tells you which one.</p>
+    <svg viewBox="0 0 480 152" width="100%" style="max-width:480px;display:block;margin:.5rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" aria-label="Four small graphs: a straight line, a U shape, an S shape and two separate curves">
+      <g transform="translate(5,0)">
+        <text x="55" y="14" text-anchor="middle" fill="#1d1d1b">y = 2x + 1</text>
+        <line x1="10" y1="83" x2="100" y2="83" stroke="#d9d7d0" stroke-width="1.5"/>
+        <line x1="55" y1="22" x2="55" y2="145" stroke="#d9d7d0" stroke-width="1.5"/>
+        <line x1="15" y1="125" x2="95" y2="25" stroke="#2b5797" stroke-width="2.5"/>
+      </g>
+      <g transform="translate(125,0)">
+        <text x="55" y="14" text-anchor="middle" fill="#1d1d1b">y = x²</text>
+        <line x1="10" y1="83" x2="100" y2="83" stroke="#d9d7d0" stroke-width="1.5"/>
+        <line x1="55" y1="22" x2="55" y2="145" stroke="#d9d7d0" stroke-width="1.5"/>
+        <path d="M 15 28 Q 55 138 95 28" fill="none" stroke="#c8372d" stroke-width="2.5"/>
+      </g>
+      <g transform="translate(245,0)">
+        <text x="55" y="14" text-anchor="middle" fill="#1d1d1b">y = x³</text>
+        <line x1="10" y1="83" x2="100" y2="83" stroke="#d9d7d0" stroke-width="1.5"/>
+        <line x1="55" y1="22" x2="55" y2="145" stroke="#d9d7d0" stroke-width="1.5"/>
+        <path d="M 15 138 C 55 138, 55 28, 95 28" fill="none" stroke="#2e8b57" stroke-width="2.5"/>
+      </g>
+      <g transform="translate(365,0)">
+        <text x="55" y="14" text-anchor="middle" fill="#1d1d1b">y = 1/x</text>
+        <line x1="10" y1="83" x2="100" y2="83" stroke="#d9d7d0" stroke-width="1.5"/>
+        <line x1="55" y1="22" x2="55" y2="145" stroke="#d9d7d0" stroke-width="1.5"/>
+        <path d="M 60 24 Q 60 78 100 78" fill="none" stroke="#d9931c" stroke-width="2.5"/>
+        <path d="M 50 142 Q 50 88 10 88" fill="none" stroke="#d9931c" stroke-width="2.5"/>
+      </g>
+    </svg>
+    <p class="caption">Straight line, U shape, S shape, two curves in opposite corners. Learn these by heart.</p>
+  </section>
+
+  <section id="worked">
+    <h2>Worked example</h2>
+    <div class="example">
+      <p><b>Which graph is y = 3x − 2?</b><br>
+         <b>Step 1</b>, highest power of x: just x, to the power 1.<br>
+         <b>Step 2</b>, so the graph is a straight line.<br>
+         <b>Step 4</b>, written as y = mx + c: m = 3 and c = −2.<br>
+         <b>Step 5</b>, m is positive, so it slopes up from left to right.<br>
+         Pick the line that slopes up and crosses the y-axis at <b>−2</b>.</p>
+      <p><b>A line crosses the y-axis at 4 and goes down 2 for every 1 across. Write its equation.</b><br>
+         <b>Step 4</b>, it crosses at 4, so c = 4.<br>
+         <b>Step 6</b>, down 2 for 1 across, so m = −2.<br>
+         The equation is <b>y = −2x + 4</b>.</p>
+    </div>
+  </section>
+
+  <section id="method">
+    <h2>The method</h2>
+    <ol>
+      <li>Find the highest power of x in the equation.</li>
+      <li>Plain x: a straight line. x²: a U. x³: an S. 1/x: two curves that avoid the axes.</li>
+      <li>A minus in front of x² turns the U upside down. A minus before x³ flips the S.</li>
+      <li>Straight line: y = mx + c. m is the gradient (steepness). c is the y-intercept (where it crosses).</li>
+      <li>Positive m slopes up from left to right. Negative m slopes down.</li>
+      <li>To read m off a graph, count: up how many for one step across.</li>
+    </ol>
+    <p>Check: put a point's x into the equation and see if the y matches.</p>
+
+    <details class="why">
+      <summary>Why is the gradient of y = 7 − 3x equal to −3, and not 3?</summary>
+      <p>The minus sign belongs to the 3, not the 7. Rewrite it as y = −3x + 7 and the m is in plain sight. As x goes up by 1, y drops by 3, so the line slopes down.</p>
+    </details>
+
+    <details class="another">
+      <summary>Another way to see it</summary>
+      <p>A table of values works too. For y = 2x + 1:</p>
+      <svg viewBox="0 0 260 62" width="100%" style="max-width:260px;display:block;margin:.5rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" aria-label="Table: x equals minus 1, 0, 1, 2 and y equals minus 1, 1, 3, 5">
+        <g stroke="#d9d7d0" fill="none"><rect x="1" y="1" width="258" height="60" stroke="#1d1d1b"/><line x1="1" y1="31" x2="259" y2="31"/><line x1="60" y1="1" x2="60" y2="61"/><line x1="110" y1="1" x2="110" y2="61"/><line x1="160" y1="1" x2="160" y2="61"/><line x1="210" y1="1" x2="210" y2="61"/></g>
+        <text x="30" y="21" text-anchor="middle">x</text><text x="85" y="21" text-anchor="middle">−1</text><text x="135" y="21" text-anchor="middle">0</text><text x="185" y="21" text-anchor="middle">1</text><text x="235" y="21" text-anchor="middle">2</text>
+        <text x="30" y="51" text-anchor="middle">y</text><text x="85" y="51" text-anchor="middle">−1</text><text x="135" y="51" text-anchor="middle">1</text><text x="185" y="51" text-anchor="middle">3</text><text x="235" y="51" text-anchor="middle">5</text>
+      </svg>
+      <p class="caption">y climbs by 2 each time x climbs by 1. That steady 2 is the gradient. x = 0 gives the intercept.</p>
+      <p>The steady climb stops for a curve. In a table for y = x² the jumps grow, so a constant step means a straight line.</p>
+    </details>
+  </section>
+
+  <section id="watch">
+    <details open>
+      <summary><h2>Watch out</h2></summary>
+      <div class="watch">
+        <p>The gradient is the number in front of x, minus sign included. In y = 7 − 3x it is −3.</p>
+        <p>A U shape means x², not x. A curve is never y = mx + c.</p>
+      </div>
+    </details>
+  </section>
+
+  <section id="quiz" class="quiz" data-code="U980">
+    <h2>Try it</h2>
+    <p>Answer from memory, no calculator. Write equations like y=4x+1. The working appears only after you check.</p>
+
+    <div class="q" data-a="MngrM3x5PTJ4KzM=" data-wrong="M3grMj1Zb3UgaGF2ZSBzd2FwcGVkIHRoZSBncmFkaWVudCBhbmQgdGhlIGludGVyY2VwdC58Mng9WW91IGxlZnQgb3V0IHRoZSAzLiBUaGUgbGluZSBkb2VzIG5vdCBwYXNzIHRocm91Z2ggdGhlIG9yaWdpbi58eCszPVRoZSBncmFkaWVudCBpcyBub3QgMS4gQ291bnQgaG93IGZhciB1cCBpdCBnb2VzIGZvciBvbmUgc3RlcCBhY3Jvc3Mu">
+      <p class="stem">1. This line is y = mx + c. Write the part after the equals sign, like 4x+1. The first steps are done.</p>
+      <svg viewBox="0 0 150 150" width="100%" style="max-width:150px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" aria-label="Grid with a straight line crossing the y-axis at 3 and rising 2 for every 1 across">
+        <g stroke="#e8e6e0" stroke-width="1">
+          <line x1="15" y1="15" x2="15" y2="135"/><line x1="40" y1="15" x2="40" y2="135"/><line x1="90" y1="15" x2="90" y2="135"/><line x1="115" y1="15" x2="115" y2="135"/>
+          <line x1="15" y1="35" x2="135" y2="35"/><line x1="15" y1="60" x2="135" y2="60"/><line x1="15" y1="85" x2="135" y2="85"/><line x1="15" y1="135" x2="135" y2="135"/>
+        </g>
+        <line x1="15" y1="110" x2="135" y2="110" stroke="#5f5f5a" stroke-width="1.5"/>
+        <line x1="65" y1="15" x2="65" y2="145" stroke="#5f5f5a" stroke-width="1.5"/>
+        <line x1="27" y1="145" x2="102" y2="20" stroke="#2b5797" stroke-width="2.5"/>
+        <text x="60" y="122" text-anchor="end" fill="#5f5f5a">0</text>
+        <text x="60" y="63" text-anchor="end" fill="#5f5f5a">3</text>
+        <text x="115" y="122" fill="#5f5f5a">2</text>
+      </svg>
+      <div class="working faded"><p>Read c: the line crosses the y-axis at 3. Read m: it goes up 2 for every 1 across, so m = 2. …</p></div>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Write the m, then the x, then the c.</p>
+      <div class="working" hidden><p>Read c: the line crosses the y-axis at 3. Read m: it goes up 2 for every 1 across, so m = 2. Equation: y = 2x + 3.</p></div>
+    </div>
+
+    <div class="q" data-a="LTJ4KzR8NC0yeHx5PS0yeCs0" data-wrong="MngrND1UaGUgbGluZSBmYWxscyBmcm9tIGxlZnQgdG8gcmlnaHQsIHNvIHRoZSBncmFkaWVudCBpcyBuZWdhdGl2ZS58LTJ4LTQ9SXQgY3Jvc3NlcyB0aGUgeS1heGlzIGFib3ZlIHplcm8sIGF0IDQufC00eCsyPVlvdSBoYXZlIHN3YXBwZWQgdGhlIGdyYWRpZW50IGFuZCB0aGUgaW50ZXJjZXB0Lg==">
+      <p class="stem">2. This line is y = mx + c. Write the part after the equals sign, like 4x+1. The first step is done.</p>
+      <svg viewBox="0 0 150 150" width="100%" style="max-width:150px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" aria-label="Grid with a straight line crossing the y-axis at 4 and falling 2 for every 1 across">
+        <g stroke="#e8e6e0" stroke-width="1">
+          <line x1="15" y1="15" x2="15" y2="135"/><line x1="40" y1="15" x2="40" y2="135"/><line x1="90" y1="15" x2="90" y2="135"/><line x1="115" y1="15" x2="115" y2="135"/>
+          <line x1="15" y1="35" x2="135" y2="35"/><line x1="15" y1="60" x2="135" y2="60"/><line x1="15" y1="85" x2="135" y2="85"/><line x1="15" y1="135" x2="135" y2="135"/>
+        </g>
+        <line x1="15" y1="110" x2="135" y2="110" stroke="#5f5f5a" stroke-width="1.5"/>
+        <line x1="65" y1="15" x2="65" y2="145" stroke="#5f5f5a" stroke-width="1.5"/>
+        <line x1="28" y1="18" x2="103" y2="143" stroke="#c8372d" stroke-width="2.5"/>
+        <text x="60" y="122" text-anchor="end" fill="#5f5f5a">0</text>
+        <text x="60" y="38" text-anchor="end" fill="#5f5f5a">4</text>
+        <text x="115" y="122" fill="#5f5f5a">2</text>
+      </svg>
+      <div class="working faded"><p>Read c: the line crosses the y-axis at 4. …</p></div>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>The line falls, so m is negative. Count how far it drops for one step across.</p>
+      <div class="working" hidden><p>Read c: the line crosses the y-axis at 4. It falls from left to right, so m is negative. It drops 2 for every 1 across, so m = −2. Equation: y = −2x + 4.</p></div>
+    </div>
+
+    <div class="q" data-a="Mg==" data-wrong="Mz1Qb3dlciAzIGdpdmVzIHRoZSBTIHNoYXBlLiBUaGlzIG9uZSBpcyBhIFUufDE9UG93ZXIgMSBnaXZlcyBhIHN0cmFpZ2h0IGxpbmUuIFRoaXMgZ3JhcGggY3VydmVzLnwtMT1UaGF0IGlzIDEveCwgdHdvIHNlcGFyYXRlIGN1cnZlcyBpbiBvcHBvc2l0ZSBjb3JuZXJzLg==">
+      <p class="stem">3. This graph is one of y = x², y = x³ or y = 1/x. What is the highest power of x in its equation?</p>
+      <svg viewBox="0 0 150 150" width="100%" style="max-width:150px;display:block;margin:.4rem 0" aria-label="A U-shaped curve with its lowest point on the origin">
+        <line x1="15" y1="120" x2="135" y2="120" stroke="#5f5f5a" stroke-width="1.5"/>
+        <line x1="75" y1="15" x2="75" y2="145" stroke="#5f5f5a" stroke-width="1.5"/>
+        <path d="M 25 22 Q 75 218 125 22" fill="none" stroke="#c8372d" stroke-width="2.5"/>
+      </svg>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Which of the four shapes is a U, and what power goes with it?</p>
+      <div class="working" hidden><p>A U shape comes from x², so the highest power is 2. Both arms rise, which x³ never does.</p></div>
+    </div>
+
+    <div class="q" data-a="M3gtNHx5PTN4LTQ=" data-wrong="M3grMT1UaGF0IGlzIHRoZSBmaXJzdCBsaW5lLiBUaGUgbmV3IG9uZSBjcm9zc2VzIGF0IOKIkjQufDN4KzQ9SXQgY3Jvc3NlcyBiZWxvdyB6ZXJvLCBzbyB0aGUgbnVtYmVyIGlzIG5lZ2F0aXZlLnwtNHgrMz1Zb3UgaGF2ZSBzd2FwcGVkIHRoZSBncmFkaWVudCBhbmQgdGhlIGludGVyY2VwdC4=">
+      <p class="stem">4. The solid line is y = 3x + 1. The dashed line is parallel to it and crosses the y-axis at −4. Write the dashed line as mx + c, like 4x+1.</p>
+      <svg viewBox="0 0 150 150" width="100%" style="max-width:150px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" aria-label="Two parallel lines of the same steepness, one crossing the y-axis above zero and one below">
+        <line x1="15" y1="80" x2="135" y2="80" stroke="#5f5f5a" stroke-width="1.5"/>
+        <line x1="75" y1="15" x2="75" y2="145" stroke="#5f5f5a" stroke-width="1.5"/>
+        <line x1="35" y1="140" x2="95" y2="20" stroke="#2b5797" stroke-width="2.5"/>
+        <line x1="60" y1="145" x2="125" y2="20" stroke="#2e8b57" stroke-width="2.5" stroke-dasharray="6 4"/>
+      </svg>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Parallel lines have the same gradient. Only the c changes.</p>
+      <div class="working" hidden><p>Parallel means the same steepness, so m stays 3. The new line crosses at −4, so c = −4. Equation: y = 3x − 4.</p></div>
+    </div>
+
+    <div class="q" data-a="MnwyIHBlciBtaWxl" data-wrong="Mz1UaGF0IGlzIHRoZSDCozMgc3RhcnQsIHdoaWNoIGlzIHRoZSBpbnRlcmNlcHQufDU9WW91IGFkZGVkIDMgYW5kIDIuIFRoZSBncmFkaWVudCBpcyB0aGUgY29zdCBvZiBvbmUgbW9yZSBtaWxlLnw2PVlvdSBtdWx0aXBsaWVkIDMgYnkgMi4gVGhlIGdyYWRpZW50IGlzIHRoZSBjb3N0IG9mIG9uZSBtb3JlIG1pbGUu">
+      <p class="stem">5. A taxi charges £3 to start, then £2 for every mile. The graph shows cost against miles. What is its gradient?</p>
+      <svg viewBox="0 0 170 130" width="100%" style="max-width:170px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="11" aria-label="A straight line starting at 3 pounds on the cost axis and rising steadily with miles">
+        <line x1="30" y1="105" x2="160" y2="105" stroke="#5f5f5a" stroke-width="1.5"/>
+        <line x1="30" y1="10" x2="30" y2="105" stroke="#5f5f5a" stroke-width="1.5"/>
+        <line x1="30" y1="90" x2="150" y2="18" stroke="#2b5797" stroke-width="2.5"/>
+        <text x="26" y="94" text-anchor="end" fill="#5f5f5a">3</text>
+        <text x="95" y="122" text-anchor="middle" fill="#5f5f5a">miles</text>
+        <text x="14" y="50" text-anchor="middle" fill="#5f5f5a" transform="rotate(-90 14 50)">cost</text>
+      </svg>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>The gradient is what the cost does for each extra mile.</p>
+      <div class="working" hidden><p>Cost = 2 × miles + 3. The gradient is the number in front of miles, which is 2. The £3 is the intercept.</p></div>
+    </div>
+  </section>
+
+  <section id="teach-back">
+    <h2>Teach it back</h2>
+    <p>Explain to a friend who missed today how to spot y = −x + 3 among six graphs. Say what you look at first and second.</p>
+  </section>
+
+  <section id="source">
+    <details open>
+      <summary><h2>Where this comes from</h2></summary>
+      <p>Sparx Maths: search <b>U980</b>. Corbettmaths: on the <a href="https://corbettmaths.com/contents/">contents page</a> find "y = mx + c" and "Quadratic graphs".</p>
+    </details>
+  </section>
+
+  <footer>
+    <p>Stuck? Tell Claude which step. Cheat sheet: <a href="../reference/U980-identifying-graphs.html">U980</a>. Goes with U377 parallel lines and U669 straight line graphs.</p>
+  </footer>
+</main>
+<script src="../assets/read.js"></script>
+<script src="../assets/generate.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

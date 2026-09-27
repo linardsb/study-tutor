@@ -1,0 +1,119 @@
+[
+  {
+    "id": "1MA1/R11/density#1",
+    "topic": "1MA1/R11/density",
+    "type": "cloze",
+    "stem": "A stone has mass 600 g and volume 300 cm³. Find its density. The first steps are done.",
+    "scaffold": "Cover D, so M is left over V. That means 600 ÷ 300 = …",
+    "hint": "Do the division, then write the unit.",
+    "answers": ["2", "2 g/cm3", "2g/cm^3"],
+    "working": "Cover D, so M is left over V. That means 600 ÷ 300 = 2. The density is 2 g/cm³.",
+    "misconceptions": [
+      {
+        "answer": "180000",
+        "message": "You multiplied. Covering D leaves M over V, which means divide."
+      },
+      {
+        "answer": "0.5",
+        "message": "You divided 300 by 600. Mass goes on top."
+      },
+      {
+        "answer": "300",
+        "message": "You subtracted. The triangle never adds or subtracts."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R11/density#2",
+    "topic": "1MA1/R11/density",
+    "type": "cloze",
+    "stem": "A liquid has density 5 g/cm³. Find the mass of 40 cm³ of it. The first step is done.",
+    "scaffold": "Cover M. D and V are left side by side. …",
+    "hint": "Side by side means multiply the density by the volume.",
+    "answers": ["200", "200 g", "200 grams"],
+    "working": "Cover M. D and V are left side by side. That means multiply: 5 × 40 = 200. The mass is 200 g.",
+    "misconceptions": [
+      {
+        "answer": "8",
+        "message": "You divided 40 by 5. Covering M leaves D beside V, which means multiply."
+      },
+      {
+        "answer": "0.125",
+        "message": "You divided 5 by 40. Side by side means multiply."
+      },
+      {
+        "answer": "45",
+        "message": "You added. The triangle never adds or subtracts."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R11/density#3",
+    "topic": "1MA1/R11/density",
+    "type": "cloze",
+    "stem": "A block has mass 750 g and density 3 g/cm³. Find its volume.",
+    "hint": "Cover V on the triangle. What is left?",
+    "answers": ["250", "250 cm3", "250cm^3"],
+    "working": "Cover V, so M is left over D. That means 750 ÷ 3 = 250. The volume is 250 cm³.",
+    "misconceptions": [
+      {
+        "answer": "2250",
+        "message": "You multiplied. Covering V leaves M over D, which means divide."
+      },
+      {
+        "answer": "0.004",
+        "message": "You divided 3 by 750. Mass goes on top."
+      },
+      {
+        "answer": "747",
+        "message": "You subtracted. The triangle never adds or subtracts."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R11/density#4",
+    "topic": "1MA1/R11/density",
+    "type": "cloze",
+    "stem": "A force of 600 N presses on an area of 3 m². Find the pressure, in N/m2.",
+    "hint": "Same triangle, new letters. Force sits where mass does.",
+    "answers": ["200", "200 N/m2", "200N/m^2"],
+    "working": "This is the U527 triangle: F on top, P beside A. Cover P and F is left over A, so 600 ÷ 3 = 200. The pressure is 200 N/m².",
+    "misconceptions": [
+      {
+        "answer": "1800",
+        "message": "You multiplied. Pressure is force ÷ area, the same shape as mass ÷ volume."
+      },
+      {
+        "answer": "0.005",
+        "message": "You divided 3 by 600. Force goes on top, where mass does."
+      },
+      {
+        "answer": "597",
+        "message": "You subtracted. The triangle never adds or subtracts."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R11/density#5",
+    "topic": "1MA1/R11/density",
+    "type": "cloze",
+    "stem": "A cuboid is 10 cm by 5 cm by 4 cm and has mass 1600 g. Someone covers D, works out 1600 ÷ 10 = 160 and writes 160 g/cm³. Which step number did they get wrong?",
+    "hint": "They divided by 10. What should 10 have been used for first?",
+    "answers": ["2", "step 2"],
+    "working": "Step 2 is the volume. Three sides mean 10 × 5 × 4 = 200 cm³ first. Then 1600 ÷ 200 = 8 g/cm³. Every other step was right.",
+    "misconceptions": [
+      {
+        "answer": "3",
+        "message": "Step 3 covered the right letter, D."
+      },
+      {
+        "answer": "4",
+        "message": "Step 4 read the triangle correctly: M over V means divide."
+      },
+      {
+        "answer": "6",
+        "message": "Step 6 wrote the right unit. The number under it is the problem."
+      }
+    ]
+  }
+]

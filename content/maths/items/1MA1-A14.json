@@ -1,0 +1,124 @@
+[
+  {
+    "id": "1MA1/A14#1",
+    "topic": "1MA1/A14",
+    "type": "cloze",
+    "stem": "The graph shows a cyclist speeding up steadily from 0 to 12 m/s in 8 seconds. Find the acceleration. The first steps are done.",
+    "figure": "<svg viewBox=\"0 0 240 150\" width=\"100%\" style=\"max-width:240px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"Velocity-time graph. A straight line from 0 at 0 seconds up to 12 metres per second at 8 seconds\">\n        <line x1=\"40\" y1=\"120\" x2=\"220\" y2=\"120\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <line x1=\"40\" y1=\"120\" x2=\"40\" y2=\"15\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <line x1=\"40\" y1=\"120\" x2=\"180\" y2=\"30\" stroke=\"#c8372d\" stroke-width=\"2.5\"/>\n        <line x1=\"180\" y1=\"30\" x2=\"180\" y2=\"120\" stroke=\"#2b5797\" stroke-width=\"1\" stroke-dasharray=\"4 3\"/>\n        <line x1=\"40\" y1=\"30\" x2=\"180\" y2=\"30\" stroke=\"#2b5797\" stroke-width=\"1\" stroke-dasharray=\"4 3\"/>\n        <text x=\"40\" y=\"136\" text-anchor=\"middle\">0</text><text x=\"180\" y=\"136\" text-anchor=\"middle\">8</text>\n        <text x=\"34\" y=\"124\" text-anchor=\"end\">0</text><text x=\"34\" y=\"34\" text-anchor=\"end\">12</text>\n        <text x=\"130\" y=\"148\" text-anchor=\"middle\" fill=\"#5f5f5a\">time (s)</text>\n        <text x=\"12\" y=\"70\" fill=\"#5f5f5a\" transform=\"rotate(-90 12 70)\" text-anchor=\"middle\">m/s</text>\n      </svg>",
+    "scaffold": "Step 3: change in velocity 12 − 0 = 12 m/s. Time taken 8 s. Acceleration = 12 ÷ 8 = …",
+    "hint": "12 ÷ 8 is the same as 3 ÷ 2.",
+    "answers": ["1.5", "3/2", "1.5 m/s2", "1.5m/s^2"],
+    "working": "Step 3: change in velocity 12 − 0 = 12 m/s. Time taken 8 s. Acceleration = 12 ÷ 8 = 1.5 m/s².",
+    "misconceptions": [
+      {
+        "answer": "96",
+        "message": "You multiplied. Acceleration is change in velocity ÷ time."
+      },
+      {
+        "answer": "0.67",
+        "message": "You divided 8 by 12. The velocity change goes on top."
+      },
+      {
+        "answer": "4",
+        "message": "You subtracted 8 from 12. Divide, do not subtract."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/A14#2",
+    "topic": "1MA1/A14",
+    "type": "cloze",
+    "stem": "The graph shows a car speeding up steadily from 0 to 16 m/s in 10 seconds. Find the distance travelled. The first step is done.",
+    "figure": "<svg viewBox=\"0 0 240 150\" width=\"100%\" style=\"max-width:240px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"Velocity-time graph. A straight line from 0 up to 16 metres per second at 10 seconds, with the triangle underneath shaded\">\n        <polygon points=\"40,120 190,120 190,25\" fill=\"#e6f4ec\"/>\n        <line x1=\"40\" y1=\"120\" x2=\"220\" y2=\"120\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <line x1=\"40\" y1=\"120\" x2=\"40\" y2=\"15\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <line x1=\"40\" y1=\"120\" x2=\"190\" y2=\"25\" stroke=\"#c8372d\" stroke-width=\"2.5\"/>\n        <line x1=\"190\" y1=\"25\" x2=\"190\" y2=\"120\" stroke=\"#2b5797\" stroke-width=\"1\" stroke-dasharray=\"4 3\"/>\n        <text x=\"40\" y=\"136\" text-anchor=\"middle\">0</text><text x=\"190\" y=\"136\" text-anchor=\"middle\">10</text>\n        <text x=\"34\" y=\"124\" text-anchor=\"end\">0</text><text x=\"34\" y=\"29\" text-anchor=\"end\">16</text>\n        <text x=\"130\" y=\"148\" text-anchor=\"middle\" fill=\"#5f5f5a\">time (s)</text>\n        <text x=\"12\" y=\"70\" fill=\"#5f5f5a\" transform=\"rotate(-90 12 70)\" text-anchor=\"middle\">m/s</text>\n      </svg>",
+    "scaffold": "Step 5: the shape under the line is one triangle. Its base is 10 s. …",
+    "hint": "The height of the triangle is the top speed. Then ½ × base × height.",
+    "answers": ["80", "80 m"],
+    "working": "Step 5: the shape under the line is one triangle. Its base is 10 s. Its height is 16 m/s. Step 6: ½ × 10 × 16 = 80 m.",
+    "misconceptions": [
+      {
+        "answer": "160",
+        "message": "You did base × height. A triangle is half of that."
+      },
+      {
+        "answer": "26",
+        "message": "You added 10 and 16. Area is ½ × base × height."
+      },
+      {
+        "answer": "1.6",
+        "message": "That is the acceleration, 16 ÷ 10. The question asks for distance, the area."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/A14#3",
+    "topic": "1MA1/A14",
+    "type": "cloze",
+    "stem": "On this graph, what is the velocity at 35 seconds?",
+    "figure": "<svg viewBox=\"0 0 300 160\" width=\"100%\" style=\"max-width:300px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"Velocity-time graph rising from 0 to 20 metres per second at 10 seconds, flat to 30 seconds, then falling to 0 at 40 seconds. A dashed line marks 35 seconds\">\n        <line x1=\"40\" y1=\"130\" x2=\"280\" y2=\"130\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <line x1=\"40\" y1=\"130\" x2=\"40\" y2=\"15\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <polyline points=\"40,130 95,30 205,30 260,130\" fill=\"none\" stroke=\"#c8372d\" stroke-width=\"2.5\"/>\n        <line x1=\"232\" y1=\"130\" x2=\"232\" y2=\"80\" stroke=\"#2b5797\" stroke-width=\"1.5\" stroke-dasharray=\"4 3\"/>\n        <text x=\"40\" y=\"146\" text-anchor=\"middle\">0</text><text x=\"95\" y=\"146\" text-anchor=\"middle\">10</text><text x=\"150\" y=\"146\" text-anchor=\"middle\">20</text><text x=\"205\" y=\"146\" text-anchor=\"middle\">30</text><text x=\"260\" y=\"146\" text-anchor=\"middle\">40</text>\n        <text x=\"232\" y=\"158\" text-anchor=\"middle\" fill=\"#2b5797\">35</text>\n        <text x=\"34\" y=\"134\" text-anchor=\"end\">0</text><text x=\"34\" y=\"84\" text-anchor=\"end\">10</text><text x=\"34\" y=\"34\" text-anchor=\"end\">20</text>\n        <text x=\"12\" y=\"75\" fill=\"#5f5f5a\" transform=\"rotate(-90 12 75)\" text-anchor=\"middle\">m/s</text>\n      </svg>",
+    "hint": "Go up from 35 s to the red line, then across.",
+    "answers": ["10", "10 m/s"],
+    "working": "Between 30 s and 40 s the line drops steadily from 20 to 0. At 35 s it is halfway down: 10 m/s.",
+    "misconceptions": [
+      {
+        "answer": "20",
+        "message": "That is the top speed. At 35 s the line has dropped halfway."
+      },
+      {
+        "answer": "0",
+        "message": "That is at 40 s. At 35 s the car is still moving."
+      },
+      {
+        "answer": "35",
+        "message": "You read the time. Go up from 35 to the line, then across to the velocity axis."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/A14#4",
+    "topic": "1MA1/A14",
+    "type": "cloze",
+    "stem": "This is a distance-time graph of a walk. Find the speed in the first 20 seconds.",
+    "figure": "<svg viewBox=\"0 0 300 160\" width=\"100%\" style=\"max-width:300px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"Distance-time graph. Distance in metres up the side. The line rises from 0 to 40 metres at 20 seconds, then stays flat at 40 until 30 seconds\">\n        <line x1=\"40\" y1=\"130\" x2=\"280\" y2=\"130\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <line x1=\"40\" y1=\"130\" x2=\"40\" y2=\"15\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <polyline points=\"40,130 180,30 250,30\" fill=\"none\" stroke=\"#2e8b57\" stroke-width=\"2.5\"/>\n        <line x1=\"180\" y1=\"30\" x2=\"180\" y2=\"130\" stroke=\"#2b5797\" stroke-width=\"1\" stroke-dasharray=\"4 3\"/>\n        <text x=\"40\" y=\"146\" text-anchor=\"middle\">0</text><text x=\"110\" y=\"146\" text-anchor=\"middle\">10</text><text x=\"180\" y=\"146\" text-anchor=\"middle\">20</text><text x=\"250\" y=\"146\" text-anchor=\"middle\">30</text>\n        <text x=\"160\" y=\"158\" text-anchor=\"middle\" fill=\"#5f5f5a\">time (s)</text>\n        <text x=\"34\" y=\"134\" text-anchor=\"end\">0</text><text x=\"34\" y=\"84\" text-anchor=\"end\">20</text><text x=\"34\" y=\"34\" text-anchor=\"end\">40</text>\n        <text x=\"12\" y=\"75\" fill=\"#5f5f5a\" transform=\"rotate(-90 12 75)\" text-anchor=\"middle\">distance (m)</text>\n      </svg>",
+    "hint": "Read the side axis. It says distance, not velocity. How far in how long?",
+    "answers": ["2", "2 m/s"],
+    "working": "This is a distance-time graph (U669), so the height is the distance and there is no area to find. 40 m in 20 s. Speed = 40 ÷ 20 = 2 m/s.",
+    "misconceptions": [
+      {
+        "answer": "400",
+        "message": "You found the area. On a distance-time graph the distance is the height, and speed is the gradient."
+      },
+      {
+        "answer": "40",
+        "message": "That is the distance. Speed is distance ÷ time: 40 ÷ 20."
+      },
+      {
+        "answer": "0.5",
+        "message": "You divided 20 by 40. Speed = distance ÷ time."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/A14#5",
+    "topic": "1MA1/A14",
+    "type": "cloze",
+    "stem": "A lift starts from rest and reaches 2 m/s after 4 seconds. It holds that speed for 6 seconds, then slows to a stop in 4 seconds. How many metres does it rise?",
+    "figure": "<svg viewBox=\"0 0 300 150\" width=\"100%\" style=\"max-width:300px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"Velocity-time graph for the lift. Rises from 0 to 2 metres per second at 4 seconds, flat to 10 seconds, falls to 0 at 14 seconds. The area underneath is shaded\">\n        <polygon points=\"40,120 100,40 190,40 250,120\" fill=\"#e6f4ec\"/>\n        <line x1=\"40\" y1=\"120\" x2=\"280\" y2=\"120\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <line x1=\"40\" y1=\"120\" x2=\"40\" y2=\"15\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <polyline points=\"40,120 100,40 190,40 250,120\" fill=\"none\" stroke=\"#c8372d\" stroke-width=\"2.5\"/>\n        <line x1=\"100\" y1=\"40\" x2=\"100\" y2=\"120\" stroke=\"#2b5797\" stroke-width=\"1\" stroke-dasharray=\"4 3\"/>\n        <line x1=\"190\" y1=\"40\" x2=\"190\" y2=\"120\" stroke=\"#2b5797\" stroke-width=\"1\" stroke-dasharray=\"4 3\"/>\n        <text x=\"40\" y=\"136\" text-anchor=\"middle\">0</text><text x=\"100\" y=\"136\" text-anchor=\"middle\">4</text><text x=\"190\" y=\"136\" text-anchor=\"middle\">10</text><text x=\"250\" y=\"136\" text-anchor=\"middle\">14</text>\n        <text x=\"160\" y=\"148\" text-anchor=\"middle\" fill=\"#5f5f5a\">time (s)</text>\n        <text x=\"34\" y=\"124\" text-anchor=\"end\">0</text><text x=\"34\" y=\"44\" text-anchor=\"end\">2</text>\n        <text x=\"12\" y=\"70\" fill=\"#5f5f5a\" transform=\"rotate(-90 12 70)\" text-anchor=\"middle\">m/s</text>\n      </svg>",
+    "hint": "Split the shape: triangle, rectangle, triangle.",
+    "answers": ["20", "20 m"],
+    "working": "Triangle: ½ × 4 × 2 = 4. Rectangle: 6 × 2 = 12. Triangle: ½ × 4 × 2 = 4. Total: 4 + 12 + 4 = 20 m.",
+    "misconceptions": [
+      {
+        "answer": "28",
+        "message": "You did 2 × 14, one rectangle for the whole time. The two ends are triangles, half each."
+      },
+      {
+        "answer": "12",
+        "message": "That is only the middle rectangle, 6 × 2. Add the two triangles."
+      },
+      {
+        "answer": "2",
+        "message": "That is the top speed. Distance is the area."
+      }
+    ]
+  }
+]

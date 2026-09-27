@@ -1,0 +1,124 @@
+[
+  {
+    "id": "1MA1/P6#1",
+    "topic": "1MA1/P6",
+    "type": "cloze",
+    "stem": "30 students were asked about pets. 18 have a dog, 11 have a cat and 6 have both. How many have neither? The first steps are done.",
+    "figure": "<svg viewBox=\"0 0 300 160\" width=\"100%\" style=\"max-width:300px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"13\" aria-label=\"Venn diagram, Dog and Cat. Dog only 12, both 6, cat only 5, outside shows a question mark. Total 30\">\n        <rect x=\"6\" y=\"6\" width=\"288\" height=\"148\" fill=\"#ffffff\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <text x=\"14\" y=\"24\" fill=\"#5f5f5a\">ξ = 30</text>\n        <circle cx=\"115\" cy=\"85\" r=\"56\" fill=\"#e6f4ec\" fill-opacity=\".8\" stroke=\"#2e8b57\" stroke-width=\"1.5\"/>\n        <circle cx=\"185\" cy=\"85\" r=\"56\" fill=\"#fdf1dc\" fill-opacity=\".8\" stroke=\"#d9931c\" stroke-width=\"1.5\"/>\n        <text x=\"90\" y=\"22\" fill=\"#2e8b57\" text-anchor=\"middle\">Dog</text><text x=\"212\" y=\"22\" fill=\"#d9931c\" text-anchor=\"middle\">Cat</text>\n        <text x=\"88\" y=\"90\" font-size=\"16\" font-weight=\"700\" text-anchor=\"middle\">12</text>\n        <text x=\"150\" y=\"90\" font-size=\"16\" font-weight=\"700\" text-anchor=\"middle\">6</text>\n        <text x=\"212\" y=\"90\" font-size=\"16\" font-weight=\"700\" text-anchor=\"middle\">5</text>\n        <text x=\"272\" y=\"145\" font-size=\"16\" font-weight=\"700\" text-anchor=\"middle\" fill=\"#c8372d\">?</text>\n      </svg>",
+    "scaffold": "Step 1: both, 6. Step 2: dog only 18 − 6 = 12, cat only 11 − 6 = 5. Step 3: inside the circles 12 + 6 + 5 = 23. Neither: 30 − 23 = …",
+    "hint": "Take 23 away from 30.",
+    "answers": ["7"],
+    "working": "Step 1: both, 6. Step 2: dog only 18 − 6 = 12, cat only 11 − 6 = 5. Step 3: inside the circles 12 + 6 + 5 = 23. Neither: 30 − 23 = 7.",
+    "misconceptions": [
+      {
+        "answer": "1",
+        "message": "You did 30 − 18 − 11. That takes the 6 away twice. Add the three inside numbers first, then take from 30."
+      },
+      {
+        "answer": "12",
+        "message": "That is dog only. Neither is outside both circles."
+      },
+      {
+        "answer": "23",
+        "message": "That is everyone inside the circles. Take it away from 30."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/P6#2",
+    "topic": "1MA1/P6",
+    "type": "cloze",
+    "stem": "The diagram shows 9 in A only, 4 in both, 6 in B only and 3 outside. One person is picked at random. What is the probability they are in set A? Give a fraction. The first steps are done.",
+    "figure": "<svg viewBox=\"0 0 300 160\" width=\"100%\" style=\"max-width:300px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"13\" aria-label=\"Venn diagram, A and B. A only 9, both 4, B only 6, outside 3\">\n        <rect x=\"6\" y=\"6\" width=\"288\" height=\"148\" fill=\"#ffffff\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <text x=\"14\" y=\"24\" fill=\"#5f5f5a\">ξ</text>\n        <circle cx=\"115\" cy=\"85\" r=\"56\" fill=\"#e6f4ec\" fill-opacity=\".8\" stroke=\"#2e8b57\" stroke-width=\"1.5\"/>\n        <circle cx=\"185\" cy=\"85\" r=\"56\" fill=\"#fdf1dc\" fill-opacity=\".8\" stroke=\"#d9931c\" stroke-width=\"1.5\"/>\n        <text x=\"90\" y=\"22\" fill=\"#2e8b57\" text-anchor=\"middle\">A</text><text x=\"212\" y=\"22\" fill=\"#d9931c\" text-anchor=\"middle\">B</text>\n        <text x=\"88\" y=\"90\" font-size=\"16\" font-weight=\"700\" text-anchor=\"middle\">9</text>\n        <text x=\"150\" y=\"90\" font-size=\"16\" font-weight=\"700\" text-anchor=\"middle\">4</text>\n        <text x=\"212\" y=\"90\" font-size=\"16\" font-weight=\"700\" text-anchor=\"middle\">6</text>\n        <text x=\"272\" y=\"145\" font-size=\"16\" font-weight=\"700\" text-anchor=\"middle\">3</text>\n      </svg>",
+    "scaffold": "Step 4: set A is the whole left circle, A only plus the overlap: 9 + 4 = 13. Step 5: the total is everyone in the box: 9 + 4 + 6 + 3 = …",
+    "hint": "Add all four numbers for the total, then write 13 over it.",
+    "answers": ["13/22"],
+    "working": "Step 4: set A is the whole left circle, A only plus the overlap: 9 + 4 = 13. Step 5: the total is everyone in the box: 9 + 4 + 6 + 3 = 22. Probability 13/22.",
+    "misconceptions": [
+      {
+        "answer": "9/22",
+        "message": "That is A only. Set A includes the overlap too: 9 + 4."
+      },
+      {
+        "answer": "13/19",
+        "message": "You left out the 3 outside. The total is everyone in the box, 22."
+      },
+      {
+        "answer": "13",
+        "message": "That is how many are in A. The question wants a probability: 13 out of the total."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/P6#3",
+    "topic": "1MA1/P6",
+    "type": "cloze",
+    "stem": "40 students were asked. 25 study art, 17 study music and 8 study neither. How many study both?",
+    "figure": "<svg viewBox=\"0 0 300 160\" width=\"100%\" style=\"max-width:300px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"13\" aria-label=\"Venn diagram, Art 25 and Music 17, total 40, outside 8, overlap shows a question mark\">\n        <rect x=\"6\" y=\"6\" width=\"288\" height=\"148\" fill=\"#ffffff\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <text x=\"14\" y=\"24\" fill=\"#5f5f5a\">ξ = 40</text>\n        <circle cx=\"115\" cy=\"85\" r=\"56\" fill=\"#e6f4ec\" fill-opacity=\".8\" stroke=\"#2e8b57\" stroke-width=\"1.5\"/>\n        <circle cx=\"185\" cy=\"85\" r=\"56\" fill=\"#fdf1dc\" fill-opacity=\".8\" stroke=\"#d9931c\" stroke-width=\"1.5\"/>\n        <text x=\"90\" y=\"22\" fill=\"#2e8b57\" text-anchor=\"middle\">Art 25</text><text x=\"212\" y=\"22\" fill=\"#d9931c\" text-anchor=\"middle\">Music 17</text>\n        <text x=\"150\" y=\"90\" font-size=\"16\" font-weight=\"700\" text-anchor=\"middle\" fill=\"#c8372d\">?</text>\n        <text x=\"272\" y=\"145\" font-size=\"16\" font-weight=\"700\" text-anchor=\"middle\">8</text>\n      </svg>",
+    "hint": "How many are inside the two circles? Then compare with 25 + 17.",
+    "answers": ["10"],
+    "working": "Inside the circles: 40 − 8 = 32. Art plus music counts the overlap twice: 25 + 17 = 42. Both: 42 − 32 = 10.",
+    "misconceptions": [
+      {
+        "answer": "2",
+        "message": "You did 25 + 17 − 40. First take the 8 outside away: inside the circles is 32."
+      },
+      {
+        "answer": "32",
+        "message": "That is how many are inside the circles. 25 + 17 = 42 counts the overlap twice, so 42 − 32 is the overlap."
+      },
+      {
+        "answer": "42",
+        "message": "That is art plus music, with the overlap counted twice."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/P6#4",
+    "topic": "1MA1/P6",
+    "type": "cloze",
+    "stem": "50 students. 30 are in Year 11 and 20 are in Year 10. 12 of the Year 11s walk to school and 8 of the Year 10s walk. How many students walk?",
+    "figure": "<svg viewBox=\"0 0 300 150\" width=\"100%\" style=\"max-width:300px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"13\" aria-label=\"A frequency tree. 50 splits into Year 11, 30, and Year 10, 20. Year 11 splits into walk 12 and other 18. Year 10 splits into walk 8 and other 12\">\n        <text x=\"20\" y=\"80\" font-weight=\"700\">50</text>\n        <line x1=\"45\" y1=\"74\" x2=\"100\" y2=\"40\" stroke=\"#5f5f5a\"/><line x1=\"45\" y1=\"80\" x2=\"100\" y2=\"115\" stroke=\"#5f5f5a\"/>\n        <text x=\"105\" y=\"44\">Year 11: 30</text><text x=\"105\" y=\"119\">Year 10: 20</text>\n        <line x1=\"185\" y1=\"36\" x2=\"225\" y2=\"20\" stroke=\"#5f5f5a\"/><line x1=\"185\" y1=\"42\" x2=\"225\" y2=\"60\" stroke=\"#5f5f5a\"/>\n        <line x1=\"185\" y1=\"111\" x2=\"225\" y2=\"95\" stroke=\"#5f5f5a\"/><line x1=\"185\" y1=\"117\" x2=\"225\" y2=\"135\" stroke=\"#5f5f5a\"/>\n        <text x=\"230\" y=\"24\" fill=\"#2b5797\">walk 12</text><text x=\"230\" y=\"64\" fill=\"#5f5f5a\">other 18</text>\n        <text x=\"230\" y=\"99\" fill=\"#2b5797\">walk 8</text><text x=\"230\" y=\"139\" fill=\"#5f5f5a\">other 12</text>\n      </svg>",
+    "hint": "Can a student be in both Year 11 and Year 10? If not, there is no overlap.",
+    "answers": ["20"],
+    "working": "This is a frequency tree (U558), not a Venn diagram. The two year groups do not overlap, so nothing is counted twice. Walkers: 12 + 8 = 20.",
+    "misconceptions": [
+      {
+        "answer": "40",
+        "message": "You added the year groups. The question asks how many walk: 12 + 8."
+      },
+      {
+        "answer": "4",
+        "message": "You took 8 from 12. Nobody is in both years, so there is no overlap to take away. Add the walkers."
+      },
+      {
+        "answer": "30",
+        "message": "That is Year 11. The walkers are 12 of them plus 8 from Year 10."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/P6#5",
+    "topic": "1MA1/P6",
+    "type": "cloze",
+    "stem": "50 people are in a café. 32 ordered coffee, 20 ordered cake and 12 ordered both. One person is picked at random. What is the probability they ordered coffee only?",
+    "figure": "<svg viewBox=\"0 0 300 160\" width=\"100%\" style=\"max-width:300px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"13\" aria-label=\"Venn diagram, Coffee 32 and Cake 20, total 50, overlap 12, coffee only shows a question mark\">\n        <rect x=\"6\" y=\"6\" width=\"288\" height=\"148\" fill=\"#ffffff\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <text x=\"14\" y=\"24\" fill=\"#5f5f5a\">ξ = 50</text>\n        <circle cx=\"115\" cy=\"85\" r=\"56\" fill=\"#e6f4ec\" fill-opacity=\".8\" stroke=\"#2e8b57\" stroke-width=\"1.5\"/>\n        <circle cx=\"185\" cy=\"85\" r=\"56\" fill=\"#fdf1dc\" fill-opacity=\".8\" stroke=\"#d9931c\" stroke-width=\"1.5\"/>\n        <text x=\"90\" y=\"22\" fill=\"#2e8b57\" text-anchor=\"middle\">Coffee 32</text><text x=\"212\" y=\"22\" fill=\"#d9931c\" text-anchor=\"middle\">Cake 20</text>\n        <text x=\"88\" y=\"90\" font-size=\"16\" font-weight=\"700\" text-anchor=\"middle\" fill=\"#c8372d\">?</text>\n        <text x=\"150\" y=\"90\" font-size=\"16\" font-weight=\"700\" text-anchor=\"middle\">12</text>\n      </svg>",
+    "hint": "Coffee only is the coffee total with the overlap taken away.",
+    "answers": ["2/5", "20/50", "4/10", "0.4", "40%"],
+    "working": "Coffee only: 32 − 12 = 20. Probability: 20/50 = 2/5.",
+    "misconceptions": [
+      {
+        "answer": "32/50",
+        "message": "That is everyone who ordered coffee. Coffee only means take away the 12 who also had cake."
+      },
+      {
+        "answer": "16/25",
+        "message": "That is everyone who ordered coffee. Coffee only means take away the 12 who also had cake."
+      },
+      {
+        "answer": "12/50",
+        "message": "That is both. Coffee only is 32 − 12."
+      }
+    ]
+  }
+]

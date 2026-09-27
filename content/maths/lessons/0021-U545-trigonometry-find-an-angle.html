@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>U545 Trigonometry: find an angle</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="lesson">
+  <nav class="sections" aria-label="Sections"><a href="#picture">Picture</a><a href="#method">Method</a><a href="#worked">Example</a><a href="#watch">Watch out</a><a href="#quiz">Try it</a></nav>
+  <header>
+    <p class="crumb"><a href="../progress.html">Progress</a> · U545 · Maths · Foundation · Papers 1 to 3</p>
+    <h1>Trigonometry: find an angle</h1>
+    <p class="aim">By the end you can find a missing angle in a right-angled triangle from two sides.</p>
+  </header>
+
+  <section id="picture">
+    <p>Two sides given and the angle missing: the same labels work. H is opposite the right angle, O is across from the angle you want, A is next to it. Write the ratio as a fraction and simplify it. On Paper 1 the fraction is in the exact-value table. On a calculator the inverse buttons sin⁻¹, cos⁻¹ and tan⁻¹ turn a ratio back into an angle.</p>
+    <svg viewBox="0 0 340 200" width="100%" style="max-width:340px;display:block;margin:.5rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="15" aria-label="A right-angled triangle with the right angle at the bottom right, the unknown angle marked at the bottom left, the sloping side labelled H = 10 cm, the vertical side labelled O = 5 cm and the bottom side labelled A">
+      <polygon points="30,170 260,170 260,40" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/>
+      <polyline points="244,170 244,154 260,154" fill="none" stroke="#1d1d1b" stroke-width="2"/>
+      <path d="M 66 170 A 36 36 0 0 0 62 152" fill="none" stroke="#2b5797" stroke-width="2"/>
+      <text x="70" y="163" fill="#2b5797" font-weight="700">θ = ?</text>
+      <text x="130" y="92" fill="#1d1d1b" font-weight="700">H = 10 cm</text>
+      <text x="268" y="110" fill="#1d1d1b" font-weight="700">O = 5 cm</text>
+      <text x="145" y="192" text-anchor="middle" fill="#1d1d1b" font-weight="700">A</text>
+    </svg>
+    <p class="caption">O = 5, H = 10. sin θ = 5 ÷ 10 = ½. sin 30° = ½, so θ = 30°.</p>
+  </section>
+
+  <section id="route">
+    <h2>Which ratio, and then undo it</h2>
+    <p>The start is the same as finding a side. The difference is the last step: you have the fraction, so you undo the ratio with the inverse button to get the angle.</p>
+    <svg width="100%" style="max-width:491px;display:block;margin:.5rem 0" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" data-diagram-type="ACTIVITY" viewBox="0 0 491 565" preserveAspectRatio="none" contentStyleType="text/css"><defs/><g font-family="sans-serif" lengthAdjust="spacing"><ellipse cx="243.831" cy="25" rx="10" ry="10" fill="#2B5797" style="stroke:#222;stroke-width:1;"/><rect x="16" y="55" width="455.661" height="52.977" fill="#FFF" style="stroke:#1D1D1B;stroke-width:1.5;" rx="12.5" ry="12.5"/><text x="107.915" y="78.535" fill="#1D1D1B" font-size="14" textLength="271.831">Label the sides from the angle you want</text><text x="26" y="95.023" fill="#1D1D1B" font-size="14" textLength="435.661">H opposite the right angle, O across from the angle, A next to it</text><rect x="139.956" y="127.977" width="207.749" height="36.488" fill="#FFF" style="stroke:#1D1D1B;stroke-width:1.5;" rx="12.5" ry="12.5"/><text x="149.956" y="151.512" fill="#1D1D1B" font-size="14" textLength="187.749">Tick the two sides you have</text><polygon points="46.843,184.465,169.788,184.465,181.788,196.465,169.788,208.465,46.843,208.465,34.843,196.465,46.843,184.465" fill="#FDF1DC" style="stroke:#D9931C;stroke-width:1.5;stroke-linejoin:miter;stroke-miterlimit:10;"/><text x="112.315" y="222" fill="#000" font-size="14" textLength="55.255">O and H</text><text x="46.843" y="201.756" fill="#1D1D1B" font-size="14" textLength="122.944">Which two letters?</text><rect x="51.301" y="244.953" width="114.028" height="52.977" fill="#FFF" style="stroke:#1D1D1B;stroke-width:1.5;" rx="12.5" ry="12.5"/><text x="93.963" y="268.488" fill="#1D1D1B" font-size="14" textLength="28.704">SOH</text><text x="61.301" y="284.977" fill="#1D1D1B" font-size="14" textLength="94.028">sin x = O ÷ H</text><polygon points="232.692,184.465,286.73,184.465,298.73,196.465,286.73,208.465,232.692,208.465,220.692,196.465,232.692,184.465" fill="#FDF1DC" style="stroke:#D9931C;stroke-width:1.5;stroke-linejoin:miter;stroke-miterlimit:10;"/><text x="232.692" y="201.756" fill="#1D1D1B" font-size="14" textLength="54.038">A and H</text><text x="298.73" y="193.512" fill="#000" font-size="14" textLength="54.626">O and A</text><rect x="201.788" y="228.465" width="115.847" height="52.977" fill="#FFF" style="stroke:#1D1D1B;stroke-width:1.5;" rx="12.5" ry="12.5"/><text x="244.894" y="252" fill="#1D1D1B" font-size="14" textLength="29.634">CAH</text><text x="211.788" y="268.488" fill="#1D1D1B" font-size="14" textLength="95.847">cos x = A ÷ H</text><rect x="337.634" y="239.709" width="115.184" height="52.977" fill="#FFF" style="stroke:#1D1D1B;stroke-width:1.5;" rx="12.5" ry="12.5"/><text x="380.532" y="263.244" fill="#1D1D1B" font-size="14" textLength="29.388">TOA</text><text x="347.634" y="279.732" fill="#1D1D1B" font-size="14" textLength="95.184">tan x = O ÷ A</text><rect x="161.643" y="337.93" width="164.375" height="36.488" fill="#FFF" style="stroke:#1D1D1B;stroke-width:1.5;" rx="12.5" ry="12.5"/><text x="171.643" y="361.465" fill="#1D1D1B" font-size="14" textLength="144.375">Work out the fraction</text><rect x="114.731" y="394.418" width="258.198" height="52.977" fill="#FFF" style="stroke:#1D1D1B;stroke-width:1.5;" rx="12.5" ry="12.5"/><text x="162.965" y="417.953" fill="#1D1D1B" font-size="14" textLength="161.731">Undo it with the inverse</text><text x="124.731" y="434.441" fill="#1D1D1B" font-size="14" textLength="238.198">sin⁻¹, cos⁻¹ or tan⁻¹ of that fraction</text><rect x="165.047" y="467.395" width="157.566" height="36.488" fill="#FFF" style="stroke:#1D1D1B;stroke-width:1.5;" rx="12.5" ry="12.5"/><text x="175.047" y="490.93" fill="#1D1D1B" font-size="14" textLength="137.566">Add the degree sign</text><ellipse cx="243.831" cy="534.883" rx="11" ry="11" fill="none" style="stroke:#222;stroke-width:1;"/><ellipse cx="243.831" cy="534.883" rx="6" ry="6" fill="#222" style="stroke:#222;stroke-width:1;"/><line x1="243.831" y1="35" x2="243.831" y2="55" style="stroke:#5F5F5A;stroke-width:1.5;"/><polygon points="239.831,45,243.831,55,247.831,45,243.831,49" fill="#5F5F5A" style="stroke:#5F5F5A;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line x1="243.831" y1="107.977" x2="243.831" y2="127.977" style="stroke:#5F5F5A;stroke-width:1.5;"/><polygon points="239.831,117.977,243.831,127.977,247.831,117.977,243.831,121.977" fill="#5F5F5A" style="stroke:#5F5F5A;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line x1="108.315" y1="208.465" x2="108.315" y2="244.953" style="stroke:#5F5F5A;stroke-width:1.5;"/><polygon points="104.315,234.953,108.315,244.953,112.315,234.953,108.315,238.953" fill="#5F5F5A" style="stroke:#5F5F5A;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line x1="108.315" y1="297.93" x2="108.315" y2="317.93" style="stroke:#5F5F5A;stroke-width:1.5;"/><polygon points="104.315,307.93,108.315,317.93,112.315,307.93,108.315,311.93" fill="#5F5F5A" style="stroke:#5F5F5A;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line x1="259.711" y1="208.465" x2="259.711" y2="228.465" style="stroke:#5F5F5A;stroke-width:1.5;"/><polygon points="255.711,218.465,259.711,228.465,263.711,218.465,259.711,222.465" fill="#5F5F5A" style="stroke:#5F5F5A;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line x1="259.711" y1="281.441" x2="259.711" y2="317.93" style="stroke:#5F5F5A;stroke-width:1.5;"/><polygon points="255.711,307.93,259.711,317.93,263.711,307.93,259.711,311.93" fill="#5F5F5A" style="stroke:#5F5F5A;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line x1="181.788" y1="196.465" x2="220.692" y2="196.465" style="stroke:#5F5F5A;stroke-width:1.5;"/><polygon points="210.692,192.465,220.692,196.465,210.692,200.465,214.692,196.465" fill="#5F5F5A" style="stroke:#5F5F5A;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line x1="243.831" y1="164.465" x2="243.831" y2="169.465" style="stroke:#5F5F5A;stroke-width:1.5;"/><line x1="243.831" y1="169.465" x2="108.315" y2="169.465" style="stroke:#5F5F5A;stroke-width:1.5;"/><line x1="108.315" y1="169.465" x2="108.315" y2="184.465" style="stroke:#5F5F5A;stroke-width:1.5;"/><polygon points="104.315,174.465,108.315,184.465,112.315,174.465,108.315,178.465" fill="#5F5F5A" style="stroke:#5F5F5A;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line x1="298.73" y1="196.465" x2="395.226" y2="196.465" style="stroke:#5F5F5A;stroke-width:1.5;"/><line x1="395.226" y1="196.465" x2="395.226" y2="239.709" style="stroke:#5F5F5A;stroke-width:1.5;"/><polygon points="391.226,229.709,395.226,239.709,399.226,229.709,395.226,233.709" fill="#5F5F5A" style="stroke:#5F5F5A;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line x1="395.226" y1="292.686" x2="395.226" y2="317.93" style="stroke:#5F5F5A;stroke-width:1.5;"/><polygon points="391.226,307.93,395.226,317.93,399.226,307.93,395.226,311.93" fill="#5F5F5A" style="stroke:#5F5F5A;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line x1="108.315" y1="317.93" x2="395.226" y2="317.93" style="stroke:#5F5F5A;stroke-width:1.5;"/><line x1="243.831" y1="317.93" x2="243.831" y2="337.93" style="stroke:#5F5F5A;stroke-width:1.5;"/><polygon points="239.831,327.93,243.831,337.93,247.831,327.93,243.831,331.93" fill="#5F5F5A" style="stroke:#5F5F5A;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line x1="243.831" y1="374.418" x2="243.831" y2="394.418" style="stroke:#5F5F5A;stroke-width:1.5;"/><polygon points="239.831,384.418,243.831,394.418,247.831,384.418,243.831,388.418" fill="#5F5F5A" style="stroke:#5F5F5A;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line x1="243.831" y1="447.395" x2="243.831" y2="467.395" style="stroke:#5F5F5A;stroke-width:1.5;"/><polygon points="239.831,457.395,243.831,467.395,247.831,457.395,243.831,461.395" fill="#5F5F5A" style="stroke:#5F5F5A;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><line x1="243.831" y1="503.883" x2="243.831" y2="523.883" style="stroke:#5F5F5A;stroke-width:1.5;"/><polygon points="239.831,513.883,243.831,523.883,247.831,513.883,243.831,517.883" fill="#5F5F5A" style="stroke:#5F5F5A;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:10;"/><?plantuml-src XPF1RXCn48Rl-nGZzT9A4L9AGqaYX4m1vO388K4zE-lnhfMD9x8dsPORJuKGD_ecF0bZTwbMIGfhQUtT__FyOyquhftVwg0tiDBbkWgqy-Q66Wh0GVie4dekuXCLQsseTRu2gvk8FSMWrRk6FvBdXVkACBmw5fTunwfnbTz8L2ZbXQ57gH2eVNG_6raP-b1SrgvSUumHXYz6VR5ajtTy_-xW46SsFwT82WP3HmsDZDMprFzStpkz8M-EpOqTcl8V6_evcF7uvV0Kl60Tk8CkLwFhyVK9wCEJwIM-5kW4aYhpt7a_4-DH-lZANc5vIFLpxhoAc58i9f_q2XlW6Y4wWn5ie4t-rBvg4Evf1wsMTfe1RRSK7MDMWwjgVcG6C0TT1eg7cmUWm4lt01CudXQJfPGaoznIPvVYrtgFqy9PEB-LejLPRP2bp-BRYyHxE1SBRs1sKG1C5lEPJD5vk8CtOlxm7MRJ0gMrKmpL8szK8akAcLGzycz4bRdbNCd4kXTH2UUDiyNabi8QQCSvSnkqb8QydEQBD-bSq3gki-RyNbAM--Nyxsy_V_qO9EUyWdGtjU_MLcZD_L3Ac1p1O1KmLQAIlv5f-mS0?></g></svg>
+    <p class="caption">Same shape as the U283 diagram, with the ending changed.</p>
+  </section>
+
+  <section id="worked">
+    <h2>Worked example</h2>
+    <div class="example">
+      <p><b>The side opposite angle θ is 5 cm. The hypotenuse is 10 cm. Find θ.</b></p>
+      <p><b>Step 1</b>, label from the angle: O = 5, H = 10.<br>
+         <b>Step 2</b>, the ratio with O and H: SOH.<br>
+         <b>Step 3</b>, the fraction: sin θ = 5 ÷ 10.<br>
+         <b>Step 4</b>, simplify: 5 ÷ 10 = ½.<br>
+         <b>Step 5</b>, the table: sin 30° = ½.<br>
+         <b>Step 6</b>, with a calculator instead: shift, sin, 5 ÷ 10, equals. The screen shows 30.<br>
+         <b>Step 7</b>, the answer: <b>θ = 30°</b>.</p>
+    </div>
+  </section>
+
+  <section id="method">
+    <h2>The method</h2>
+    <ol>
+      <li>Label H, O and A from the angle you want.</li>
+      <li>Pick the ratio from the two sides you have: SOH, CAH or TOA.</li>
+      <li>Write the fraction: top letter over bottom letter, numbers in.</li>
+      <li>Simplify the fraction.</li>
+      <li>No calculator: find that value in the table and read off the angle.</li>
+      <li>Calculator: shift, then sin, cos or tan, type the fraction, equals.</li>
+      <li>Write the angle in degrees.</li>
+    </ol>
+    <table style="border-collapse:collapse;margin:.5rem 0" aria-label="Exact values of sin, cos and tan">
+      <tr><th style="text-align:left;padding:.2rem .7rem .2rem 0">angle</th><th style="padding:.2rem .7rem">0°</th><th style="padding:.2rem .7rem">30°</th><th style="padding:.2rem .7rem">45°</th><th style="padding:.2rem .7rem">60°</th><th style="padding:.2rem .7rem">90°</th></tr>
+      <tr><td style="padding:.2rem .7rem .2rem 0">sin</td><td style="text-align:center">0</td><td style="text-align:center">½</td><td style="text-align:center">√2 ÷ 2</td><td style="text-align:center">√3 ÷ 2</td><td style="text-align:center">1</td></tr>
+      <tr><td style="padding:.2rem .7rem .2rem 0">cos</td><td style="text-align:center">1</td><td style="text-align:center">√3 ÷ 2</td><td style="text-align:center">√2 ÷ 2</td><td style="text-align:center">½</td><td style="text-align:center">0</td></tr>
+      <tr><td style="padding:.2rem .7rem .2rem 0">tan</td><td style="text-align:center">0</td><td style="text-align:center">1 ÷ √3</td><td style="text-align:center">1</td><td style="text-align:center">√3</td><td style="text-align:center">none</td></tr>
+    </table>
+
+    <details class="why">
+      <summary>Why do you need to know which ratio you used before reading the table?</summary>
+      <p>½ is in the table twice: sin 30° and cos 60°. The fraction alone does not name the angle. The ratio from step 2 picks the row, and the row gives the angle.</p>
+    </details>
+  </section>
+
+  <section id="watch">
+    <details open>
+      <summary><h2>Watch out</h2></summary>
+      <div class="watch">
+        <p>Keep the fraction the right way up. sin is O over H: 5 ÷ 10, not 10 ÷ 5.</p>
+        <p>Read the right row. ½ is sin 30° but also cos 60°. Match the ratio you used.</p>
+        <p>Answer in degrees. ½ is the ratio, not the angle.</p>
+      </div>
+    </details>
+  </section>
+
+  <section id="quiz" class="quiz" data-code="U545">
+    <h2>Try it</h2>
+    <p>Answer from memory, no calculator. Give the number of degrees, like 30. The working appears only after you check.</p>
+
+    <div class="q" data-a="NDV8NDVkZWdyZWVz" data-wrong="MT1UaGF0IGlzIHRoZSByYXRpby4gVGhlIHRhYmxlIHNheXMgd2hpY2ggYW5nbGUgaGFzIHRhbiAxLnwzMD10YW4gMzDCsCBpcyAxIMO3IOKImjMuIExvb2sgYWxvbmcgdGhlIHRhbiByb3cgZm9yIDEufDYwPXRhbiA2MMKwIGlzIOKImjMuIExvb2sgYWxvbmcgdGhlIHRhbiByb3cgZm9yIDEu">
+      <p class="stem">1. Find the angle marked θ. The first steps are done. Finish it.</p>
+      <svg viewBox="0 0 240 135" width="100%" style="max-width:240px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" role="img" aria-label="A right-angled triangle with the unknown angle theta at the bottom left, the vertical side opposite it 4 cm and the bottom side next to it 4 cm"><title>A right-angled triangle with the unknown angle theta at the bottom left, the vertical side opposite it 4 cm and the bottom side next to it 4 cm</title><polygon points="20,110 180,110 180,25" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><polyline points="168,110 168,98 180,98" fill="none" stroke="#1d1d1b" stroke-width="1.5"/><path d="M 46 110 A 26 26 0 0 0 43 97" fill="none" stroke="#2b5797" stroke-width="1.5"/><text x="50" y="104" fill="#2b5797" font-weight="700">θ</text><text x="62" y="52" fill="#1d1d1b" font-weight="700"></text><text x="185" y="72" fill="#1d1d1b" font-weight="700">4 cm</text><text x="100" y="126" text-anchor="middle" fill="#1d1d1b" font-weight="700">4 cm</text></svg>
+      <div class="working faded"><p>Step 1, O = 4, A = 4. Step 2, TOA. Step 3, tan θ = 4 ÷ 4. Step 4, simplify: 1. Step 5, in the table, tan 45° = 1. Step 7, θ = …</p></div>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Read along the tan row for the value 1.</p>
+      <div class="working" hidden><p>Step 1, O = 4, A = 4. Step 2, TOA. Step 3, tan θ = 4 ÷ 4. Step 4, simplify: 1. Step 5, in the table, tan 45° = 1. Step 7, θ = 45°.</p></div>
+    </div>
+
+    <div class="q" data-a="NjB8NjBkZWdyZWVz" data-wrong="MzA9wr0gaXMgc2luIDMwwrAsIGJ1dCB5b3UgdXNlZCBBIGFuZCBILCBzbyBpdCBpcyBjb3MuIGNvcyA2MMKwID0gwr0ufDAuNT1UaGF0IGlzIHRoZSByYXRpby4gVGhlIHF1ZXN0aW9uIHdhbnRzIHRoZSBhbmdsZS58Mj1Zb3Ugd3JvdGUgdGhlIGZyYWN0aW9uIHVwc2lkZSBkb3duLiBjb3MgaXMgQSBvdmVyIEgsIHNvIDMgw7cgNi4=">
+      <p class="stem">2. Find the angle marked θ. The first steps are done. Finish it.</p>
+      <svg viewBox="0 0 240 135" width="100%" style="max-width:240px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" role="img" aria-label="A right-angled triangle with the unknown angle theta at the bottom left, hypotenuse 6 cm and the bottom side next to the angle 3 cm"><title>A right-angled triangle with the unknown angle theta at the bottom left, hypotenuse 6 cm and the bottom side next to the angle 3 cm</title><polygon points="20,110 180,110 180,25" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><polyline points="168,110 168,98 180,98" fill="none" stroke="#1d1d1b" stroke-width="1.5"/><path d="M 46 110 A 26 26 0 0 0 43 97" fill="none" stroke="#2b5797" stroke-width="1.5"/><text x="50" y="104" fill="#2b5797" font-weight="700">θ</text><text x="62" y="52" fill="#1d1d1b" font-weight="700">6 cm</text><text x="185" y="72" fill="#1d1d1b" font-weight="700"></text><text x="100" y="126" text-anchor="middle" fill="#1d1d1b" font-weight="700">3 cm</text></svg>
+      <div class="working faded"><p>Step 1, A = 3, H = 6. Step 2, CAH. Step 3, cos θ = 3 ÷ 6. …</p></div>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Simplify 3 ÷ 6, then read the cos row.</p>
+      <div class="working" hidden><p>Step 1, A = 3, H = 6. Step 2, CAH. Step 3, cos θ = 3 ÷ 6. Step 4, simplify: ½. Step 5, in the table, cos 60° = ½. Step 7, θ = 60°.</p></div>
+    </div>
+
+    <div class="q" data-a="MzB8MzBkZWdyZWVz" data-wrong="NjA9wr0gaXMgY29zIDYwwrAsIGJ1dCB5b3UgaGF2ZSBPIGFuZCBILCBzbyBpdCBpcyBzaW4uIHNpbiAzMMKwID0gwr0ufDAuNT1UaGF0IGlzIHRoZSByYXRpby4gRmluZCB3aGljaCBhbmdsZSBoYXMgc2luIMK9LnwyPVlvdSB3cm90ZSB0aGUgZnJhY3Rpb24gdXBzaWRlIGRvd24uIHNpbiBpcyBPIG92ZXIgSCwgc28gNiDDtyAxMi4=">
+      <p class="stem">3. Find the angle marked θ.</p>
+      <svg viewBox="0 0 240 135" width="100%" style="max-width:240px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" role="img" aria-label="A right-angled triangle with the unknown angle theta at the bottom left, hypotenuse 12 cm and the vertical side opposite the angle 6 cm"><title>A right-angled triangle with the unknown angle theta at the bottom left, hypotenuse 12 cm and the vertical side opposite the angle 6 cm</title><polygon points="20,110 180,110 180,25" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><polyline points="168,110 168,98 180,98" fill="none" stroke="#1d1d1b" stroke-width="1.5"/><path d="M 46 110 A 26 26 0 0 0 43 97" fill="none" stroke="#2b5797" stroke-width="1.5"/><text x="50" y="104" fill="#2b5797" font-weight="700">θ</text><text x="62" y="52" fill="#1d1d1b" font-weight="700">12 cm</text><text x="185" y="72" fill="#1d1d1b" font-weight="700">6 cm</text><text x="100" y="126" text-anchor="middle" fill="#1d1d1b" font-weight="700"></text></svg>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Have O and H. Which ratio?</p>
+      <div class="working" hidden><p>Step 2: SOH. Step 3: sin θ = 6 ÷ 12. Step 4: ½. Step 5: sin 30° = ½. Step 7: θ = 30°.</p></div>
+    </div>
+
+    <div class="q" data-a="NHw0Y20=" data-wrong="MTY9WW91IGRpdmlkZWQuIHggaXMgb24gdG9wIG9mIHRoZSBmcmFjdGlvbiwgc28gbXVsdGlwbHkufDMwPVRoZSBxdWVzdGlvbiBhc2tzIGZvciBhIHNpZGUsIG5vdCBhbiBhbmdsZS4gY29zIDYwwrAgPSB4IMO3IDgufDg9VGhhdCBpcyB0aGUgaHlwb3RlbnVzZS4gY29zIDYwwrAgaXMgwr0sIHNvIHggaXMgaGFsZiBvZiBpdC4=">
+      <p class="stem">4. Find the side marked x.</p>
+      <svg viewBox="0 0 240 135" width="100%" style="max-width:240px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" role="img" aria-label="A right-angled triangle with a 60° angle at the bottom left, hypotenuse 8 cm, and the bottom side next to the angle marked x"><title>A right-angled triangle with a 60° angle at the bottom left, hypotenuse 8 cm, and the bottom side next to the angle marked x</title><polygon points="20,110 180,110 180,25" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><polyline points="168,110 168,98 180,98" fill="none" stroke="#1d1d1b" stroke-width="1.5"/><path d="M 46 110 A 26 26 0 0 0 43 97" fill="none" stroke="#2b5797" stroke-width="1.5"/><text x="50" y="104" fill="#2b5797" font-weight="700">60°</text><text x="62" y="52" fill="#1d1d1b" font-weight="700">8 cm</text><text x="185" y="72" fill="#1d1d1b" font-weight="700"></text><text x="100" y="126" text-anchor="middle" fill="#1d1d1b" font-weight="700">x</text></svg>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>One side and the angle given, a side wanted. That is U283: cos 60° = x ÷ 8.</p>
+      <div class="working" hidden><p>Not an angle: this is find a side, U283. Have H, want A, so CAH. cos 60° = x ÷ 8, and cos 60° = ½. x = 8 × ½ = 4 cm.</p></div>
+    </div>
+
+    <div class="q" data-a="MnxzdGVwMg==" data-wrong="Mz1TdGVwIDMgZm9sbG93cyB0aGUgcmF0aW8gZnJvbSBzdGVwIDIuIFRoZSB3cm9uZyB0dXJuIGNhbWUgZWFybGllcjogQSBhbmQgSCBpcyBDQUgsIG5vdCBTT0gufDQ9NCDDtyA4IGlzIMK9LCBzbyBzdGVwIDQgaXMgZmluZS4gTG9vayBhdCB0aGUgcmF0aW8gcGlja2VkIGluIHN0ZXAgMi58NT1TdGVwIDUgcmVhZCB0aGUgc2luIHJvdyBjb3JyZWN0bHkuIFRoZSByYXRpbyBpdHNlbGYgd2FzIHdyb25nOiBBIGFuZCBIIGlzIGNvcy4=">
+      <p class="stem">5. Sam finds the angle in this triangle. Step 1: A = 4, H = 8. Step 2: SOH. Step 3: sin θ = 4 ÷ 8. Step 4: ½. Step 5: sin 30° = ½, so θ = 30°. Which step went wrong first? Answer with the step number.</p>
+      <svg viewBox="0 0 240 135" width="100%" style="max-width:240px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" role="img" aria-label="A right-angled triangle with the unknown angle theta at the bottom left, hypotenuse 8 cm and the bottom side next to the angle 4 cm"><title>A right-angled triangle with the unknown angle theta at the bottom left, hypotenuse 8 cm and the bottom side next to the angle 4 cm</title><polygon points="20,110 180,110 180,25" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><polyline points="168,110 168,98 180,98" fill="none" stroke="#1d1d1b" stroke-width="1.5"/><path d="M 46 110 A 26 26 0 0 0 43 97" fill="none" stroke="#2b5797" stroke-width="1.5"/><text x="50" y="104" fill="#2b5797" font-weight="700">θ</text><text x="62" y="52" fill="#1d1d1b" font-weight="700">8 cm</text><text x="185" y="72" fill="#1d1d1b" font-weight="700"></text><text x="100" y="126" text-anchor="middle" fill="#1d1d1b" font-weight="700">4 cm</text></svg>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Which two sides does Sam have? Check each step against them.</p>
+      <div class="working" hidden><p>The sides are A and H, so the ratio is CAH, not SOH. cos θ = 4 ÷ 8 = ½, and cos 60° = ½, so the angle is 60°. First wrong step = 2.</p></div>
+    </div>
+  </section>
+
+  <section id="teach-back">
+    <h2>Teach it back</h2>
+    <p>A friend missed today. Explain how to find the angle when the opposite side is 2 cm and the hypotenuse is 4 cm. Say how you read the table. Say it to Claude.</p>
+  </section>
+
+  <section id="source">
+    <details open>
+      <summary><h2>Where this comes from</h2></summary>
+      <p>Sparx Maths: search <b>U545</b> in Independent Learning. Corbettmaths: <a href="https://corbettmaths.com/contents/">contents page</a>, "Trigonometry: missing angles".</p>
+    </details>
+  </section>
+
+  <footer>
+    <p>Stuck? Tell Claude which step. Cheat sheet: <a href="../reference/U545-trigonometry-find-an-angle.html">U545</a>. Do U283 find a side first. It is item 4's neighbour, and the table is on its cheat sheet.</p>
+  </footer>
+</main>
+<script src="../assets/read.js"></script>
+<script src="../assets/generate.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+[
+  {
+    "id": "1MA1/G20/side#1",
+    "topic": "1MA1/G20/side",
+    "type": "cloze",
+    "stem": "Find the side marked x. The first steps are done. Finish it.",
+    "figure": "<svg viewBox=\"0 0 240 135\" width=\"100%\" style=\"max-width:240px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A right-angled triangle with a 30° angle at the bottom left, hypotenuse 12 cm, and the vertical side opposite the angle marked x\"><title>A right-angled triangle with a 30° angle at the bottom left, hypotenuse 12 cm, and the vertical side opposite the angle marked x</title><polygon points=\"20,110 180,110 180,25\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><polyline points=\"168,110 168,98 180,98\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><path d=\"M 46 110 A 26 26 0 0 0 43 97\" fill=\"none\" stroke=\"#2b5797\" stroke-width=\"1.5\"/><text x=\"50\" y=\"104\" fill=\"#2b5797\" font-weight=\"700\">30°</text><text x=\"62\" y=\"52\" fill=\"#1d1d1b\" font-weight=\"700\">12 cm</text><text x=\"185\" y=\"72\" fill=\"#1d1d1b\" font-weight=\"700\">x</text><text x=\"100\" y=\"126\" text-anchor=\"middle\" fill=\"#1d1d1b\" font-weight=\"700\"></text></svg>",
+    "scaffold": "Step 1, label from the 30°: H = 12, x is O. Step 2, have H, want O. Step 3, SOH. Step 4, sin 30° = x ÷ 12, and sin 30° = ½. Step 5, x is on top, so multiply: 12 × ½ = …",
+    "hint": "Half of 12.",
+    "answers": ["6", "6cm"],
+    "working": "Step 1, label from the 30°: H = 12, x is O. Step 2, have H, want O. Step 3, SOH. Step 4, sin 30° = x ÷ 12, and sin 30° = ½. Step 5, x is on top, so multiply: 12 × ½ = 6. Step 6, 6 cm.",
+    "misconceptions": [
+      {
+        "answer": "24",
+        "message": "You divided by ½. O is on top of the fraction, so multiply."
+      },
+      {
+        "answer": "12",
+        "message": "That is the hypotenuse. O is half of it at 30°."
+      },
+      {
+        "answer": "3",
+        "message": "You halved twice. 12 × ½ is 6."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G20/side#2",
+    "topic": "1MA1/G20/side",
+    "type": "cloze",
+    "stem": "Find the side marked x. The first steps are done. Finish it.",
+    "figure": "<svg viewBox=\"0 0 240 135\" width=\"100%\" style=\"max-width:240px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A right-angled triangle with a 60° angle at the bottom left, hypotenuse 8 cm, and the bottom side next to the angle marked x\"><title>A right-angled triangle with a 60° angle at the bottom left, hypotenuse 8 cm, and the bottom side next to the angle marked x</title><polygon points=\"20,110 180,110 180,25\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><polyline points=\"168,110 168,98 180,98\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><path d=\"M 46 110 A 26 26 0 0 0 43 97\" fill=\"none\" stroke=\"#2b5797\" stroke-width=\"1.5\"/><text x=\"50\" y=\"104\" fill=\"#2b5797\" font-weight=\"700\">60°</text><text x=\"62\" y=\"52\" fill=\"#1d1d1b\" font-weight=\"700\">8 cm</text><text x=\"185\" y=\"72\" fill=\"#1d1d1b\" font-weight=\"700\"></text><text x=\"100\" y=\"126\" text-anchor=\"middle\" fill=\"#1d1d1b\" font-weight=\"700\">x</text></svg>",
+    "scaffold": "Step 1, label from the 60°: H = 8, x is A. Step 2, have H, want A. Step 3, CAH. …",
+    "hint": "cos 60° = x ÷ 8. Read cos 60° from the table.",
+    "answers": ["4", "4cm"],
+    "working": "Step 1, label from the 60°: H = 8, x is A. Step 2, have H, want A. Step 3, CAH. Step 4, cos 60° = x ÷ 8, and cos 60° = ½. Step 5, x is on top, so multiply: 8 × ½ = 4. Step 6, 4 cm.",
+    "misconceptions": [
+      {
+        "answer": "16",
+        "message": "You divided by ½. A is on top, so multiply."
+      },
+      {
+        "answer": "8",
+        "message": "That is the hypotenuse. cos 60° is ½, so A is half of it."
+      },
+      {
+        "answer": "2",
+        "message": "You halved twice. 8 × ½ is 4."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G20/side#3",
+    "topic": "1MA1/G20/side",
+    "type": "cloze",
+    "stem": "Find the side marked x.",
+    "figure": "<svg viewBox=\"0 0 240 135\" width=\"100%\" style=\"max-width:240px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A right-angled triangle with a 45° angle at the bottom left, the bottom side next to the angle 9 cm, and the vertical side opposite the angle marked x\"><title>A right-angled triangle with a 45° angle at the bottom left, the bottom side next to the angle 9 cm, and the vertical side opposite the angle marked x</title><polygon points=\"20,110 180,110 180,25\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><polyline points=\"168,110 168,98 180,98\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><path d=\"M 46 110 A 26 26 0 0 0 43 97\" fill=\"none\" stroke=\"#2b5797\" stroke-width=\"1.5\"/><text x=\"50\" y=\"104\" fill=\"#2b5797\" font-weight=\"700\">45°</text><text x=\"62\" y=\"52\" fill=\"#1d1d1b\" font-weight=\"700\"></text><text x=\"185\" y=\"72\" fill=\"#1d1d1b\" font-weight=\"700\">x</text><text x=\"100\" y=\"126\" text-anchor=\"middle\" fill=\"#1d1d1b\" font-weight=\"700\">9 cm</text></svg>",
+    "hint": "Have A, want O. Which ratio has O and A?",
+    "answers": ["9", "9cm"],
+    "working": "Step 2: have A, want O. Step 3: TOA. Step 4: tan 45° = x ÷ 9, and tan 45° = 1. Step 5: x = 9 × 1 = 9. Step 6: 9 cm.",
+    "misconceptions": [
+      {
+        "answer": "4.5",
+        "message": "You used ½. That is sin 30°. tan 45° is 1."
+      },
+      {
+        "answer": "18",
+        "message": "You doubled. tan 45° is 1, so O equals A."
+      },
+      {
+        "answer": "81",
+        "message": "You multiplied 9 by 9. tan 45° is 1."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G20/side#4",
+    "topic": "1MA1/G20/side",
+    "type": "cloze",
+    "stem": "Find the angle marked θ.",
+    "figure": "<svg viewBox=\"0 0 240 135\" width=\"100%\" style=\"max-width:240px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A right-angled triangle with the unknown angle theta at the bottom left, hypotenuse 10 cm and the vertical side opposite the angle 5 cm\"><title>A right-angled triangle with the unknown angle theta at the bottom left, hypotenuse 10 cm and the vertical side opposite the angle 5 cm</title><polygon points=\"20,110 180,110 180,25\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><polyline points=\"168,110 168,98 180,98\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><path d=\"M 46 110 A 26 26 0 0 0 43 97\" fill=\"none\" stroke=\"#2b5797\" stroke-width=\"1.5\"/><text x=\"50\" y=\"104\" fill=\"#2b5797\" font-weight=\"700\">θ</text><text x=\"62\" y=\"52\" fill=\"#1d1d1b\" font-weight=\"700\">10 cm</text><text x=\"185\" y=\"72\" fill=\"#1d1d1b\" font-weight=\"700\">5 cm</text><text x=\"100\" y=\"126\" text-anchor=\"middle\" fill=\"#1d1d1b\" font-weight=\"700\"></text></svg>",
+    "hint": "Two sides given, angle wanted. Write O ÷ H, then find that value in the table.",
+    "answers": ["30", "30degrees"],
+    "working": "Not a side: this is find an angle, U545. sin θ = 5 ÷ 10 = ½. sin 30° = ½, so θ = 30°.",
+    "misconceptions": [
+      {
+        "answer": "0.5",
+        "message": "That is the ratio, sin θ = ½. The question wants the angle whose sin is ½."
+      },
+      {
+        "answer": "60",
+        "message": "½ is cos 60°, but you have O and H, so it is sin. sin 30° = ½."
+      },
+      {
+        "answer": "5",
+        "message": "That is a side. The question asks for the angle."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G20/side#5",
+    "topic": "1MA1/G20/side",
+    "type": "cloze",
+    "stem": "A ramp rises 3 m and makes an angle of 30° with the ground. How long is the ramp, in metres?",
+    "figure": "<svg viewBox=\"0 0 240 135\" width=\"100%\" style=\"max-width:240px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A ramp drawn as a right-angled triangle: the ramp is the sloping side, it makes 30° with the ground, and the vertical rise is 3 m\"><title>A ramp drawn as a right-angled triangle: the ramp is the sloping side, it makes 30° with the ground, and the vertical rise is 3 m</title><polygon points=\"20,110 180,110 180,25\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><polyline points=\"168,110 168,98 180,98\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><path d=\"M 46 110 A 26 26 0 0 0 43 97\" fill=\"none\" stroke=\"#2b5797\" stroke-width=\"1.5\"/><text x=\"50\" y=\"104\" fill=\"#2b5797\" font-weight=\"700\">30°</text><text x=\"62\" y=\"52\" fill=\"#1d1d1b\" font-weight=\"700\">ramp</text><text x=\"185\" y=\"72\" fill=\"#1d1d1b\" font-weight=\"700\">3 m</text><text x=\"100\" y=\"126\" text-anchor=\"middle\" fill=\"#1d1d1b\" font-weight=\"700\">ground</text></svg>",
+    "hint": "The ramp is H. sin 30° = 3 ÷ H.",
+    "answers": ["6", "6m"],
+    "working": "The height is O, across from the 30°. The ramp is H. Step 3: SOH. Step 4: ½ = 3 ÷ H. Step 5: H is on the bottom, so divide: H = 3 ÷ ½ = 6. Step 6: 6 m.",
+    "misconceptions": [
+      {
+        "answer": "1.5",
+        "message": "You multiplied. The ramp is H, on the bottom of the fraction, so divide."
+      },
+      {
+        "answer": "3",
+        "message": "That is the height. The ramp is the hypotenuse, and it is longer."
+      },
+      {
+        "answer": "0.5",
+        "message": "That is sin 30°, not a length."
+      }
+    ]
+  }
+]
