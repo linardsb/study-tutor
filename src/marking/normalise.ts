@@ -13,7 +13,7 @@ export function normaliseAnswer(s: string): string {
     .replace(/\s+/g, "")
     .replace(/^\+/, "")
     .replace(/^(-?)0+(\d)/, "$1$2")
-    .replace(/^(-?)\./, "$10.")
+    .replace(/^(-?)\./, (_, sign: string) => `${sign}0.`)
     .replace(/(\.\d*?)0+$/, "$1")
     .replace(/\.$/, "");
 }

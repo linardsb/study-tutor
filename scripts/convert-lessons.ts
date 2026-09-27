@@ -1,6 +1,6 @@
 import { mkdirSync, readdirSync } from "node:fs";
 import path from "node:path";
-import { itemsFileName } from "../src/content/pack";
+import { itemsFileName, loadTopics } from "../src/content/pack";
 import type { Item, Misconception, Topic } from "../src/content/types";
 
 export interface ParsedItem {
@@ -27,10 +27,12 @@ export function splitWrong(pair: string): Misconception {
   for (let i = 1; i < pair.length - 1; i += 1)
     if (pair[i] === "=" && pair[i - 1] !== " " && pair[i + 1] !== " ") at = i;
   if (at < 1) throw new Error(`no key=message split in "${pair}"`);
-  return {
-    answer: pair.slice(0, at).trim(),
-    message: pair.slice(at + 1).trim(),
-  };
+  const answer = pair.slice(0, at).trim();
+  if (/\s/.test(answer))
+    throw new Error(
+      `wrong-answer key "${answer}" holds a space: an unspaced "=" inside the message of "${pair}"?`,
+    );
+  return { answer, message: pair.slice(at + 1).trim() };
 }
 
 function text(html: string): string {
@@ -40,6 +42,9 @@ function text(html: string): string {
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
+    .replace(/&nbsp;/g, " ")
+    .replace(/&times;/g, "×")
+    .replace(/&#(\d+);/g, (_, n: string) => String.fromCodePoint(Number(n)))
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -111,7 +116,7 @@ export async function convert(
   const out = new Map<string, Item[]>();
   const files = readdirSync(lessonsDir)
     .filter((f) => f.endsWith(".html"))
-    .sort();
+    .sort((a, b) => a.localeCompare(b));
   for (const file of files) {
     const html = await Bun.file(path.join(lessonsDir, file)).text();
     const { code, items } = parseLesson(html, file);
@@ -142,12 +147,11 @@ export async function convert(
   return out;
 }
 
+/** The v1 maths lessons are the only hand-written quiz blocks; the paths are fixed, not arguments. */
 if (import.meta.main) {
-  const lessonsDir = process.argv[2] ?? "content/maths/lessons";
-  const outDir = process.argv[3] ?? "content/maths/items";
-  const topics = (await Bun.file(
-    path.join(lessonsDir, "..", "topics.json"),
-  ).json()) as Topic[];
+  const lessonsDir = "content/maths/lessons";
+  const outDir = "content/maths/items";
+  const topics = await loadTopics("maths");
   mkdirSync(outDir, { recursive: true });
   const packs = await convert(lessonsDir, topics);
   let count = 0;

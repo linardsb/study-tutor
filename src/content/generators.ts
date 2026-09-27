@@ -1,5 +1,9 @@
 import path from "node:path";
+import { subjectDir } from "./pack";
 import type { Generator } from "./types";
+
+/** One table per generators.js file. The file writes one global, so a repeat import must not re-read it. */
+const tables = new Map<string, Record<string, Generator>>();
 
 /**
  * Runs content/<subject>/generators.js under Bun (it assigns globalThis.GEN) and returns the table.
@@ -11,9 +15,13 @@ export async function loadGenerators(
   subject: string,
   root = process.cwd(),
 ): Promise<Record<string, Generator>> {
-  await import(path.resolve(root, "content", subject, "generators.js"));
+  const file = path.join(subjectDir(subject, root), "generators.js");
+  const cached = tables.get(file);
+  if (cached) return cached;
+  await import(file);
   const table = (globalThis as { GEN?: Record<string, Generator> }).GEN;
   if (!table)
     throw new Error(`content/${subject}/generators.js did not set GEN`);
+  tables.set(file, table);
   return table;
 }

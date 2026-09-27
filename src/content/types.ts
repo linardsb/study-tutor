@@ -47,8 +47,11 @@ export interface Item {
   misconceptions: Misconception[];
 }
 
-/** The item a model job may see before an `attempt` event exists for it. */
-export type ItemView = Omit<Item, "answers" | "working" | "misconceptions">;
+/** The item a model job may see before an `attempt` event exists for it. `toItemView` in pack.ts is the runtime projection. */
+export type ItemView = Omit<
+  Item,
+  "answers" | "working" | "mark_scheme" | "misconceptions"
+>;
 
 /** generators.js contract, unchanged from v1 (see the file's header comment). */
 export type GeneratedAnswerType =

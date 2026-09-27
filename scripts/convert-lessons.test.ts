@@ -27,6 +27,12 @@ test("splitWrong: plain key, key holding '=', message holding ' = ' and starting
   });
 });
 
+test("splitWrong refuses a key holding a space: the last unspaced '=' was inside the message", () => {
+  expect(() => splitWrong("y=2x+16=You added 6, so c=4.")).toThrow(
+    'wrong-answer key "y=2x+16=You added 6, so c" holds a space',
+  );
+});
+
 const b64 = (s: string) => Buffer.from(s, "utf8").toString("base64");
 const fixture = `<section id="quiz" class="quiz" data-code="U999">
   <h2>Try it</h2>
@@ -39,7 +45,7 @@ const fixture = `<section id="quiz" class="quiz" data-code="U999">
     <div class="working" hidden><p>10% of 45 = 4.5. 20% = 9.</p></div>
   </div>
   <div class="q" data-a="${b64("130")}" data-wrong="${b64("120=Not yet.|65=Copied.")}">
-    <p class="stem">2. Find 65% of 200.</p>
+    <p class="stem">2. Find 65%&nbsp;of 200&#39;s &times; 1.</p>
     <p class="hint" hidden>10% of 200 is 20.</p>
     <div class="working" hidden><p>60% = 120. 5% = 10. 65% = 130.</p></div>
   </div>
@@ -59,7 +65,7 @@ test("parseLesson: stems lose their number, figure and scaffold appear only wher
     { answer: "4.5", message: "Half way." },
     { answer: "18", message: "Twice." },
   ]);
-  expect(b?.stem).toBe("Find 65% of 200.");
+  expect(b?.stem).toBe("Find 65% of 200's × 1.");
   expect(b).not.toHaveProperty("figure");
   expect(b).not.toHaveProperty("scaffold");
   expect(b?.working).toBe("60% = 120. 5% = 10. 65% = 130.");

@@ -125,7 +125,7 @@ re-converted goes red.
 ### New Files to Create
 
 - `src/content/types.ts` - the content contract (item, topic, misconception, generator)
-- `src/content/pack.ts` - `itemsFileName(topicId)` and `loadTopics(subject)`
+- `src/content/pack.ts` - `itemsFileName(topicId)`, `subjectDir(subject, root)`, `loadTopics(subject, root)` and `toItemView(item)`
 - `src/content/generators.ts` - `loadGenerators(subject, root)`: runs the plain-JS file, returns `GEN`
 - `src/content/generators.test.ts` - planted-fault check, 21 × 300 runs, coverage
 - `src/content/pack.test.ts` - topics and items invariants, board-wording scan
@@ -236,13 +236,16 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
 
 - **IMPLEMENT**: verbatim from the Appendix. `types.ts` holds `ItemType`, `Tier`, `Topic`,
   `Misconception`, `Item`, `ItemView`, `Generated`, `Generator`. `pack.ts` holds `itemsFileName(topicId)`
-  (`1MA1/G17/cone` → `1MA1-G17-cone.json`) and `loadTopics(subject)`.
+  (`1MA1/G17/cone` → `1MA1-G17-cone.json`), `subjectDir(subject, root)` (a lower-case word, or throw),
+  `loadTopics(subject, root)` (shape-checked) and `toItemView(item)` (PR #22 round 1, F2 and F4).
 - **PATTERN**: string unions per CLAUDE.md "Types".
 - **GOTCHA**: `figure`, `scaffold` and `hint` are additions to D5's field list. They are optional and carry
   what the lessons already hold (`observed`: 60 items have an svg, 42 have a faded first step, all 105
   have a hint). Dropping them would make T4's render from JSON poorer than the v1 page. See N4.
-- **GOTCHA**: `ItemView` drops `misconceptions` as well as `answers` and `working`. Wrong answers narrow
-  the right one; T9 decides what the post-attempt variant adds back.
+- **GOTCHA**: `ItemView` drops `mark_scheme` and `misconceptions` as well as `answers` and `working`:
+  a mark scheme is the answer for `short`, `extended` and `practical-method`, and wrong answers narrow
+  the right one. The type alone is compile-time; `toItemView(item)` is the runtime projection a job must
+  go through (PR #22 round 1, F2). T9 decides what the post-attempt variant adds back.
 - **VALIDATE**: `bunx tsc --noEmit`
 - **SATISFIES**: AC #1
 
@@ -391,7 +394,7 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
 - **GOTCHA**: bounds like "2 to 3 misconceptions" are data facts (`observed`), not schema. They exist so a
   re-conversion that silently drops half the misconceptions goes red; loosen them with a comment when the
   content changes.
-- **VALIDATE**: `bun test` → 13 pass across 5 files (`observed` 2026-09-27 on the branch; `main` has 2 server tests, the prototype layout had fewer). Then two mutations, both `observed` red:
+- **VALIDATE**: `bun test` → 19 pass across 5 files (`observed` 2026-09-27 after the PR #22 round-1 fixes; 13 before them; `main` has 2 server tests, the prototype layout had fewer). Then two mutations, both `observed` red:
   M2 edit one hint in `content/maths/lessons/0001-…html`, `bun test scripts/convert-lessons.test.ts` → the
   deep-equal test fails; M3 `perl -pi -e 'if (!$done && s/"hint": "/"hint": "Edexcel /) { $done = 1 }' content/maths/items/1MA1-R4.json`,
   `bun test src/content/pack.test.ts` → `content/maths/items/1MA1-R4.json matches /\b(Edexcel|…)\b/`.
@@ -629,6 +632,7 @@ with the Write tool, or avoid them; this ticket avoids them.
 
 ## AMENDMENTS
 
+- 2026-09-27 (PR #22 review, round 1) — `ItemView` also omits `mark_scheme`; `toItemView` and `subjectDir` added to `pack.ts`; `loadTopics` takes `root` and checks the file's shape; `loadGenerators` memoises per file; `splitWrong` refuses a key with a space; `text()` decodes `&nbsp;`, `&times;` and numeric entities; the scripts take no argv paths (`convert` is fixed to `content/maths`, the gate walks every subject under `content/`); `checkGenerators` is split into `checkOne`; `.sort()` calls carry a comparator; `SHAPE.number` normalises first. The Appendix listings for `pack.ts`, `generators.ts`, `test-generators.ts`, `convert-lessons.ts` and the three test files are the pre-review source; the shipped files are on the branch. Fixes report: `.claude/reports/pr-22-review-fixes.md`.
 - 2026-09-27 (implementation) — Work done in a worktree at `~/Desktop/study-tutor-t3`: a T2 session was live in the main checkout. `biome.json` keeps the `vcs` block from `main` (the Appendix now shows it). `bun test` count corrected 11/4 → 13/5. Report: `.claude/reports/t3-maths-content-pack-report.md`.
 - 2026-09-27 — Prototype run on the full planned layout; every claim re-labelled `observed`. Biome
   override added for `generators.js` (163 lint diagnostics, not 0 as first stated). Loader switched from
@@ -877,8 +881,11 @@ export interface Item {
   misconceptions: Misconception[];
 }
 
-/** The item a model job may see before an `attempt` event exists for it. */
-export type ItemView = Omit<Item, "answers" | "working" | "misconceptions">;
+/** The item a model job may see before an `attempt` event exists for it. `toItemView` in pack.ts is the runtime projection. */
+export type ItemView = Omit<
+  Item,
+  "answers" | "working" | "mark_scheme" | "misconceptions"
+>;
 
 /** generators.js contract, unchanged from v1 (see the file's header comment). */
 export type GeneratedAnswerType =

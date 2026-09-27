@@ -32,10 +32,10 @@ generator gate runs 21 generators 300 times each under Bun, from both the CLI an
 
 | File | Cases | Result |
 |---|---|---|
-| `src/marking/normalise.test.ts` | 1 (8 rows) | pass |
-| `src/content/generators.test.ts` | 3: planted faults, 21 × 300 runs, coverage | pass |
-| `scripts/convert-lessons.test.ts` | 4: split rule, fixture parse, unknown-code throw, deep-equal of committed items | pass |
-| `src/content/pack.test.ts` | 3: topics invariants, items invariants, board-wording scan over 63 files | pass |
+| `src/marking/normalise.test.ts` | 1 (9 rows after PR #22 round 1; 8 before) | pass |
+| `src/content/generators.test.ts` | 5 after PR #22 round 1 (3 before): planted faults, number shape, per-subject memo, 21 × 300 runs, coverage | pass |
+| `scripts/convert-lessons.test.ts` | 5 after PR #22 round 1 (4 before): split rule, split refusal, fixture parse, unknown-code throw, deep-equal of committed items | pass |
+| `src/content/pack.test.ts` | 6 after PR #22 round 1 (3 before): topics invariants, items invariants with figure and scaffold counts, `toItemView`, `subjectDir`, `loadTopics` root and shape, board-wording scan over 63 files | pass |
 
 Mutations (all `observed` red, then reverted):
 
@@ -49,7 +49,7 @@ All `observed` in the worktree on 2026-09-27:
 
 - `bunx tsc --noEmit` clean
 - `bunx biome check .` 40 files, no diagnostics
-- `bun test` 13 pass, 0 fail, 2260 expect calls, 5 files
+- `bun test` 13 pass, 0 fail, 2260 expect calls, 5 files (19 pass, 2326 expect calls after the PR #22 round-1 fixes, `.claude/reports/pr-22-review-fixes.md`)
 - `bun scripts/test-generators.ts` `all 6300 runs pass` (21 × 300, `derived`)
 - `bun run check` green
 - Level 4.1 `bun run convert` twice: identical md5 over the 21 item files, `git status --short content/` empty
