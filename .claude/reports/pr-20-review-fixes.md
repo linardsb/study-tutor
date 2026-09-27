@@ -66,7 +66,7 @@ New failure mode of the mechanism: `parseLog` swallows the parse error, so a cor
 
 ## Manual look
 
-- **SonarCloud** re-analyses on the push. The two Bug-rated lines are gone; the three regex smells above will still show. If the gate stays red on those, a human decides in the SonarCloud UI.
+- **SonarCloud**: `SonarCloud Code Analysis` on the pushed head reports `pass` (`gh pr checks 20`, observed 2026-09-27 after the push). The two Bug-rated lines are gone; the three regex smells above may still be listed as smells but do not fail the gate.
 - **PC install** (report D11) is still open; unchanged by this round.
 
 ## Copies sweep
