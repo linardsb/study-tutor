@@ -3,26 +3,39 @@
 # requires-python = ">=3.8"
 # ///
 """
-Stop hook — the "Done = pnpm check green, never say-so" guarantee.
+Stop hook — the "Done = `bun run check` green, never say-so" guarantee.
 
-When the agent tries to end its turn with uncommitted changes to workspace
-code (apps/, services/, packages/, db/), run `pnpm check` (turbo: typecheck +
-lint + test). If it fails, block the stop (exit 2) and feed the tail of the
-output back so the agent fixes it before declaring done.
+When the agent tries to end its turn with uncommitted changes to engine code
+(src/, scripts/, app/, content/) or the gate's config (package.json,
+tsconfig.json, biome.json, bun.lock), run `bun run check` (tsc --noEmit +
+biome check + bun test). If it fails, block the stop (exit 2) and feed the
+tail of the output back so the agent fixes it before declaring done.
 
 Escape hatches, all fail-open:
   - stop_hook_active: if we already blocked once this turn, allow the stop —
     the agent tried and reported; a hook must never loop forever.
-  - No dirty workspace code → exit 0 without running anything (conversation
-    turns stay free; turbo caching keeps re-runs cheap otherwise).
-  - pnpm missing, timeout, or any unexpected error → exit 0.
+  - No dirty engine code → exit 0 without running anything (conversation
+    turns stay free).
+  - bun missing → exit 1 with a note on stderr (non-blocking: the user sees
+    that the gate did not run, and the stop proceeds).
+  - timeout, or any unexpected error → exit 0.
 """
 
 import json
+import shutil
 import subprocess
 import sys
 
-CODE_PREFIXES = ("apps/", "services/", "packages/", "db/")
+CODE_PREFIXES = (
+    "src/",
+    "scripts/",
+    "app/",
+    "content/",
+    "package.json",
+    "tsconfig.json",
+    "biome.json",
+    "bun.lock",
+)
 CHECK_TIMEOUT_S = 300
 
 
@@ -48,8 +61,14 @@ def main() -> None:
         if not dirty_code_files():
             sys.exit(0)
 
+        # shell=True turns a missing bun into returncode 127, not an exception,
+        # so the fail-open promise above needs this check to hold.
+        if shutil.which("bun") is None:
+            print("stop_check: bun not on PATH, `bun run check` not run", file=sys.stderr)
+            sys.exit(1)  # non-blocking: stderr reaches the user, the stop proceeds
+
         result = subprocess.run(
-            "pnpm check", shell=True,
+            "bun run check", shell=True,
             capture_output=True, text=True, timeout=CHECK_TIMEOUT_S,
         )
         if result.returncode == 0:
@@ -57,8 +76,8 @@ def main() -> None:
 
         tail = (result.stdout + "\n" + result.stderr)[-3000:]
         print(
-            "BLOCKED: workspace code changed but `pnpm check` is red. "
-            "Fix the failures before finishing (Done = pnpm check green):\n"
+            "BLOCKED: engine code changed but `bun run check` is red. "
+            "Fix the failures before finishing (Done = bun run check green):\n"
             f"{tail}",
             file=sys.stderr,
         )

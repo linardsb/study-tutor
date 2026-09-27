@@ -1,0 +1,53 @@
+import { expect, test } from "bun:test";
+import { openBrowser, startServer } from "./server";
+
+test("port ladder: skips a taken port, tries the next rung, serves the page", async () => {
+  // The OS picks the anchor, so no port in the ladder can already belong to another socket.
+  const first = startServer([0]);
+  const base = first.port ?? 0; // undefined only for a unix socket; the assertion below covers 0
+  // A port the test just released: the middle rung must be free and must be the one chosen.
+  const probe = startServer([0]);
+  const free = probe.port ?? 0;
+  probe.stop(true);
+  let second: ReturnType<typeof startServer> | undefined;
+  let last: ReturnType<typeof startServer> | undefined;
+  try {
+    expect(base).not.toBe(0);
+    expect(free).not.toBe(0);
+    second = startServer([base, free, 0]);
+    expect(second.port).toBe(free); // rung 1 skipped, rung 2 tried before rung 3
+
+    const page = await fetch(`http://127.0.0.1:${second.port}/`);
+    expect(page.status).toBe(200);
+    expect(page.headers.get("content-type")).toBe("text/html; charset=utf-8");
+    expect(await page.text()).toContain("Study tutor");
+
+    const missing = await fetch(`http://127.0.0.1:${second.port}/nope`);
+    expect(missing.status).toBe(404);
+
+    expect(() => startServer([base])).toThrow(`No free port in ${base}`);
+
+    last = startServer([base, 0]);
+    expect(last.port).not.toBe(0);
+    expect(last.port).not.toBe(base);
+  } finally {
+    first.stop(true);
+    second?.stop(true);
+    last?.stop(true);
+  }
+});
+
+test("openBrowser does not throw when the opener is missing from PATH", () => {
+  // Pretend to be Linux on a machine without xdg-open; the server must keep running.
+  const platform = Object.getOwnPropertyDescriptor(process, "platform");
+  Object.defineProperty(process, "platform", {
+    value: "linux",
+    configurable: true,
+  });
+  try {
+    expect(Bun.which("xdg-open")).toBeNull();
+    expect(() => openBrowser("http://127.0.0.1:1/")).not.toThrow();
+  } finally {
+    if (platform) Object.defineProperty(process, "platform", platform);
+  }
+});

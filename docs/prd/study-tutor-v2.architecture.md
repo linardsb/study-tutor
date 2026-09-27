@@ -207,13 +207,34 @@ S5  Question:      does replay hold across a schema change?
     Decision rule: identical rungs and XP → ship / drift → add the startup `replay --check` first
 ```
 
+**S1 result (2026-09-27).** Zips built on the dev Mac by `bun run build` (T1, #3; `observed` after the PR #21 round 2 fixes: Windows
+41,127,857 bytes, mac 46,808,764 bytes with both arm64 and x64 binaries).
+
+- Mac, dev machine (macOS 15.7.3, Intel), run by the implementing session: the x64 binary from the
+  extracted zip served 200 through `Start.command` (`observed`). Dialog count: `pending`, owner Linards,
+  expected 2026-10-04; the Safari download and Finder double-click need a person at the screen. In its
+  place, Gatekeeper's verdict on quarantined copies was read with `spctl`: `rejected, source=no usable
+  signature` for both `Start.command` and the binary (`observed`), which is the "cannot be verified"
+  dialog with an Open Anyway path, not the "damaged" dead end. That holds only because the build re-signs
+  both mac binaries ad hoc: Bun's darwin-x64 compile leaves Bun's own Developer ID signature in place and
+  invalidates it (`observed`: `codesign -vv` reports "code or signature have been modified"), and a
+  quarantined binary with an invalid signature gets "damaged" with no Open Anyway (`expected`: documented
+  macOS behaviour, not run in this ticket). On macOS 15 and 26 the
+  path is Done, System Settings, Privacy & Security, Open Anyway, open again; D10's right-click Open no
+  longer exists on these versions.
+- Windows, a fresh PC: `pending`, owner Linards, expected 2026-10-04. Protocol: plan
+  `.claude/plans/s1-spike-and-repo-skeleton.md`, Level 4 step 4.
+- Mac, a fresh Apple silicon machine: `pending`, owner Linards, expected 2026-10-04. Level 4 step 5.
+- Decision by the rule: `pending` until both fresh-machine legs are in.
+
 PRD experiments E1–E5 stand. E1 (adherence on the existing folder) runs before any of this is built.
 
 ## Open questions
 
 - PRD Q1–Q4, Q6–Q8, Q10 unchanged. Q5 is answered above (structural guard; Jev optional). Q9 is
   answered by D9.
-- Q11. Which port, and what happens when it is taken? Settled by S1's hello-world.
+- Q11. Settled by S1: the first free of 4731 to 4735, then any free port; the URL is printed in the console
+  either way.
 - Q12. Does Anthropic's compatibility endpoint carry vision and JSON well enough, or does Anthropic need
   the one adapter S2 allows for? Settled by S2.
 - Q13. Where does the parent digest go with no outbound channel: a page, a file in `data/digest/`, or
