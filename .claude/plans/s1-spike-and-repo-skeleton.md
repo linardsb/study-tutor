@@ -95,7 +95,8 @@ dependencies. `zip` from macOS (`observed` at `/usr/bin/zip`) for the build.
 ### Relevant Codebase Files IMPORTANT: YOU MUST READ THESE FILES BEFORE IMPLEMENTING!
 
 - `.claude/hooks/stop_check.py` (whole file, 77 lines) - Why: Task 6 rewrites it. Keep its three escape
-  hatches (`stop_hook_active`, clean tree, any exception → exit 0) and its shape.
+  hatches (`stop_hook_active`, clean tree, any exception → exit 0) and its shape. A missing `bun` exits 1 with a
+  note on stderr (PR #21 review R2-2): non-blocking, but visible.
 - `.claude/hooks/pre_tool_use.py` (lines 156-158, `GUARD_FENCE`; docstring lines 1-40) - Why: writes to
   `.claude/hooks/` through Edit/Write are blocked; a Bash heredoc is not (the docstring says so). See Q1.
   Guard 2 also blocks any Bash command whose text contains a recursive force delete, even inside a
@@ -311,10 +312,12 @@ Darwin `observed` (the sketch opened a tab); win32 `expected`.
 
 - **IMPLEMENT**: one test with `bun:test`. Let the OS pick the anchor: `first = startServer([0])`, `base = first.port`
   (PR #21 review M1: a random base overlaps the ephemeral range and can already be taken).
-  `second = startServer([base, base + 1, 0])`; expect `second.port` to be neither `base` nor `0`; `fetch` `/` on it → 200, `content-type` is `text/html; charset=utf-8` and body contains `Study tutor`;
+  Bind and release a second OS-picked port: `free = startServer([0]).port`, then `stop(true)` (PR #21 review R2-1: the
+  middle rung must be a port known to be free, and the test must assert it is chosen, or a "first rung, else last rung"
+  ladder passes). `second = startServer([base, free, 0])`; expect `second.port` to be `free`; `fetch` `/` on it → 200, `content-type` is `text/html; charset=utf-8` and body contains `Study tutor`;
   `fetch` `/nope` → 404;
   `startServer([base])` throws `No free port`; `startServer([base, 0]).port` is neither `0` nor `base`.
-  Stop all three with `stop(true)`.
+  Create `second` and `last` inside the `try`; stop all three in `finally` with `stop(true)`.
 - **PATTERN**: the sketch under Patterns passed with the first four assertions (`observed`, 1 pass).
 - **GOTCHA**: never use a port from `PORTS` in the test; the dev server may be running on it. The `port: 0`
   case proves the last-resort fallback, which is the Q11 answer.
@@ -638,3 +641,5 @@ legs.
 - 2026-09-27 — Q1–Q4 decided by Linards on the plan's recommendations: heredoc edit of the stop hook, keep the `xattr -d` line in `Start.command`, both mac binaries in one zip, launchers under `launchers/`. No task changes.
 
 - 2026-09-27 — PR #21 review round 1 (`.claude/code-reviews/pr-21-review.md`, fixes in `.claude/reports/pr-21-review-fixes.md`): Task 2's ladder steps on `EACCES` too and rethrows only for port 0; Task 3's test lets the OS pick the anchor port and adds an opener test; the page and README say "the window that started the tutor", not "black window"; `openBrowser` swallows a missing opener; `scripts/build.ts` spawns `process.execPath`; `Start.command` checks `cd`; `tsconfig.json` gains `include`; the stop hook exits 0 when `bun` is missing; the "damaged" claim in the S1 result is tagged `expected`.
+
+- 2026-09-27 — PR #21 review round 2 (`.claude/code-reviews/pr-21-review-round-2.md`, fixes in `.claude/reports/pr-21-review-fixes-round-2.md`): Task 3's test binds and releases a port for the middle rung and asserts it is the one chosen, with the servers created inside the `try`; the stop hook exits 1 with a stderr note when `bun` is missing (reverses round 1's exit 0: visible, still non-blocking); README step 4 adds "Mac: click Terminate if it asks." R2-3 (the opener test asserts no `xdg-open` on the machine) is deferred to T4 (#6).

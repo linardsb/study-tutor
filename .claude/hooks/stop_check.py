@@ -16,7 +16,9 @@ Escape hatches, all fail-open:
     the agent tried and reported; a hook must never loop forever.
   - No dirty engine code → exit 0 without running anything (conversation
     turns stay free).
-  - bun missing, timeout, or any unexpected error → exit 0.
+  - bun missing → exit 1 with a note on stderr (non-blocking: the user sees
+    that the gate did not run, and the stop proceeds).
+  - timeout, or any unexpected error → exit 0.
 """
 
 import json
@@ -62,7 +64,8 @@ def main() -> None:
         # shell=True turns a missing bun into returncode 127, not an exception,
         # so the fail-open promise above needs this check to hold.
         if shutil.which("bun") is None:
-            sys.exit(0)
+            print("stop_check: bun not on PATH, `bun run check` not run", file=sys.stderr)
+            sys.exit(1)  # non-blocking: stderr reaches the user, the stop proceeds
 
         result = subprocess.run(
             "bun run check", shell=True,

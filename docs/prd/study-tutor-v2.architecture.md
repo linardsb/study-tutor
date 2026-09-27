@@ -207,8 +207,8 @@ S5  Question:      does replay hold across a schema change?
     Decision rule: identical rungs and XP → ship / drift → add the startup `replay --check` first
 ```
 
-**S1 result (2026-09-27).** Zips built on the dev Mac by `bun run build` (T1, #3; `observed` after the PR #21 round 1 fixes: Windows
-41,127,839 bytes, mac 46,808,746 bytes with both arm64 and x64 binaries).
+**S1 result (2026-09-27).** Zips built on the dev Mac by `bun run build` (T1, #3; `observed` after the PR #21 round 2 fixes: Windows
+41,127,857 bytes, mac 46,808,764 bytes with both arm64 and x64 binaries).
 
 - Mac, dev machine (macOS 15.7.3, Intel), run by the implementing session: the x64 binary from the
   extracted zip served 200 through `Start.command` (`observed`). Dialog count: `pending`, owner Linards,

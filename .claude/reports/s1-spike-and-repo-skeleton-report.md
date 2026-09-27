@@ -33,13 +33,13 @@ set to linux and no `xdg-open` on PATH. Result: 2 pass, 0 fail (`observed`, `bun
 
 All `observed` on 2026-09-27, macOS 15.7.3 Intel, Bun 1.3.4, TypeScript 7.0.2, Biome 2.5.14:
 
-- `bun run check`: tsc clean, Biome "Checked 7 files, no fixes", 2 pass 0 fail, 12 expect() calls, exit 0 (`observed` after the PR #21 round 1 fixes).
+- `bun run check`: tsc clean, Biome "Checked 7 files, no fixes", 2 pass 0 fail, 12 expect() calls, exit 0 (`observed` after the PR #21 round 2 fixes; the same figures after round 1).
 - `bun src/server.ts`: `Study tutor is running at http://127.0.0.1:4731/`; curl `/` 200, `/nope` 404;
   `lsof` shows the listener on `127.0.0.1:4731` only.
 - `bun run build`: three compiles plus two ad hoc re-signs in about 9.5 s (runtimes already cached);
-  `dist/StudyTutor-windows.zip` 41,127,839 bytes (round 1 fixes; 41,128,211 at `db8388b`) (`StudyTutor.exe` 115,691,608, `Start.bat`, `README.txt`);
-  `dist/StudyTutor-mac.zip` 46,808,746 bytes (round 1 fixes; 46,808,601 at `db8388b`) (`StudyTutor-arm64` 59,867,200, `StudyTutor-x64` 65,995,184 after the ad hoc re-sign,
-  `Start.command` 755, `README.txt`); both extract to one `StudyTutor/` folder.
+  `dist/StudyTutor-windows.zip` 41,127,857 bytes (round 2 fixes; 41,127,839 after round 1, 41,128,211 at `db8388b`) (`StudyTutor.exe` 115,691,608, `Start.bat` 185, `README.txt` 607);
+  `dist/StudyTutor-mac.zip` 46,808,764 bytes (round 2 fixes; 46,808,746 after round 1, 46,808,601 at `db8388b`) (`StudyTutor-arm64` 59,867,200, `StudyTutor-x64` 65,995,184 after the ad hoc re-sign,
+  `Start.command` 195, mode 755, `README.txt` 607); both extract to one `StudyTutor/` folder.
 - Extracted mac zip in a scratch folder: `./StudyTutor/Start.command` picked the x64 binary, printed the
   URL, curl 200.
 - `codesign -vv` on both extracted mac binaries: "satisfies its Designated Requirement", `Signature=adhoc`.
@@ -49,7 +49,8 @@ All `observed` on 2026-09-27, macOS 15.7.3 Intel, Bun 1.3.4, TypeScript 7.0.2, B
 - `git ls-files -s launchers/Start.command` → `100755`; `file launchers/Start.bat` → CRLF; `README.txt` 10 lines.
 - Stop hook: dirty `src/` with a red scratch test → `BLOCKED: engine code changed but \`bun run check\` is
   red ...`, exit 2; scratch files removed → exit 0. `grep` for pnpm, apps/, services/, packages/, db/, turbo,
-  taxi in the hook → none. Clean-tree probe after the wip commit `67a636b`: exit 0.
+  taxi in the hook → none. Clean-tree probe after the wip commit `67a636b`: exit 0. Dirty `src/` with `bun` off
+  PATH (round 2 fixes): `stop_check: bun not on PATH, \`bun run check\` not run` on stderr, exit 1 (non-blocking).
 - `git diff --stat e1/` and `git diff --stat CLAUDE.md`: empty.
 
 Level 4 steps 1–3 (Safari download, Finder double-click, dialog count on this Mac) were not run: they need
