@@ -1,0 +1,119 @@
+[
+  {
+    "id": "1MA1/R5#1",
+    "topic": "1MA1/R5",
+    "type": "cloze",
+    "stem": "2:7 = ?:21. Find the missing number. The first step is done. Finish it.",
+    "scaffold": "Multiplier: 21 ÷ 7 = 3. …",
+    "hint": "Multiply the 2 by that multiplier.",
+    "answers": ["6"],
+    "working": "Multiplier: 21 ÷ 7 = 3. 2 × 3 = 6.",
+    "misconceptions": [
+      {
+        "answer": "16",
+        "message": "You added 14 to the 2. Equivalent ratios multiply."
+      },
+      {
+        "answer": "3",
+        "message": "That is the multiplier, not the missing part."
+      },
+      {
+        "answer": "10.5",
+        "message": "You divided 21 by 2. The pair you know is 7 and 21."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R5#2",
+    "topic": "1MA1/R5",
+    "type": "cloze",
+    "stem": "5:3 = 40:?. Find the missing number. The first step is done. Finish it.",
+    "scaffold": "The 5 and the 40 are the pair you know both values of. …",
+    "hint": "Work out 40 ÷ 5 first.",
+    "answers": ["24"],
+    "working": "The 5 and the 40 are the pair you know both values of. Multiplier: 40 ÷ 5 = 8. 3 × 8 = 24.",
+    "misconceptions": [
+      {
+        "answer": "38",
+        "message": "You added 35 to the 3. Equivalent ratios multiply."
+      },
+      {
+        "answer": "8",
+        "message": "That is the multiplier, not the missing part."
+      },
+      {
+        "answer": "0.375",
+        "message": "You divided 3 by 8. The other part is multiplied, not divided."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R5#3",
+    "topic": "1MA1/R5",
+    "type": "cloze",
+    "stem": "A recipe for 4 people needs 300 g of flour. How many grams for 10 people?",
+    "hint": "The multiplier is 10 ÷ 4.",
+    "answers": ["750"],
+    "working": "Multiplier: 10 ÷ 4 = 2.5. 300 × 2.5 = 750 g.",
+    "misconceptions": [
+      {
+        "answer": "600",
+        "message": "You scaled up to 8 people and stopped. The question says 10."
+      },
+      {
+        "answer": "1200",
+        "message": "You multiplied by 4, the number of people. The multiplier is 10 ÷ 4."
+      },
+      {
+        "answer": "120",
+        "message": "You divided 300 by 2.5 instead of multiplying."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R5#4",
+    "topic": "1MA1/R5",
+    "type": "cloze",
+    "stem": "Simplify 18:24 to its smallest whole numbers.",
+    "hint": "Nothing is being scaled up here. What divides into both 18 and 24?",
+    "answers": ["3:4", "3 to 4"],
+    "working": "This is simplifying, not scaling. The highest common factor of 18 and 24 is 6. 18 ÷ 6 = 3 and 24 ÷ 6 = 4. Answer 3:4.",
+    "misconceptions": [
+      {
+        "answer": "36:48",
+        "message": "You doubled both parts. The question wants the smallest whole numbers."
+      },
+      {
+        "answer": "9:12",
+        "message": "You divided by 2. A bigger number goes into both."
+      },
+      {
+        "answer": "6:8",
+        "message": "You divided by 3. Keep going, 2 goes into both of those."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R5#5",
+    "topic": "1MA1/R5",
+    "type": "cloze",
+    "stem": "In a class the ratio of girls to boys is 3:4. There are 16 boys. How many girls?",
+    "hint": "Boys is the part you know both values of: 4 and 16.",
+    "answers": ["12"],
+    "working": "Boys: 16 ÷ 4 = 4, so the multiplier is 4. Girls: 3 × 4 = 12.",
+    "misconceptions": [
+      {
+        "answer": "21",
+        "message": "You added 5 to the 16. Ratios scale by multiplying."
+      },
+      {
+        "answer": "4",
+        "message": "That is the multiplier, not the number of girls."
+      },
+      {
+        "answer": "16",
+        "message": "You copied the boys across. The ratio is 3 to 4, not 1 to 1."
+      }
+    ]
+  }
+]

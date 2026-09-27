@@ -1,0 +1,119 @@
+[
+  {
+    "id": "1MA1/R9/increase-decrease#1",
+    "topic": "1MA1/R9/increase-decrease",
+    "type": "cloze",
+    "stem": "Increase £80 by 25%. The first steps are done.",
+    "scaffold": "Step 1: 10% of 80 = 8, so 20% = 16 and 5% = 4. 25% = 16 + 4 = 20. Step 2: increase, so 80 + 20 = …",
+    "hint": "Add the 20 to the 80.",
+    "answers": ["100"],
+    "working": "Step 1: 10% of 80 = 8, so 20% = 16 and 5% = 4. 25% = 16 + 4 = 20. Step 2: increase, so 80 + 20 = 100. £100.",
+    "misconceptions": [
+      {
+        "answer": "20",
+        "message": "That is 25% of 80. The question asks for the new amount, so add it on."
+      },
+      {
+        "answer": "60",
+        "message": "You took it away. Increase means add."
+      },
+      {
+        "answer": "105",
+        "message": "You added 25 as pounds. 25% of 80 is 20."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R9/increase-decrease#2",
+    "topic": "1MA1/R9/increase-decrease",
+    "type": "cloze",
+    "stem": "A parcel weighs 60 kg. Its weight goes up by 15%. Find the new weight in kg. The first step is done.",
+    "scaffold": "Step 1: 10% of 60 = 6 and 5% of 60 = 3, so 15% = …",
+    "hint": "15% is 6 + 3. Then add that to 60.",
+    "answers": ["69", "69 kg"],
+    "working": "Step 1: 10% of 60 = 6 and 5% of 60 = 3, so 15% = 6 + 3 = 9. Step 2: goes up, so 60 + 9 = 69 kg.",
+    "misconceptions": [
+      {
+        "answer": "9",
+        "message": "That is 15% of 60. Add it to the 60."
+      },
+      {
+        "answer": "75",
+        "message": "You added 15 as kilograms. 15% of 60 is 9."
+      },
+      {
+        "answer": "51",
+        "message": "You took it away. Goes up means add."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R9/increase-decrease#3",
+    "topic": "1MA1/R9/increase-decrease",
+    "type": "cloze",
+    "stem": "A pair of trainers costs £45. In a sale the price is cut by 20%. Find the sale price in pounds.",
+    "hint": "10% of 45 first. Then double it.",
+    "answers": ["36"],
+    "working": "10% of 45 = 4.5, so 20% = 9. A cut, so 45 − 9 = 36. £36.",
+    "misconceptions": [
+      {
+        "answer": "9",
+        "message": "That is the money off. Take it from 45."
+      },
+      {
+        "answer": "54",
+        "message": "You added. A cut means take away."
+      },
+      {
+        "answer": "25",
+        "message": "You took 20 as pounds. 20% of 45 is 9."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R9/increase-decrease#4",
+    "topic": "1MA1/R9/increase-decrease",
+    "type": "cloze",
+    "stem": "A TV costs £320. What is 35% of the price?",
+    "hint": "No increase or decrease here. Stop at the percentage.",
+    "answers": ["112"],
+    "working": "This is U349, percentage of an amount, with nothing added or taken away. 10% of 320 = 32, so 30% = 96. 5% = 16. 35% = 96 + 16 = 112. £112.",
+    "misconceptions": [
+      {
+        "answer": "208",
+        "message": "You took 35% off. The question only asks for 35% of the price."
+      },
+      {
+        "answer": "432",
+        "message": "You added 35% on. Only the 35% was asked for."
+      },
+      {
+        "answer": "285",
+        "message": "You took 35 as pounds. Find 35% of 320."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R9/increase-decrease#5",
+    "topic": "1MA1/R9/increase-decrease",
+    "type": "cloze",
+    "stem": "A village has 1800 people. The population grows by 12%. How many people live there now?",
+    "hint": "10% of 1800 is 180. Build 12% from 10% and 2%.",
+    "answers": ["2016"],
+    "working": "10% of 1800 = 180. 1% = 18, so 2% = 36. 12% = 180 + 36 = 216. Grows, so 1800 + 216 = 2016.",
+    "misconceptions": [
+      {
+        "answer": "216",
+        "message": "That is the 12%. Add it to 1800."
+      },
+      {
+        "answer": "1812",
+        "message": "You added 12 people. 12% of 1800 is 216."
+      },
+      {
+        "answer": "1584",
+        "message": "You took it away. The population grew."
+      }
+    ]
+  }
+]

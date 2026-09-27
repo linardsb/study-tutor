@@ -1,0 +1,124 @@
+[
+  {
+    "id": "1MA1/A12#1",
+    "topic": "1MA1/A12",
+    "type": "cloze",
+    "stem": "This line is y = mx + c. Write the part after the equals sign, like 4x+1. The first steps are done.",
+    "figure": "<svg viewBox=\"0 0 150 150\" width=\"100%\" style=\"max-width:150px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"11\" aria-label=\"Grid with a straight line crossing the y-axis at 3 and rising 2 for every 1 across\">\n        <g stroke=\"#e8e6e0\" stroke-width=\"1\">\n          <line x1=\"15\" y1=\"15\" x2=\"15\" y2=\"135\"/><line x1=\"40\" y1=\"15\" x2=\"40\" y2=\"135\"/><line x1=\"90\" y1=\"15\" x2=\"90\" y2=\"135\"/><line x1=\"115\" y1=\"15\" x2=\"115\" y2=\"135\"/>\n          <line x1=\"15\" y1=\"35\" x2=\"135\" y2=\"35\"/><line x1=\"15\" y1=\"60\" x2=\"135\" y2=\"60\"/><line x1=\"15\" y1=\"85\" x2=\"135\" y2=\"85\"/><line x1=\"15\" y1=\"135\" x2=\"135\" y2=\"135\"/>\n        </g>\n        <line x1=\"15\" y1=\"110\" x2=\"135\" y2=\"110\" stroke=\"#5f5f5a\" stroke-width=\"1.5\"/>\n        <line x1=\"65\" y1=\"15\" x2=\"65\" y2=\"145\" stroke=\"#5f5f5a\" stroke-width=\"1.5\"/>\n        <line x1=\"27\" y1=\"145\" x2=\"102\" y2=\"20\" stroke=\"#2b5797\" stroke-width=\"2.5\"/>\n        <text x=\"60\" y=\"122\" text-anchor=\"end\" fill=\"#5f5f5a\">0</text>\n        <text x=\"60\" y=\"63\" text-anchor=\"end\" fill=\"#5f5f5a\">3</text>\n        <text x=\"115\" y=\"122\" fill=\"#5f5f5a\">2</text>\n      </svg>",
+    "scaffold": "Read c: the line crosses the y-axis at 3. Read m: it goes up 2 for every 1 across, so m = 2. …",
+    "hint": "Write the m, then the x, then the c.",
+    "answers": ["2x+3", "y=2x+3"],
+    "working": "Read c: the line crosses the y-axis at 3. Read m: it goes up 2 for every 1 across, so m = 2. Equation: y = 2x + 3.",
+    "misconceptions": [
+      {
+        "answer": "3x+2",
+        "message": "You have swapped the gradient and the intercept."
+      },
+      {
+        "answer": "2x",
+        "message": "You left out the 3. The line does not pass through the origin."
+      },
+      {
+        "answer": "x+3",
+        "message": "The gradient is not 1. Count how far up it goes for one step across."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/A12#2",
+    "topic": "1MA1/A12",
+    "type": "cloze",
+    "stem": "This line is y = mx + c. Write the part after the equals sign, like 4x+1. The first step is done.",
+    "figure": "<svg viewBox=\"0 0 150 150\" width=\"100%\" style=\"max-width:150px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"11\" aria-label=\"Grid with a straight line crossing the y-axis at 4 and falling 2 for every 1 across\">\n        <g stroke=\"#e8e6e0\" stroke-width=\"1\">\n          <line x1=\"15\" y1=\"15\" x2=\"15\" y2=\"135\"/><line x1=\"40\" y1=\"15\" x2=\"40\" y2=\"135\"/><line x1=\"90\" y1=\"15\" x2=\"90\" y2=\"135\"/><line x1=\"115\" y1=\"15\" x2=\"115\" y2=\"135\"/>\n          <line x1=\"15\" y1=\"35\" x2=\"135\" y2=\"35\"/><line x1=\"15\" y1=\"60\" x2=\"135\" y2=\"60\"/><line x1=\"15\" y1=\"85\" x2=\"135\" y2=\"85\"/><line x1=\"15\" y1=\"135\" x2=\"135\" y2=\"135\"/>\n        </g>\n        <line x1=\"15\" y1=\"110\" x2=\"135\" y2=\"110\" stroke=\"#5f5f5a\" stroke-width=\"1.5\"/>\n        <line x1=\"65\" y1=\"15\" x2=\"65\" y2=\"145\" stroke=\"#5f5f5a\" stroke-width=\"1.5\"/>\n        <line x1=\"28\" y1=\"18\" x2=\"103\" y2=\"143\" stroke=\"#c8372d\" stroke-width=\"2.5\"/>\n        <text x=\"60\" y=\"122\" text-anchor=\"end\" fill=\"#5f5f5a\">0</text>\n        <text x=\"60\" y=\"38\" text-anchor=\"end\" fill=\"#5f5f5a\">4</text>\n        <text x=\"115\" y=\"122\" fill=\"#5f5f5a\">2</text>\n      </svg>",
+    "scaffold": "Read c: the line crosses the y-axis at 4. …",
+    "hint": "The line falls, so m is negative. Count how far it drops for one step across.",
+    "answers": ["-2x+4", "4-2x", "y=-2x+4"],
+    "working": "Read c: the line crosses the y-axis at 4. It falls from left to right, so m is negative. It drops 2 for every 1 across, so m = −2. Equation: y = −2x + 4.",
+    "misconceptions": [
+      {
+        "answer": "2x+4",
+        "message": "The line falls from left to right, so the gradient is negative."
+      },
+      {
+        "answer": "-2x-4",
+        "message": "It crosses the y-axis above zero, at 4."
+      },
+      {
+        "answer": "-4x+2",
+        "message": "You have swapped the gradient and the intercept."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/A12#3",
+    "topic": "1MA1/A12",
+    "type": "cloze",
+    "stem": "This graph is one of y = x², y = x³ or y = 1/x. What is the highest power of x in its equation?",
+    "figure": "<svg viewBox=\"0 0 150 150\" width=\"100%\" style=\"max-width:150px;display:block;margin:.4rem 0\" aria-label=\"A U-shaped curve with its lowest point on the origin\">\n        <line x1=\"15\" y1=\"120\" x2=\"135\" y2=\"120\" stroke=\"#5f5f5a\" stroke-width=\"1.5\"/>\n        <line x1=\"75\" y1=\"15\" x2=\"75\" y2=\"145\" stroke=\"#5f5f5a\" stroke-width=\"1.5\"/>\n        <path d=\"M 25 22 Q 75 218 125 22\" fill=\"none\" stroke=\"#c8372d\" stroke-width=\"2.5\"/>\n      </svg>",
+    "hint": "Which of the four shapes is a U, and what power goes with it?",
+    "answers": ["2"],
+    "working": "A U shape comes from x², so the highest power is 2. Both arms rise, which x³ never does.",
+    "misconceptions": [
+      {
+        "answer": "3",
+        "message": "Power 3 gives the S shape. This one is a U."
+      },
+      {
+        "answer": "1",
+        "message": "Power 1 gives a straight line. This graph curves."
+      },
+      {
+        "answer": "-1",
+        "message": "That is 1/x, two separate curves in opposite corners."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/A12#4",
+    "topic": "1MA1/A12",
+    "type": "cloze",
+    "stem": "The solid line is y = 3x + 1. The dashed line is parallel to it and crosses the y-axis at −4. Write the dashed line as mx + c, like 4x+1.",
+    "figure": "<svg viewBox=\"0 0 150 150\" width=\"100%\" style=\"max-width:150px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"11\" aria-label=\"Two parallel lines of the same steepness, one crossing the y-axis above zero and one below\">\n        <line x1=\"15\" y1=\"80\" x2=\"135\" y2=\"80\" stroke=\"#5f5f5a\" stroke-width=\"1.5\"/>\n        <line x1=\"75\" y1=\"15\" x2=\"75\" y2=\"145\" stroke=\"#5f5f5a\" stroke-width=\"1.5\"/>\n        <line x1=\"35\" y1=\"140\" x2=\"95\" y2=\"20\" stroke=\"#2b5797\" stroke-width=\"2.5\"/>\n        <line x1=\"60\" y1=\"145\" x2=\"125\" y2=\"20\" stroke=\"#2e8b57\" stroke-width=\"2.5\" stroke-dasharray=\"6 4\"/>\n      </svg>",
+    "hint": "Parallel lines have the same gradient. Only the c changes.",
+    "answers": ["3x-4", "y=3x-4"],
+    "working": "Parallel means the same steepness, so m stays 3. The new line crosses at −4, so c = −4. Equation: y = 3x − 4.",
+    "misconceptions": [
+      {
+        "answer": "3x+1",
+        "message": "That is the first line. The new one crosses at −4."
+      },
+      {
+        "answer": "3x+4",
+        "message": "It crosses below zero, so the number is negative."
+      },
+      {
+        "answer": "-4x+3",
+        "message": "You have swapped the gradient and the intercept."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/A12#5",
+    "topic": "1MA1/A12",
+    "type": "cloze",
+    "stem": "A taxi charges £3 to start, then £2 for every mile. The graph shows cost against miles. What is its gradient?",
+    "figure": "<svg viewBox=\"0 0 170 130\" width=\"100%\" style=\"max-width:170px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"11\" aria-label=\"A straight line starting at 3 pounds on the cost axis and rising steadily with miles\">\n        <line x1=\"30\" y1=\"105\" x2=\"160\" y2=\"105\" stroke=\"#5f5f5a\" stroke-width=\"1.5\"/>\n        <line x1=\"30\" y1=\"10\" x2=\"30\" y2=\"105\" stroke=\"#5f5f5a\" stroke-width=\"1.5\"/>\n        <line x1=\"30\" y1=\"90\" x2=\"150\" y2=\"18\" stroke=\"#2b5797\" stroke-width=\"2.5\"/>\n        <text x=\"26\" y=\"94\" text-anchor=\"end\" fill=\"#5f5f5a\">3</text>\n        <text x=\"95\" y=\"122\" text-anchor=\"middle\" fill=\"#5f5f5a\">miles</text>\n        <text x=\"14\" y=\"50\" text-anchor=\"middle\" fill=\"#5f5f5a\" transform=\"rotate(-90 14 50)\">cost</text>\n      </svg>",
+    "hint": "The gradient is what the cost does for each extra mile.",
+    "answers": ["2", "2 per mile"],
+    "working": "Cost = 2 × miles + 3. The gradient is the number in front of miles, which is 2. The £3 is the intercept.",
+    "misconceptions": [
+      {
+        "answer": "3",
+        "message": "That is the £3 start, which is the intercept."
+      },
+      {
+        "answer": "5",
+        "message": "You added 3 and 2. The gradient is the cost of one more mile."
+      },
+      {
+        "answer": "6",
+        "message": "You multiplied 3 by 2. The gradient is the cost of one more mile."
+      }
+    ]
+  }
+]

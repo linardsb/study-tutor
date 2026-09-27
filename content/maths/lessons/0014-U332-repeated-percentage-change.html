@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>U332 Repeated percentage change</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="lesson">
+  <nav class="sections" aria-label="Sections"><a href="#picture">Picture</a><a href="#worked">Example</a><a href="#method">Method</a><a href="#watch">Watch out</a><a href="#quiz">Try it</a></nav>
+  <header>
+    <p class="crumb"><a href="../progress.html">Progress</a> · U332 · Maths · Foundation · Papers 1 to 3</p>
+    <h1>Repeated percentage change</h1>
+    <p class="aim">By the end you can apply two percentage changes in a row and tell simple from compound interest.</p>
+  </header>
+
+  <section id="picture">
+    <p>£200 goes up by 10%, then 10% again. The second 10% comes from the new amount, so it is bigger.</p>
+    <p class="caption">Year 1: 10% of £200 is £20, total £220.</p>
+    <div class="bar" style="width:91%" aria-label="Ten green blocks of 20 making 200, then one amber block of 20 added, total 220">
+      <span class="on">20</span><span class="on">20</span><span class="on">20</span><span class="on">20</span><span class="on">20</span><span class="on">20</span><span class="on">20</span><span class="on">20</span><span class="on">20</span><span class="on">20</span><span style="background:var(--amber-bg);border-color:var(--amber)">20</span>
+    </div>
+    <p class="caption">Year 2: 10% of £220 is £22, total £242.</p>
+    <div class="bar" aria-label="Ten green blocks of 22 making 220, then one amber block of 22 added, total 242">
+      <span class="on">22</span><span class="on">22</span><span class="on">22</span><span class="on">22</span><span class="on">22</span><span class="on">22</span><span class="on">22</span><span class="on">22</span><span class="on">22</span><span class="on">22</span><span style="background:var(--amber-bg);border-color:var(--amber)">22</span>
+    </div>
+    <p class="caption">10% then 10% gives £242. One 20% rise gives £240.</p>
+  </section>
+
+  <section id="worked">
+    <h2>Worked example</h2>
+    <div class="example">
+      <p><b>A car worth £8000 loses 10% of its value each year. Find its value after 2 years.</b><br>
+         <b>Step 1</b>, year 1: 10% of 8000 = 800. 8000 − 800 = 7200.<br>
+         <b>Step 2</b>, year 2, on the new amount: 10% of 7200 = 720. 7200 − 720 = 6480.<br>
+         <b>Step 3</b>, one line per year, so the answer is the last line: <b>£6480</b>. A single 20% drop would give £6400, which is wrong.</p>
+      <p><b>£400 is saved at 5% per year for 2 years. Find the total with simple interest, then with compound interest.</b><br>
+         <b>Step 4</b>, simple: 5% of 400 = 20 each year. 2 × 20 = 40. Total <b>£440</b>.<br>
+         <b>Step 1</b>, compound, year 1: 400 + 20 = 420.<br>
+         <b>Step 2</b>, year 2: 5% of 420 = 21. 420 + 21 = <b>£441</b>.</p>
+    </div>
+  </section>
+
+  <section id="method">
+    <h2>The method</h2>
+    <ol>
+      <li>Do the first change: find the percentage, add it or take it away. Write the new amount.</li>
+      <li>Do the second change on the new amount, never on the original.</li>
+      <li>One line per year or per change. Keep the running total on each line.</li>
+      <li>Simple interest is different: find the interest once, then multiply by the number of years.</li>
+    </ol>
+    <p>Simple interest is paid on the original only, the same every year. Compound is added to the total and grows.</p>
+
+    <details class="why">
+      <summary>Why does a 10% rise then a 10% fall not get you back to the start?</summary>
+      <p>The fall is 10% of the bigger number. £200 up 10% is £220. 10% of 220 is 22, so it falls to £198.</p>
+    </details>
+
+    <details class="another">
+      <summary>Another way to see it: the multiplier</summary>
+      <p>With a calculator, multiply by the multiplier each time. Up 10% is × 1.1: £200 × 1.1 × 1.1 = £242. Three years is 1.1³.</p>
+      <svg viewBox="0 0 320 60" width="100%" style="max-width:320px;display:block;margin:.5rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" aria-label="A chain: 200, times 1.1, 220, times 1.1, 242">
+        <rect x="6" y="16" width="60" height="30" fill="#e6f4ec" stroke="#1d1d1b"/><text x="36" y="36" text-anchor="middle" font-weight="700">200</text>
+        <line x1="66" y1="31" x2="120" y2="31" stroke="#5f5f5a" stroke-width="1.5"/><polygon points="126,31 118,27 118,35" fill="#5f5f5a"/><text x="96" y="14" text-anchor="middle" fill="#c8372d">× 1.1</text>
+        <rect x="130" y="16" width="60" height="30" fill="#e6f4ec" stroke="#1d1d1b"/><text x="160" y="36" text-anchor="middle" font-weight="700">220</text>
+        <line x1="190" y1="31" x2="244" y2="31" stroke="#5f5f5a" stroke-width="1.5"/><polygon points="250,31 242,27 242,35" fill="#5f5f5a"/><text x="220" y="14" text-anchor="middle" fill="#c8372d">× 1.1</text>
+        <rect x="254" y="16" width="60" height="30" fill="#e6f4ec" stroke="#1d1d1b"/><text x="284" y="36" text-anchor="middle" font-weight="700">242</text>
+      </svg>
+      <p>The chain stops matching for simple interest. The interest is the same every year, so find it once and multiply by the years.</p>
+    </details>
+  </section>
+
+  <section id="watch">
+    <details open>
+      <summary><h2>Watch out</h2></summary>
+      <div class="watch">
+        <p>Adding the percentages. 10% then 10% is not 20%.</p>
+        <p>Taking the second change from the original. The second step is 10% of 220, not 200.</p>
+      </div>
+    </details>
+  </section>
+
+  <section id="quiz" class="quiz" data-code="U332">
+    <h2>Try it</h2>
+    <p>Answer from memory, no calculator. Give the number only, in pounds where it is money. The working appears only after you check.</p>
+
+    <div class="q" data-a="NjA1" data-wrong="NjAwPVlvdSBhZGRlZCAxMCUgb2YgNTAwIHR3aWNlLiBUaGUgc2Vjb25kIDEwJSBpcyBvZiA1NTAsIHNvIDU1Lnw1NTA9VGhhdCBpcyBhZnRlciBvbmUgeWVhci4gRG8gdGhlIHNlY29uZCB5ZWFyLnw1NT1UaGF0IGlzIHRoZSBzZWNvbmQgeWVhcidzIGludGVyZXN0LiBBZGQgaXQgdG8gNTUwLg==">
+      <p class="stem">1. £500 goes up by 10%, then by 10% again. Find the final amount. The first steps are done.</p>
+      <div class="working faded"><p>Step 1: 10% of 500 = 50, so 500 + 50 = 550. Step 2: 10% of 550 = 55. Step 3: 550 + 55 = …</p></div>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Add 55 to 550.</p>
+      <div class="working" hidden><p>Step 1: 10% of 500 = 50, so 500 + 50 = 550. Step 2: 10% of 550 = 55. Step 3: 550 + 55 = 605. £605.</p></div>
+    </div>
+
+    <div class="q" data-a="MzYz" data-wrong="MzYwPVlvdSB1c2VkIDMwIGFnYWluLiBZZWFyIDIncyAxMCUgaXMgb2YgMzMwLCB3aGljaCBpcyAzMy58MzMwPVRoYXQgaXMgYWZ0ZXIgb25lIHllYXIuIERvIHllYXIgMi58MzM9VGhhdCBpcyB5ZWFyIDIncyBpbnRlcmVzdC4gQWRkIGl0IHRvIDMzMC4=">
+      <p class="stem">2. £300 is put in a savings account paying 10% compound interest per year. How much is in the account after 2 years? The first step is done.</p>
+      <div class="working faded"><p>Step 1: 10% of 300 = 30, so 300 + 30 = 330. Step 2: 10% of 330 = …</p></div>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>10% of 330 is 33. Then add it to 330.</p>
+      <div class="working" hidden><p>Step 1: 10% of 300 = 30, so 300 + 30 = 330. Step 2: 10% of 330 = 33. Step 3: 330 + 33 = 363. £363.</p></div>
+    </div>
+
+    <div class="q" data-a="Mzg0" data-wrong="MzYwPVlvdSB0b29rIDIwJSBvZiA2MDAgdHdpY2UuIFRoZSBzZWNvbmQgMjAlIGlzIG9mIDQ4MC58NDgwPVRoYXQgaXMgYWZ0ZXIgb25lIHllYXIuIERvIHRoZSBzZWNvbmQgeWVhci58OTY9VGhhdCBpcyB5ZWFyIDIncyBsb3NzLiBUYWtlIGl0IGZyb20gNDgwLg==">
+      <p class="stem">3. A laptop costs £600 new. It loses 20% of its value every year. What is it worth after 2 years?</p>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>20% of 600 first. Write the new value before you start year 2.</p>
+      <div class="working" hidden><p>Year 1: 20% of 600 = 120, so 600 − 120 = 480. Year 2: 20% of 480 = 96, so 480 − 96 = 384. £384.</p></div>
+    </div>
+
+    <div class="q" data-a="ODQ=" data-wrong="MzY9VGhhdCBpcyB0aGUgbW9uZXkgb2ZmLiBUYWtlIGl0IGZyb20gMTIwLnw1OC44PVlvdSB0b29rIDMwJSBvZmYgdHdpY2UuIFRoZSBzYWxlIGhhcyBvbmUgY3V0Lnw5MD1Zb3UgdG9vayAzMCBhcyBwb3VuZHMuIDMwJSBvZiAxMjAgaXMgMzYu">
+      <p class="stem">4. A coat costs £120. In a sale the price is cut by 30%. Find the sale price.</p>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>One change only. 10% of 120 first.</p>
+      <div class="working" hidden><p>This is U554, a single change. 10% of 120 = 12, so 30% = 36. 120 − 36 = 84. £84.</p></div>
+    </div>
+
+    <div class="q" data-a="NDgwMA==" data-wrong="NTAwMD1Zb3UgY2FuY2VsbGVkIHRoZSB0d28gY2hhbmdlcy4gVGhlIGZhbGwgaXMgMjAlIG9mIDYwMDAsIHdoaWNoIGlzIGJpZ2dlciB0aGFuIHRoZSByaXNlLnw2MDAwPVRoYXQgaXMgYWZ0ZXIgdGhlIHJpc2UuIE5vdyB0YWtlIDIwJSBvZiA2MDAwIGF3YXkufDQwMDA9WW91IHRvb2sgMjAlIG9mIDUwMDAgYXdheS4gVGhlIGZhbGwgaXMgMjAlIG9mIHRoZSBuZXcgbnVtYmVyLCA2MDAwLg==">
+      <p class="stem">5. A town has 5000 people. The population rises by 20% in one year, then falls by 20% the next year. What is the population at the end?</p>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Do the rise first and write the new number. The fall is 20% of that.</p>
+      <div class="working" hidden><p>Up: 20% of 5000 = 1000, so 5000 + 1000 = 6000. Down: 20% of 6000 = 1200, so 6000 − 1200 = 4800. It does not go back to 5000.</p></div>
+    </div>
+  </section>
+
+  <section id="teach-back">
+    <h2>Teach it back</h2>
+    <p>A £3000 motorbike loses 10% of its value each year. Explain to a friend how to find its value after two years. Say why it is not 20% off. Say it to Claude.</p>
+  </section>
+
+  <section id="source">
+    <details open>
+      <summary><h2>Where this comes from</h2></summary>
+      <p>Sparx Maths: search <b>U332</b>. Corbettmaths: on the <a href="https://corbettmaths.com/contents/">contents page</a> find "Compound interest" and "Simple interest".</p>
+    </details>
+  </section>
+
+  <footer>
+    <p>Stuck? Say which step. Cheat sheet: <a href="../reference/U332-repeated-percentage-change.html">U332</a>. Question 4 is U554, one change only.</p>
+  </footer>
+</main>
+<script src="../assets/read.js"></script>
+<script src="../assets/generate.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+[
+  {
+    "id": "1MA1/P8#1",
+    "topic": "1MA1/P8",
+    "type": "cloze",
+    "stem": "A fair coin is flipped twice. What is the probability of two heads? The first step is done. Finish it.",
+    "scaffold": "Heads is 1/2 each time. …",
+    "hint": "Multiply along the branch: 1/2 × 1/2.",
+    "answers": ["1/4", "0.25", "25%"],
+    "working": "Heads is 1/2 each time. Along the branch: 1/2 × 1/2 = 1/4.",
+    "misconceptions": [
+      {
+        "answer": "1/2",
+        "message": "That is one flip. Two heads needs both flips to land heads."
+      },
+      {
+        "answer": "1",
+        "message": "You added 1/2 and 1/2. Along a branch you multiply."
+      },
+      {
+        "answer": "2/4",
+        "message": "You added the tops and the bottoms. Multiply top by top, bottom by bottom."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/P8#2",
+    "topic": "1MA1/P8",
+    "type": "cloze",
+    "stem": "A bag has 3 red and 2 blue counters. One is taken, put back, and another taken. What is the probability both are blue? The first step is done. Finish it.",
+    "scaffold": "The counter goes back, so blue is 2/5 both times. …",
+    "hint": "Multiply along the branch: 2/5 × 2/5.",
+    "answers": ["4/25", "0.16", "16%"],
+    "working": "The counter goes back, so blue is 2/5 both times. Along the branch: 2/5 × 2/5 = 4/25. As a decimal that is 0.16.",
+    "misconceptions": [
+      {
+        "answer": "4/5",
+        "message": "You added 2/5 and 2/5. Along a branch you multiply."
+      },
+      {
+        "answer": "2/5",
+        "message": "That is one pick. Both picks have to be blue."
+      },
+      {
+        "answer": "4/20",
+        "message": "You dropped the bottom number by 1. The counter went back, so nothing changes."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/P8#3",
+    "topic": "1MA1/P8",
+    "type": "cloze",
+    "stem": "The probability it rains on any day is 0.3. What is the probability it rains on exactly one of Saturday and Sunday?",
+    "hint": "Not raining is 0.7. Two paths fit: wet then dry, and dry then wet.",
+    "answers": ["0.42", "42%", "21/50"],
+    "working": "Not raining is 0.7. Rain then dry: 0.3 × 0.7 = 0.21. Dry then rain: 0.7 × 0.3 = 0.21. Add the two paths: 0.42.",
+    "misconceptions": [
+      {
+        "answer": "0.09",
+        "message": "That is rain on both days. Exactly one means one wet day and one dry day."
+      },
+      {
+        "answer": "0.21",
+        "message": "That is one of the two paths. The other path fits as well."
+      },
+      {
+        "answer": "0.6",
+        "message": "You doubled 0.3. Multiply along each path first, then add the two."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/P8#4",
+    "topic": "1MA1/P8",
+    "type": "cloze",
+    "stem": "A spinner has 5 equal sections: 2 red and 3 green. It is spun once. What is the probability it does not land on red?",
+    "hint": "One spin, so there is no branch to multiply along. Count the sections.",
+    "answers": ["3/5", "0.6", "60%", "6/10"],
+    "working": "One event, so no tree is needed. Not red is the 3 green sections out of 5, which is 3/5. You could also do 1 − 2/5 = 3/5.",
+    "misconceptions": [
+      {
+        "answer": "2/5",
+        "message": "That is the probability it is red. Not red is everything else."
+      },
+      {
+        "answer": "1/5",
+        "message": "You counted one section out of five. Three of the five are green."
+      },
+      {
+        "answer": "9/25",
+        "message": "You multiplied as if there were two spins. It is spun once."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/P8#5",
+    "topic": "1MA1/P8",
+    "type": "cloze",
+    "stem": "A bag has 4 green and 1 yellow sweet. Two are taken without replacement. Someone writes green 4/5, then green 4/5 again, then multiplies to get 16/25. Which step number did they get wrong first?",
+    "hint": "Read the method list. Which step writes the second set of branches?",
+    "answers": ["2", "step 2"],
+    "working": "Step 2 writes the second set of branches. Without replacement one sweet is gone. So the second green is 3 out of 4, not 4 out of 5. Done properly: 4/5 × 3/4 = 12/20 = 3/5.",
+    "misconceptions": [
+      {
+        "answer": "4",
+        "message": "Step 4 multiplied along the branch, which is right. The fractions going in were wrong."
+      },
+      {
+        "answer": "3",
+        "message": "Step 3 checks each set adds to 1, and theirs did. Look earlier."
+      },
+      {
+        "answer": "16/25",
+        "message": "That is their answer. The question asks for a step number."
+      }
+    ]
+  }
+]

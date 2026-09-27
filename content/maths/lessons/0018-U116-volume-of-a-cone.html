@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>U116 Volume of a cone</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="lesson">
+  <nav class="sections" aria-label="Sections"><a href="#picture">Picture</a><a href="#method">Method</a><a href="#worked">Example</a><a href="#watch">Watch out</a><a href="#quiz">Try it</a></nav>
+  <header>
+    <p class="crumb"><a href="../progress.html">Progress</a> · U116 · Maths · Foundation · Papers 1 to 3</p>
+    <h1>Volume of a cone</h1>
+    <p class="aim">By the end you can use the cone formula the exam gives you, and pick the right height.</p>
+  </header>
+
+  <section id="picture">
+    <p>A cone is a circle base rising to a point. The exam gives you this formula: V = 1/3 πr²h. r is the radius of the base. h is the perpendicular height (straight up from the centre of the base to the point). The sloping edge is the slant height.</p>
+    <svg viewBox="0 0 300 220" width="100%" style="max-width:300px;display:block;margin:.5rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="14" aria-label="A cone with its radius drawn along the base, its perpendicular height drawn as a dashed line up the middle, and the slant height along the sloping edge">
+      <polygon points="150,20 70,170 230,170" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/>
+      <ellipse cx="150" cy="170" rx="80" ry="22" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/>
+      <line x1="150" y1="20" x2="150" y2="170" stroke="#2b5797" stroke-width="2.5" stroke-dasharray="6 4"/>
+      <line x1="150" y1="170" x2="230" y2="170" stroke="#2b5797" stroke-width="2.5"/>
+      <circle cx="150" cy="170" r="3.5" fill="#1d1d1b"/>
+      <text x="156" y="100" fill="#2b5797" font-weight="700">h = 10 cm</text>
+      <text x="190" y="192" text-anchor="middle" fill="#2b5797" font-weight="700">r = 3 cm</text>
+      <text x="8" y="60" fill="#5f5f5a">slant, not used</text>
+    </svg>
+    <p class="caption">Radius 3 cm, perpendicular height 10 cm. r² = 9. 9 × 10 = 90. 90 ÷ 3 = 30. Volume = 30π cm³.</p>
+  </section>
+
+  <section id="explore">
+    <h2>Where the ÷ 3 comes from</h2>
+    <p>Drag the shape to turn it. Pour the cone into the tin round it: it takes three cones to fill it, so one cone is a third of the tin. Change r and h and the numbers follow.</p>
+    <div class="solid" data-solid="cone" data-r="3" data-h="10"></div>
+    <p class="caption">The dashed blue line is the perpendicular height, straight up the middle. The sloping edge is never in the formula.</p>
+  </section>
+
+  <section id="worked">
+    <h2>Worked example</h2>
+    <div class="example">
+      <p><b>A cone has radius 3 cm and perpendicular height 10 cm. Find its volume in terms of π.</b></p>
+      <p><b>Step 1</b>, the radius: r = 3.<br>
+         <b>Step 2</b>, square it: 3 × 3 = 9.<br>
+         <b>Step 3</b>, times the height: 9 × 10 = 90.<br>
+         <b>Step 4</b>, divide by 3: 90 ÷ 3 = 30.<br>
+         <b>Step 5</b>, times π: 30π.<br>
+         <b>Step 6</b>, the unit: <b>30π cm³</b>.</p>
+    </div>
+  </section>
+
+  <section id="method">
+    <h2>The method</h2>
+    <ol>
+      <li>Find the radius of the base. Halve a diameter.</li>
+      <li>Square the radius: r × r.</li>
+      <li>Multiply by the perpendicular height h.</li>
+      <li>Divide by 3.</li>
+      <li>Multiply by π. Leave π in the answer unless told to use a number.</li>
+      <li>Add the unit cubed, like cm³.</li>
+    </ol>
+    <p>Paper 1: keep π as a symbol, or use 3 if told. Calculator: type it in and round as asked. 30π = 94.2 cm³ to 1 decimal place.</p>
+
+    <details class="why">
+      <summary>Why is the slant height never in the formula?</summary>
+      <p>Volume is the base area times how tall the cone stands, then a third of that. How tall it stands is the perpendicular height. The slant is the sloping edge, and it is longer.</p>
+    </details>
+  </section>
+
+  <section id="watch">
+    <details open>
+      <summary><h2>Watch out</h2></summary>
+      <div class="watch">
+        <p>Do not skip the ÷ 3. πr²h is a cylinder, three times too big.</p>
+        <p>Use the perpendicular height, not the slant. The exam often prints both.</p>
+        <p>Halve a diameter before you square it.</p>
+      </div>
+    </details>
+  </section>
+
+  <section id="quiz" class="quiz" data-code="U116">
+    <h2>Try it</h2>
+    <p>Answer from memory, no calculator. Write pi as the word pi, like 30pi. A number is enough, or add cm3. The working appears only after you check.</p>
+
+    <div class="q" data-a="NjBwaXw2MCBwaXw2MCpwaXw2MHhwaXxwaSo2MHw2MHBpIGNtM3w2MHBpIGNtXjN8NjAqcGkgY20zfDYwKnBpIGNtXjM=" data-wrong="MTgwcGk9WW91IHNraXBwZWQgdGhlIMO3IDMuIFRoYXQgaXMgdGhlIGN5bGluZGVyLCB0aHJlZSB0aW1lcyB0b28gYmlnLnw2MD1Zb3UgZHJvcHBlZCB0aGUgz4AuIFdyaXRlIHRoZSBudW1iZXIgdGltZXMgz4AsIGxpa2UgNjBwaS58MjBwaT1Zb3UgZG91YmxlZCB0aGUgcmFkaXVzLiBTcXVhcmUgaXQ6IDYgw5cgNi4=">
+      <p class="stem">1. Find the volume of this cone in terms of pi. The first steps are done. Finish it.</p>
+      <svg viewBox="0 0 170 130" width="100%" style="max-width:170px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" role="img" aria-label="A cone with radius 6 cm and perpendicular height 5 cm"><title>A cone with radius 6 cm and perpendicular height 5 cm</title><polygon points="80,12 30,100 130,100" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><ellipse cx="80" cy="100" rx="50" ry="14" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><line x1="80" y1="12" x2="80" y2="100" stroke="#2b5797" stroke-width="2" stroke-dasharray="5 3"/><circle cx="80" cy="100" r="2.5" fill="#1d1d1b"/><text x="84" y="84" fill="#2b5797" stroke="#ffffff" stroke-width="3" paint-order="stroke">5 cm</text><line x1="80" y1="100" x2="130" y2="100" stroke="#2b5797" stroke-width="2"/><text x="105" y="126" text-anchor="middle" fill="#2b5797">6 cm</text></svg>
+      <div class="working faded"><p>Step 1, r = 6. Step 2, 6 × 6 = 36. Step 3, 36 × 5 = 180. Step 4, 180 ÷ 3 = 60. Step 5, 60 × π = …</p></div>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>60 times π.</p>
+      <div class="working" hidden><p>Step 1, r = 6. Step 2, 6 × 6 = 36. Step 3, 36 × 5 = 180. Step 4, 180 ÷ 3 = 60. Step 5, 60 × π = 60π. Step 6, 60π cm³.</p></div>
+    </div>
+
+    <div class="q" data-a="OHBpfDggcGl8OCpwaXw4eHBpfHBpKjh8OHBpIGNtM3w4cGkgY21eM3w4KnBpIGNtM3w4KnBpIGNtXjM=" data-wrong="MjRwaT1Zb3Ugc2tpcHBlZCB0aGUgw7cgMy4gRGl2aWRlIDI0IGJ5IDMgZmlyc3QufDg9WW91IGRyb3BwZWQgdGhlIM+ALiBXcml0ZSB0aGUgbnVtYmVyIHRpbWVzIM+ALCBsaWtlIDhwaS58MjQ9WW91IHNraXBwZWQgdGhlIMO3IDMgYW5kIGRyb3BwZWQgdGhlIM+ALg==">
+      <p class="stem">2. Find the volume of this cone in terms of pi. The first steps are done. Finish it.</p>
+      <svg viewBox="0 0 170 130" width="100%" style="max-width:170px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" role="img" aria-label="A cone with radius 2 cm and perpendicular height 6 cm"><title>A cone with radius 2 cm and perpendicular height 6 cm</title><polygon points="80,12 30,100 130,100" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><ellipse cx="80" cy="100" rx="50" ry="14" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><line x1="80" y1="12" x2="80" y2="100" stroke="#2b5797" stroke-width="2" stroke-dasharray="5 3"/><circle cx="80" cy="100" r="2.5" fill="#1d1d1b"/><text x="84" y="84" fill="#2b5797" stroke="#ffffff" stroke-width="3" paint-order="stroke">6 cm</text><line x1="80" y1="100" x2="130" y2="100" stroke="#2b5797" stroke-width="2"/><text x="105" y="126" text-anchor="middle" fill="#2b5797">2 cm</text></svg>
+      <div class="working faded"><p>Step 1, r = 2. Step 2, 2 × 2 = 4. Step 3, 4 × 6 = 24. …</p></div>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>24 ÷ 3, then times π.</p>
+      <div class="working" hidden><p>Step 1, r = 2. Step 2, 2 × 2 = 4. Step 3, 4 × 6 = 24. Step 4, 24 ÷ 3 = 8. Step 5, 8 × π = 8π. Step 6, 8π cm³.</p></div>
+    </div>
+
+    <div class="q" data-a="MjVwaXwyNSBwaXwyNSpwaXwyNXhwaXxwaSoyNXwyNXBpIGNtM3wyNXBpIGNtXjN8MjUqcGkgY20zfDI1KnBpIGNtXjM=" data-wrong="MTAwcGk9WW91IHVzZWQgMTAgYXMgdGhlIHJhZGl1cy4gSGFsdmUgdGhlIGRpYW1ldGVyOiByID0gNS58NzVwaT1Zb3Ugc2tpcHBlZCB0aGUgw7cgMy4gRGl2aWRlIDc1IGJ5IDMufDI1PVlvdSBkcm9wcGVkIHRoZSDPgC4gV3JpdGUgdGhlIG51bWJlciB0aW1lcyDPgCwgbGlrZSAyNXBpLg==">
+      <p class="stem">3. A cone has base diameter 10 cm, perpendicular height 3 cm and slant height 5.8 cm. Find its volume in terms of pi.</p>
+      <svg viewBox="0 0 170 130" width="100%" style="max-width:170px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" role="img" aria-label="A cone with base diameter 10 cm and perpendicular height 3 cm, slant height 5.8 cm along the sloping edge"><title>A cone with base diameter 10 cm and perpendicular height 3 cm, slant height 5.8 cm along the sloping edge</title><polygon points="80,12 30,100 130,100" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><ellipse cx="80" cy="100" rx="50" ry="14" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><line x1="80" y1="12" x2="80" y2="100" stroke="#2b5797" stroke-width="2" stroke-dasharray="5 3"/><circle cx="80" cy="100" r="2.5" fill="#1d1d1b"/><text x="84" y="84" fill="#2b5797" stroke="#ffffff" stroke-width="3" paint-order="stroke">3 cm</text><line x1="30" y1="100" x2="130" y2="100" stroke="#2b5797" stroke-width="2"/><text x="80" y="126" text-anchor="middle" fill="#2b5797">10 cm</text><text x="128" y="50" fill="#5f5f5a" stroke="#ffffff" stroke-width="3" paint-order="stroke">5.8 cm</text></svg>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Halve the diameter. Ignore the slant.</p>
+      <div class="working" hidden><p>Step 1: r = 10 ÷ 2 = 5. Step 2: 25. Step 3: 25 × 3 = 75. Step 4: 75 ÷ 3 = 25. Step 5: 25 × π = 25π. Step 6: 25π cm³. The slant height, 5.8, is not used.</p></div>
+    </div>
+
+    <div class="q" data-a="MzZwaXwzNiBwaXwzNipwaXwzNnhwaXxwaSozNnwzNnBpIGNtM3wzNnBpIGNtXjN8MzYqcGkgY20zfDM2KnBpIGNtXjM=" data-wrong="OXBpPVlvdSBkaXZpZGVkIGJ5IDMgYXMgZm9yIGEgY29uZS4gQSBzcGhlcmUgaXMgNC8zIMOXIHLCszogZGl2aWRlIGJ5IDMsIHRoZW4gbXVsdGlwbHkgYnkgNC58MjdwaT1UaGF0IGlzIM+AcsKzLiBUaGUgNC8zIGlzIG1pc3NpbmcufDM2PVlvdSBkcm9wcGVkIHRoZSDPgC4gV3JpdGUgdGhlIG51bWJlciB0aW1lcyDPgCwgbGlrZSAzNnBpLg==">
+      <p class="stem">4. A sphere has radius 3 cm. Find its volume in terms of pi.</p>
+      <svg viewBox="0 0 130 120" width="100%" style="max-width:130px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" role="img" aria-label="A sphere with radius 3 cm marked from the centre to the edge"><title>A sphere with radius 3 cm marked from the centre to the edge</title><circle cx="62" cy="60" r="46" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><ellipse cx="62" cy="60" rx="46" ry="14" fill="none" stroke="#1d1d1b" stroke-width="1.2" stroke-dasharray="4 3"/><circle cx="62" cy="60" r="2.5" fill="#1d1d1b"/><line x1="62" y1="60" x2="108" y2="60" stroke="#2b5797" stroke-width="2"/><text x="86" y="40" text-anchor="middle" fill="#2b5797">3 cm</text></svg>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>A sphere is not a cone. Cube the radius, then the 4/3.</p>
+      <div class="working" hidden><p>Not a cone: this is a sphere, U617. r³ = 27. 27 ÷ 3 = 9, then 9 × 4 = 36. V = 36 × π = 36π cm³.</p></div>
+    </div>
+
+    <div class="q" data-a="MzZ8MzZtM3wzNiBtXjM=" data-wrong="MTQ0PVlvdSB1c2VkIDYgYXMgdGhlIHJhZGl1cy4gSGFsdmUgdGhlIGRpYW1ldGVyOiByID0gMy58MTI9VGhhdCBpcyBywrJoIMO3IDMuIE5vdyBtdWx0aXBseSBieSDPgCwgd2hpY2ggaXMgMyBoZXJlLnwxMDg9WW91IHNraXBwZWQgdGhlIMO3IDMuIERpdmlkZSAzNiBieSAzIGJlZm9yZSB0aGUgz4Au">
+      <p class="stem">5. A pile of sand is a cone with base diameter 6 m and perpendicular height 4 m. Taking π as 3, find its volume in m³.</p>
+      <svg viewBox="0 0 170 130" width="100%" style="max-width:170px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" role="img" aria-label="A cone with base diameter 6 m and perpendicular height 4 m"><title>A cone with base diameter 6 m and perpendicular height 4 m</title><polygon points="80,12 30,100 130,100" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><ellipse cx="80" cy="100" rx="50" ry="14" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><line x1="80" y1="12" x2="80" y2="100" stroke="#2b5797" stroke-width="2" stroke-dasharray="5 3"/><circle cx="80" cy="100" r="2.5" fill="#1d1d1b"/><text x="84" y="84" fill="#2b5797" stroke="#ffffff" stroke-width="3" paint-order="stroke">4 m</text><line x1="30" y1="100" x2="130" y2="100" stroke="#2b5797" stroke-width="2"/><text x="80" y="126" text-anchor="middle" fill="#2b5797">6 m</text></svg>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Halve the diameter first.</p>
+      <div class="working" hidden><p>Step 1: r = 6 ÷ 2 = 3. Step 2: 9. Step 3: 9 × 4 = 36. Step 4: 36 ÷ 3 = 12. Step 5: 12 × 3 = 36. Step 6: 36 m³.</p></div>
+    </div>
+  </section>
+
+  <section id="teach-back">
+    <h2>Teach it back</h2>
+    <p>A friend missed today. Explain how to find the volume of a cone with base diameter 8 cm and height 6 cm. Leave π in. Say it to Claude.</p>
+  </section>
+
+  <section id="source">
+    <details open>
+      <summary><h2>Where this comes from</h2></summary>
+      <p>Sparx Maths: search <b>U116</b> in Independent Learning. Corbettmaths: on the <a href="https://corbettmaths.com/contents/">contents page</a> find "Cones" and pick the volume video.</p>
+    </details>
+  </section>
+
+  <footer>
+    <p>Stuck? Tell Claude which step. Cheat sheet: <a href="../reference/U116-volume-of-a-cone.html">U116</a>. Goes with U950 area of a circle. Item 4's neighbour: U617 volume of a sphere.</p>
+  </footer>
+</main>
+<script src="../assets/vendor/three.min.js"></script>
+<script src="../assets/solids.js"></script>
+<script src="../assets/read.js"></script>
+<script src="../assets/generate.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

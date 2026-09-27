@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>U617 Volume of a sphere</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="lesson">
+  <nav class="sections" aria-label="Sections"><a href="#picture">Picture</a><a href="#method">Method</a><a href="#worked">Example</a><a href="#watch">Watch out</a><a href="#quiz">Try it</a></nav>
+  <header>
+    <p class="crumb"><a href="../progress.html">Progress</a> · U617 · Maths · Foundation · Papers 1 to 3</p>
+    <h1>Volume of a sphere</h1>
+    <p class="aim">By the end you can use the sphere formula the exam gives you, leaving π in the answer.</p>
+  </header>
+
+  <section id="picture">
+    <p>A sphere is a ball shape. Its volume (the space inside, counted in cubes) depends only on the radius r. The exam gives you this formula: V = 4/3 πr³. You still need to know how to use it.</p>
+    <svg viewBox="0 0 300 200" width="100%" style="max-width:300px;display:block;margin:.5rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="14" aria-label="A sphere drawn as a circle with a dashed ellipse round its middle, and the radius drawn from the centre to the edge">
+      <circle cx="150" cy="100" r="80" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/>
+      <ellipse cx="150" cy="100" rx="80" ry="24" fill="none" stroke="#1d1d1b" stroke-width="1.5" stroke-dasharray="5 4"/>
+      <line x1="150" y1="100" x2="230" y2="100" stroke="#2b5797" stroke-width="2.5"/>
+      <circle cx="150" cy="100" r="3.5" fill="#1d1d1b"/>
+      <text x="190" y="90" text-anchor="middle" fill="#2b5797" font-weight="700">r = 3 cm</text>
+    </svg>
+    <p class="caption">Radius 3 cm. r³ = 27. 4/3 × 27 = 36. Volume = 36π cm³.</p>
+  </section>
+
+  <section id="explore">
+    <h2>The ball and its tin</h2>
+    <p>Drag the ball to turn it. The tin round it has the same radius and is as tall as the ball is wide. The ball fills two thirds of the tin. That is where 4/3 comes from: two thirds of 2r is 4r/3.</p>
+    <div class="solid" data-solid="sphere" data-r="3"></div>
+    <p class="caption">The blue line is the radius. The dashed half completes the diameter, which is twice as long. Questions often give the diameter and expect you to halve it.</p>
+  </section>
+
+  <section id="worked">
+    <h2>Worked example</h2>
+    <div class="example">
+      <p><b>A sphere has radius 3 cm. Find its volume in terms of π.</b></p>
+      <p><b>Step 1</b>, the radius: r = 3.<br>
+         <b>Step 2</b>, cube it: 3 × 3 × 3 = 27.<br>
+         <b>Step 3</b>, the 4/3: 27 ÷ 3 = 9, then 9 × 4 = 36.<br>
+         <b>Step 4</b>, times π: 36π.<br>
+         <b>Step 5</b>, the unit: <b>36π cm³</b>.</p>
+    </div>
+  </section>
+
+  <section id="method">
+    <h2>The method</h2>
+    <ol>
+      <li>Find the radius. Halve the diameter if that is what is given.</li>
+      <li>Cube the radius: r × r × r.</li>
+      <li>Divide by 3, then multiply by 4. That is the 4/3.</li>
+      <li>Multiply by π. Leave π in the answer unless told to use a number.</li>
+      <li>Add the unit cubed, like cm³.</li>
+    </ol>
+    <p>Paper 1: keep π as a symbol, or use 3 if told. Calculator: 4 ÷ 3 × π × r³, then round as asked. 36π = 113.1 cm³ to 1 decimal place. A hemisphere (half a sphere) is the full volume halved.</p>
+
+    <details class="why">
+      <summary>Why cube the radius here, when the circle only squared it?</summary>
+      <p>Area counts flat squares, so two lengths are multiplied. Volume counts cubes, so three are: r × r × r.</p>
+    </details>
+  </section>
+
+  <section id="watch">
+    <details open>
+      <summary><h2>Watch out</h2></summary>
+      <div class="watch">
+        <p>Cube the radius, do not square it. 3³ is 27, not 9.</p>
+        <p>Halve a diameter first. Diameter 6 cm means r = 3.</p>
+        <p>Keep the 4/3. πr³ on its own is not the volume.</p>
+      </div>
+    </details>
+  </section>
+
+  <section id="quiz" class="quiz" data-code="U617">
+    <h2>Try it</h2>
+    <p>Answer from memory, no calculator. Write pi as the word pi, like 36pi. A number is enough, or add cm3. The working appears only after you check.</p>
+
+    <div class="q" data-a="Mjg4cGl8Mjg4IHBpfDI4OCpwaXwyODh4cGl8cGkqMjg4fDI4OHBpIGNtM3wyODhwaSBjbV4zfDI4OCpwaSBjbTN8Mjg4KnBpIGNtXjM=" data-wrong="MjE2cGk9WW91IHNraXBwZWQgdGhlIDQvMy4gRGl2aWRlIDIxNiBieSAzLCB0aGVuIG11bHRpcGx5IGJ5IDQufDQ4cGk9WW91IHNxdWFyZWQgdGhlIHJhZGl1cy4gQ3ViZSBpdDogNiDDlyA2IMOXIDYufDI4OD1Zb3UgZHJvcHBlZCB0aGUgz4AuIFdyaXRlIHRoZSBudW1iZXIgdGltZXMgz4AsIGxpa2UgMjg4cGku">
+      <p class="stem">1. Find the volume of this sphere in terms of pi. The first steps are done. Finish it.</p>
+      <svg viewBox="0 0 130 120" width="100%" style="max-width:130px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" role="img" aria-label="A sphere with radius 6 cm marked from the centre to the edge"><title>A sphere with radius 6 cm marked from the centre to the edge</title><circle cx="62" cy="60" r="46" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><ellipse cx="62" cy="60" rx="46" ry="14" fill="none" stroke="#1d1d1b" stroke-width="1.2" stroke-dasharray="4 3"/><circle cx="62" cy="60" r="2.5" fill="#1d1d1b"/><line x1="62" y1="60" x2="108" y2="60" stroke="#2b5797" stroke-width="2"/><text x="86" y="40" text-anchor="middle" fill="#2b5797">6 cm</text></svg>
+      <div class="working faded"><p>Step 1, r = 6. Step 2, 6 × 6 × 6 = 216. Step 3, 216 ÷ 3 = 72, then 72 × 4 = 288. Step 4, 288 × π = …</p></div>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>288 times π.</p>
+      <div class="working" hidden><p>Step 1, r = 6. Step 2, 6 × 6 × 6 = 216. Step 3, 216 ÷ 3 = 72, then 72 × 4 = 288. Step 4, 288 × π = 288π. Step 5, 288π cm³.</p></div>
+    </div>
+
+    <div class="q" data-a="MzZwaXwzNiBwaXwzNipwaXwzNnhwaXxwaSozNnwzNnBpIGNtM3wzNnBpIGNtXjN8MzYqcGkgY20zfDM2KnBpIGNtXjM=" data-wrong="MjdwaT1Zb3Ugc2tpcHBlZCB0aGUgNC8zLiBEaXZpZGUgMjcgYnkgMywgdGhlbiBtdWx0aXBseSBieSA0LnwyODhwaT1Zb3UgdXNlZCA2IGFzIHRoZSByYWRpdXMuIFRoZSBkaWFtZXRlciBpcyA2LCBzbyByID0gMy58MTJwaT1Zb3Ugc3F1YXJlZCB0aGUgcmFkaXVzLiBUaGUgY3ViZSBpcyAyNywgbm90IDku">
+      <p class="stem">2. Find the volume of this sphere in terms of pi. The first steps are done. Finish it.</p>
+      <svg viewBox="0 0 130 120" width="100%" style="max-width:130px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" role="img" aria-label="A sphere with diameter 6 cm marked right across through the centre"><title>A sphere with diameter 6 cm marked right across through the centre</title><circle cx="62" cy="60" r="46" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><ellipse cx="62" cy="60" rx="46" ry="14" fill="none" stroke="#1d1d1b" stroke-width="1.2" stroke-dasharray="4 3"/><circle cx="62" cy="60" r="2.5" fill="#1d1d1b"/><line x1="16" y1="60" x2="108" y2="60" stroke="#2b5797" stroke-width="2"/><text x="62" y="40" text-anchor="middle" fill="#2b5797">6 cm</text></svg>
+      <div class="working faded"><p>Step 1, r = 6 ÷ 2 = 3. Step 2, 3 × 3 × 3 = 27. …</p></div>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>27 ÷ 3, then × 4.</p>
+      <div class="working" hidden><p>Step 1, r = 6 ÷ 2 = 3. Step 2, 3 × 3 × 3 = 27. Step 3, 27 ÷ 3 = 9, then 9 × 4 = 36. Step 4, 36 × π = 36π. Step 5, 36π cm³.</p></div>
+    </div>
+
+    <div class="q" data-a="MTA4fDEwOGNtM3wxMDggY21eMw==" data-wrong="ODY0PVlvdSB1c2VkIDYgYXMgdGhlIHJhZGl1cy4gSGFsdmUgdGhlIGRpYW1ldGVyOiByID0gMy58MzY9VGhhdCBpcyA0LzMgw5cgMjcuIE5vdyBtdWx0aXBseSBieSDPgCwgd2hpY2ggaXMgMyBoZXJlLnw4MT1UaGF0IGlzIDI3IMOXIDMuIFRoZSA0LzMgaXMgbWlzc2luZy4=">
+      <p class="stem">3. A sphere has diameter 6 cm. Taking π as 3, find its volume in cm³.</p>
+      <svg viewBox="0 0 130 120" width="100%" style="max-width:130px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" role="img" aria-label="A sphere with diameter 6 cm marked right across through the centre"><title>A sphere with diameter 6 cm marked right across through the centre</title><circle cx="62" cy="60" r="46" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><ellipse cx="62" cy="60" rx="46" ry="14" fill="none" stroke="#1d1d1b" stroke-width="1.2" stroke-dasharray="4 3"/><circle cx="62" cy="60" r="2.5" fill="#1d1d1b"/><line x1="16" y1="60" x2="108" y2="60" stroke="#2b5797" stroke-width="2"/><text x="62" y="40" text-anchor="middle" fill="#2b5797">6 cm</text></svg>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Halve the diameter, then cube.</p>
+      <div class="working" hidden><p>Step 1: r = 6 ÷ 2 = 3. Step 2: 27. Step 3: 27 ÷ 3 = 9, then 9 × 4 = 36. Step 4: 36 × 3 = 108. Step 5: 108 cm³.</p></div>
+    </div>
+
+    <div class="q" data-a="MTJwaXwxMiBwaXwxMipwaXwxMnhwaXxwaSoxMnwxMnBpIGNtM3wxMnBpIGNtXjN8MTIqcGkgY20zfDEyKnBpIGNtXjM=" data-wrong="MzZwaT1Zb3UgZm9yZ290IHRoZSDDtyAzLiBBIGNvbmUgaXMgYSB0aGlyZCBvZiB0aGUgY3lsaW5kZXIgcm91bmQgaXQufDQ4cGk9WW91IHVzZWQgdGhlIHNwaGVyZSdzIDQvMy4gQSBjb25lIGlzIMO3IDMgb25seSwgbm8gw5cgNC58MTI9WW91IGRyb3BwZWQgdGhlIM+ALiBXcml0ZSB0aGUgbnVtYmVyIHRpbWVzIM+ALCBsaWtlIDEycGku">
+      <p class="stem">4. A cone has radius 3 cm and perpendicular height 4 cm. Find its volume in terms of pi.</p>
+      <svg viewBox="0 0 170 130" width="100%" style="max-width:170px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" role="img" aria-label="A cone with radius 3 cm and perpendicular height 4 cm"><title>A cone with radius 3 cm and perpendicular height 4 cm</title><polygon points="80,12 30,100 130,100" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><ellipse cx="80" cy="100" rx="50" ry="14" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><line x1="80" y1="12" x2="80" y2="100" stroke="#2b5797" stroke-width="2" stroke-dasharray="5 3"/><circle cx="80" cy="100" r="2.5" fill="#1d1d1b"/><text x="84" y="84" fill="#2b5797" stroke="#ffffff" stroke-width="3" paint-order="stroke">4 cm</text><line x1="80" y1="100" x2="130" y2="100" stroke="#2b5797" stroke-width="2"/><text x="105" y="126" text-anchor="middle" fill="#2b5797">3 cm</text></svg>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>A cone is not a sphere. Square the radius, times the height, divide by 3.</p>
+      <div class="working" hidden><p>Not a sphere: this is a cone, U116. r² = 9. 9 × 4 = 36. 36 ÷ 3 = 12. V = 12 × π = 12π cm³.</p></div>
+    </div>
+
+    <div class="q" data-a="ODY0fDg2NGNtM3w4NjQgY21eMw==" data-wrong="NjkxMj1Zb3UgdXNlZCAxMiBhcyB0aGUgcmFkaXVzLiBIYWx2ZSB0aGUgZGlhbWV0ZXI6IHIgPSA2LnwyODg9VGhhdCBpcyA0LzMgw5cgMjE2LiBOb3cgbXVsdGlwbHkgYnkgz4AsIHdoaWNoIGlzIDMgaGVyZS58NjQ4PVRoYXQgaXMgMjE2IMOXIDMuIFRoZSA0LzMgaXMgbWlzc2luZy4=">
+      <p class="stem">5. A globe has diameter 12 cm. Taking π as 3, find its volume in cm³.</p>
+      <svg viewBox="0 0 130 120" width="100%" style="max-width:130px;display:block;margin:.4rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12" role="img" aria-label="A sphere with diameter 12 cm marked right across through the centre"><title>A sphere with diameter 12 cm marked right across through the centre</title><circle cx="62" cy="60" r="46" fill="#e6f4ec" stroke="#1d1d1b" stroke-width="2"/><ellipse cx="62" cy="60" rx="46" ry="14" fill="none" stroke="#1d1d1b" stroke-width="1.2" stroke-dasharray="4 3"/><circle cx="62" cy="60" r="2.5" fill="#1d1d1b"/><line x1="16" y1="60" x2="108" y2="60" stroke="#2b5797" stroke-width="2"/><text x="62" y="40" text-anchor="middle" fill="#2b5797">12 cm</text></svg>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Halve the diameter, then cube.</p>
+      <div class="working" hidden><p>Step 1: r = 12 ÷ 2 = 6. Step 2: 216. Step 3: 216 ÷ 3 = 72, then 72 × 4 = 288. Step 4: 288 × 3 = 864. Step 5: 864 cm³.</p></div>
+    </div>
+  </section>
+
+  <section id="teach-back">
+    <h2>Teach it back</h2>
+    <p>A friend missed today. Explain how to find the volume of a sphere with diameter 18 cm, leaving π in. Every step. Say it to Claude.</p>
+  </section>
+
+  <section id="source">
+    <details open>
+      <summary><h2>Where this comes from</h2></summary>
+      <p>Sparx Maths: search <b>U617</b> in Independent Learning. Corbettmaths: on the <a href="https://corbettmaths.com/contents/">contents page</a> find "Spheres" and pick the volume video.</p>
+    </details>
+  </section>
+
+  <footer>
+    <p>Stuck? Tell Claude which step. Cheat sheet: <a href="../reference/U617-volume-of-a-sphere.html">U617</a>. Item 4's neighbour: U116 volume of a cone, another formula the exam gives you.</p>
+  </footer>
+</main>
+<script src="../assets/vendor/three.min.js"></script>
+<script src="../assets/solids.js"></script>
+<script src="../assets/read.js"></script>
+<script src="../assets/generate.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

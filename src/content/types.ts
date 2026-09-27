@@ -1,0 +1,71 @@
+/** Item types, architecture D5. The first five mark in code; the last three go to a job with a mark scheme. */
+export type ItemType =
+  | "generator"
+  | "cloze"
+  | "label"
+  | "sequence"
+  | "vocab"
+  | "short"
+  | "extended"
+  | "practical-method";
+
+export type Tier = "F" | "H";
+
+/**
+ * Topic id grammar: `<spec>/<statement>` (for example `1MA1/R4`) when one lesson sits under the
+ * statement; `<spec>/<statement>/<slug>` (for example `1MA1/G17/cone`) when several do. The statement
+ * is always the first two segments. School codes (Sparx U-codes) are aliases only.
+ */
+export interface Topic {
+  id: string;
+  title: string;
+  aliases: string[];
+  prerequisites: string[];
+  tier: Tier;
+}
+
+/** A named wrong answer and what to say about it. `message` names the mistake, never the right answer. */
+export interface Misconception {
+  answer: string;
+  message: string;
+}
+
+export interface Item {
+  id: string;
+  topic: string;
+  type: ItemType;
+  stem: string;
+  /** Inline SVG shown under the stem, verbatim from the lesson. */
+  figure?: string;
+  /** The first step or two, shown before the pupil answers (the lesson's faded working). */
+  scaffold?: string;
+  hint?: string;
+  params?: Record<string, unknown>;
+  answers?: string[];
+  working?: string;
+  mark_scheme?: string;
+  misconceptions: Misconception[];
+}
+
+/** The item a model job may see before an `attempt` event exists for it. `toItemView` in pack.ts is the runtime projection. */
+export type ItemView = Omit<
+  Item,
+  "answers" | "working" | "mark_scheme" | "misconceptions"
+>;
+
+/** generators.js contract, unchanged from v1 (see the file's header comment). */
+export type GeneratedAnswerType =
+  | "number"
+  | "pi"
+  | "ratio"
+  | "fraction"
+  | "text";
+export interface Generated {
+  stem: string;
+  answers: string[];
+  working: string;
+  hint: string;
+  wrong: Record<string, string>;
+  type?: GeneratedAnswerType;
+}
+export type Generator = (rng: () => number) => Generated;

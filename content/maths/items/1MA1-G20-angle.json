@@ -1,0 +1,124 @@
+[
+  {
+    "id": "1MA1/G20/angle#1",
+    "topic": "1MA1/G20/angle",
+    "type": "cloze",
+    "stem": "Find the angle marked θ. The first steps are done. Finish it.",
+    "figure": "<svg viewBox=\"0 0 240 135\" width=\"100%\" style=\"max-width:240px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A right-angled triangle with the unknown angle theta at the bottom left, the vertical side opposite it 4 cm and the bottom side next to it 4 cm\"><title>A right-angled triangle with the unknown angle theta at the bottom left, the vertical side opposite it 4 cm and the bottom side next to it 4 cm</title><polygon points=\"20,110 180,110 180,25\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><polyline points=\"168,110 168,98 180,98\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><path d=\"M 46 110 A 26 26 0 0 0 43 97\" fill=\"none\" stroke=\"#2b5797\" stroke-width=\"1.5\"/><text x=\"50\" y=\"104\" fill=\"#2b5797\" font-weight=\"700\">θ</text><text x=\"62\" y=\"52\" fill=\"#1d1d1b\" font-weight=\"700\"></text><text x=\"185\" y=\"72\" fill=\"#1d1d1b\" font-weight=\"700\">4 cm</text><text x=\"100\" y=\"126\" text-anchor=\"middle\" fill=\"#1d1d1b\" font-weight=\"700\">4 cm</text></svg>",
+    "scaffold": "Step 1, O = 4, A = 4. Step 2, TOA. Step 3, tan θ = 4 ÷ 4. Step 4, simplify: 1. Step 5, in the table, tan 45° = 1. Step 7, θ = …",
+    "hint": "Read along the tan row for the value 1.",
+    "answers": ["45", "45degrees"],
+    "working": "Step 1, O = 4, A = 4. Step 2, TOA. Step 3, tan θ = 4 ÷ 4. Step 4, simplify: 1. Step 5, in the table, tan 45° = 1. Step 7, θ = 45°.",
+    "misconceptions": [
+      {
+        "answer": "1",
+        "message": "That is the ratio. The table says which angle has tan 1."
+      },
+      {
+        "answer": "30",
+        "message": "tan 30° is 1 ÷ √3. Look along the tan row for 1."
+      },
+      {
+        "answer": "60",
+        "message": "tan 60° is √3. Look along the tan row for 1."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G20/angle#2",
+    "topic": "1MA1/G20/angle",
+    "type": "cloze",
+    "stem": "Find the angle marked θ. The first steps are done. Finish it.",
+    "figure": "<svg viewBox=\"0 0 240 135\" width=\"100%\" style=\"max-width:240px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A right-angled triangle with the unknown angle theta at the bottom left, hypotenuse 6 cm and the bottom side next to the angle 3 cm\"><title>A right-angled triangle with the unknown angle theta at the bottom left, hypotenuse 6 cm and the bottom side next to the angle 3 cm</title><polygon points=\"20,110 180,110 180,25\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><polyline points=\"168,110 168,98 180,98\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><path d=\"M 46 110 A 26 26 0 0 0 43 97\" fill=\"none\" stroke=\"#2b5797\" stroke-width=\"1.5\"/><text x=\"50\" y=\"104\" fill=\"#2b5797\" font-weight=\"700\">θ</text><text x=\"62\" y=\"52\" fill=\"#1d1d1b\" font-weight=\"700\">6 cm</text><text x=\"185\" y=\"72\" fill=\"#1d1d1b\" font-weight=\"700\"></text><text x=\"100\" y=\"126\" text-anchor=\"middle\" fill=\"#1d1d1b\" font-weight=\"700\">3 cm</text></svg>",
+    "scaffold": "Step 1, A = 3, H = 6. Step 2, CAH. Step 3, cos θ = 3 ÷ 6. …",
+    "hint": "Simplify 3 ÷ 6, then read the cos row.",
+    "answers": ["60", "60degrees"],
+    "working": "Step 1, A = 3, H = 6. Step 2, CAH. Step 3, cos θ = 3 ÷ 6. Step 4, simplify: ½. Step 5, in the table, cos 60° = ½. Step 7, θ = 60°.",
+    "misconceptions": [
+      {
+        "answer": "30",
+        "message": "½ is sin 30°, but you used A and H, so it is cos. cos 60° = ½."
+      },
+      {
+        "answer": "0.5",
+        "message": "That is the ratio. The question wants the angle."
+      },
+      {
+        "answer": "2",
+        "message": "You wrote the fraction upside down. cos is A over H, so 3 ÷ 6."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G20/angle#3",
+    "topic": "1MA1/G20/angle",
+    "type": "cloze",
+    "stem": "Find the angle marked θ.",
+    "figure": "<svg viewBox=\"0 0 240 135\" width=\"100%\" style=\"max-width:240px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A right-angled triangle with the unknown angle theta at the bottom left, hypotenuse 12 cm and the vertical side opposite the angle 6 cm\"><title>A right-angled triangle with the unknown angle theta at the bottom left, hypotenuse 12 cm and the vertical side opposite the angle 6 cm</title><polygon points=\"20,110 180,110 180,25\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><polyline points=\"168,110 168,98 180,98\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><path d=\"M 46 110 A 26 26 0 0 0 43 97\" fill=\"none\" stroke=\"#2b5797\" stroke-width=\"1.5\"/><text x=\"50\" y=\"104\" fill=\"#2b5797\" font-weight=\"700\">θ</text><text x=\"62\" y=\"52\" fill=\"#1d1d1b\" font-weight=\"700\">12 cm</text><text x=\"185\" y=\"72\" fill=\"#1d1d1b\" font-weight=\"700\">6 cm</text><text x=\"100\" y=\"126\" text-anchor=\"middle\" fill=\"#1d1d1b\" font-weight=\"700\"></text></svg>",
+    "hint": "Have O and H. Which ratio?",
+    "answers": ["30", "30degrees"],
+    "working": "Step 2: SOH. Step 3: sin θ = 6 ÷ 12. Step 4: ½. Step 5: sin 30° = ½. Step 7: θ = 30°.",
+    "misconceptions": [
+      {
+        "answer": "60",
+        "message": "½ is cos 60°, but you have O and H, so it is sin. sin 30° = ½."
+      },
+      {
+        "answer": "0.5",
+        "message": "That is the ratio. Find which angle has sin ½."
+      },
+      {
+        "answer": "2",
+        "message": "You wrote the fraction upside down. sin is O over H, so 6 ÷ 12."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G20/angle#4",
+    "topic": "1MA1/G20/angle",
+    "type": "cloze",
+    "stem": "Find the side marked x.",
+    "figure": "<svg viewBox=\"0 0 240 135\" width=\"100%\" style=\"max-width:240px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A right-angled triangle with a 60° angle at the bottom left, hypotenuse 8 cm, and the bottom side next to the angle marked x\"><title>A right-angled triangle with a 60° angle at the bottom left, hypotenuse 8 cm, and the bottom side next to the angle marked x</title><polygon points=\"20,110 180,110 180,25\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><polyline points=\"168,110 168,98 180,98\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><path d=\"M 46 110 A 26 26 0 0 0 43 97\" fill=\"none\" stroke=\"#2b5797\" stroke-width=\"1.5\"/><text x=\"50\" y=\"104\" fill=\"#2b5797\" font-weight=\"700\">60°</text><text x=\"62\" y=\"52\" fill=\"#1d1d1b\" font-weight=\"700\">8 cm</text><text x=\"185\" y=\"72\" fill=\"#1d1d1b\" font-weight=\"700\"></text><text x=\"100\" y=\"126\" text-anchor=\"middle\" fill=\"#1d1d1b\" font-weight=\"700\">x</text></svg>",
+    "hint": "One side and the angle given, a side wanted. That is U283: cos 60° = x ÷ 8.",
+    "answers": ["4", "4cm"],
+    "working": "Not an angle: this is find a side, U283. Have H, want A, so CAH. cos 60° = x ÷ 8, and cos 60° = ½. x = 8 × ½ = 4 cm.",
+    "misconceptions": [
+      {
+        "answer": "16",
+        "message": "You divided. x is on top of the fraction, so multiply."
+      },
+      {
+        "answer": "30",
+        "message": "The question asks for a side, not an angle. cos 60° = x ÷ 8."
+      },
+      {
+        "answer": "8",
+        "message": "That is the hypotenuse. cos 60° is ½, so x is half of it."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G20/angle#5",
+    "topic": "1MA1/G20/angle",
+    "type": "cloze",
+    "stem": "Sam finds the angle in this triangle. Step 1: A = 4, H = 8. Step 2: SOH. Step 3: sin θ = 4 ÷ 8. Step 4: ½. Step 5: sin 30° = ½, so θ = 30°. Which step went wrong first? Answer with the step number.",
+    "figure": "<svg viewBox=\"0 0 240 135\" width=\"100%\" style=\"max-width:240px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A right-angled triangle with the unknown angle theta at the bottom left, hypotenuse 8 cm and the bottom side next to the angle 4 cm\"><title>A right-angled triangle with the unknown angle theta at the bottom left, hypotenuse 8 cm and the bottom side next to the angle 4 cm</title><polygon points=\"20,110 180,110 180,25\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><polyline points=\"168,110 168,98 180,98\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><path d=\"M 46 110 A 26 26 0 0 0 43 97\" fill=\"none\" stroke=\"#2b5797\" stroke-width=\"1.5\"/><text x=\"50\" y=\"104\" fill=\"#2b5797\" font-weight=\"700\">θ</text><text x=\"62\" y=\"52\" fill=\"#1d1d1b\" font-weight=\"700\">8 cm</text><text x=\"185\" y=\"72\" fill=\"#1d1d1b\" font-weight=\"700\"></text><text x=\"100\" y=\"126\" text-anchor=\"middle\" fill=\"#1d1d1b\" font-weight=\"700\">4 cm</text></svg>",
+    "hint": "Which two sides does Sam have? Check each step against them.",
+    "answers": ["2", "step2"],
+    "working": "The sides are A and H, so the ratio is CAH, not SOH. cos θ = 4 ÷ 8 = ½, and cos 60° = ½, so the angle is 60°. First wrong step = 2.",
+    "misconceptions": [
+      {
+        "answer": "3",
+        "message": "Step 3 follows the ratio from step 2. The wrong turn came earlier: A and H is CAH, not SOH."
+      },
+      {
+        "answer": "4",
+        "message": "4 ÷ 8 is ½, so step 4 is fine. Look at the ratio picked in step 2."
+      },
+      {
+        "answer": "5",
+        "message": "Step 5 read the sin row correctly. The ratio itself was wrong: A and H is cos."
+      }
+    ]
+  }
+]

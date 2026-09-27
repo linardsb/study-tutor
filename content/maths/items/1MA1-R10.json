@@ -1,0 +1,119 @@
+[
+  {
+    "id": "1MA1/R10#1",
+    "topic": "1MA1/R10",
+    "type": "cloze",
+    "stem": "3 notebooks cost £2.40. How much do 7 notebooks cost? The first steps are done. Finish it.",
+    "scaffold": "Step 1, one notebook: 2.40 ÷ 3 = £0.80. Step 2, seven notebooks: 7 × 0.80 = …",
+    "hint": "Seven lots of 80p.",
+    "answers": ["5.60", "5.6"],
+    "working": "Step 1, one notebook: 2.40 ÷ 3 = £0.80. Step 2, seven notebooks: 7 × 0.80 = £5.60. Step 3, check: more notebooks, more money.",
+    "misconceptions": [
+      {
+        "answer": "0.80",
+        "message": "That is one notebook. Step 2 still has to happen: multiply by 7."
+      },
+      {
+        "answer": "6.40",
+        "message": "You added the 4 extra notebooks on as pounds. Multiply the price of one by 7."
+      },
+      {
+        "answer": "16.80",
+        "message": "You multiplied the price of three by 7. Use the price of one, 80p."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R10#2",
+    "topic": "1MA1/R10",
+    "type": "cloze",
+    "stem": "8 apples cost £2. How much do 20 apples cost? The first step is done. Finish it.",
+    "scaffold": "Step 1, one apple: 2 ÷ 8 = £0.25. …",
+    "hint": "Twenty lots of 25p.",
+    "answers": ["5", "5.00"],
+    "working": "Step 1, one apple: 2 ÷ 8 = £0.25. Step 2, twenty apples: 20 × 0.25 = £5. Step 3, check: 20 apples is more than 8, and £5 is more than £2.",
+    "misconceptions": [
+      {
+        "answer": "0.25",
+        "message": "That is one apple. Multiply by 20."
+      },
+      {
+        "answer": "14",
+        "message": "You added 12 apples on as pounds. Multiply the price of one by 20."
+      },
+      {
+        "answer": "40",
+        "message": "You multiplied the price of eight by 20. Use the price of one, 25p."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R10#3",
+    "topic": "1MA1/R10",
+    "type": "cloze",
+    "stem": "A recipe for 4 people uses 200 g of rice. How many grams for 6 people?",
+    "hint": "Find the rice for one person: 200 ÷ 4.",
+    "answers": ["300", "300g"],
+    "working": "Step 1, one person: 200 ÷ 4 = 50 g. Step 2, six people: 6 × 50 = 300 g. Step 3: more people, more rice.",
+    "misconceptions": [
+      {
+        "answer": "50",
+        "message": "That is one person. Multiply by 6."
+      },
+      {
+        "answer": "1200",
+        "message": "You multiplied the amount for four by 6. Find one person first."
+      },
+      {
+        "answer": "202",
+        "message": "You added 2 people on as grams. Find the rice for one person, then multiply."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R10#4",
+    "topic": "1MA1/R10",
+    "type": "cloze",
+    "stem": "Jo and Sam share £45 in the ratio 2 : 3. How much does Sam get?",
+    "hint": "This is sharing, not scaling. Count the parts first: 2 + 3.",
+    "answers": ["27", "27.00"],
+    "working": "Not direct proportion: this is sharing in a ratio, U577. Total parts: 2 + 3 = 5. One part: 45 ÷ 5 = £9. Sam: 3 × 9 = £27.",
+    "misconceptions": [
+      {
+        "answer": "18",
+        "message": "That is Jo's share, the 2 parts. Sam has 3 parts."
+      },
+      {
+        "answer": "22.50",
+        "message": "You halved the money. The shares are 2 parts and 3 parts, not equal."
+      },
+      {
+        "answer": "67.50",
+        "message": "You divided by 2 and multiplied by 3. Divide by the total parts, 5."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R10#5",
+    "topic": "1MA1/R10",
+    "type": "cloze",
+    "stem": "Cereal comes in two packs. Pack A: 500 g for £2. Pack B: 750 g for £2.70. Work out the cost per 100 g of each. How many pence cheaper per 100 g is the better buy?",
+    "hint": "Pack A: 200p ÷ 5. Pack B: 270p ÷ 7.5.",
+    "answers": ["4", "4p"],
+    "working": "Step 1, per 100 g: A is 200p ÷ 5 = 40p. B is 270p ÷ 7.5 = 36p. Pack B is the better buy, by 40 − 36 = 4p.",
+    "misconceptions": [
+      {
+        "answer": "40",
+        "message": "That is pack A per 100 g. The question asks for the difference between the packs."
+      },
+      {
+        "answer": "36",
+        "message": "That is pack B per 100 g. Take it away from pack A's 40p."
+      },
+      {
+        "answer": "70",
+        "message": "That is the difference in the price tags. Compare the same amount, 100 g, first."
+      }
+    ]
+  }
+]

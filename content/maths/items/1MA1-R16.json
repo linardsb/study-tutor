@@ -1,0 +1,119 @@
+[
+  {
+    "id": "1MA1/R16#1",
+    "topic": "1MA1/R16",
+    "type": "cloze",
+    "stem": "£500 goes up by 10%, then by 10% again. Find the final amount. The first steps are done.",
+    "scaffold": "Step 1: 10% of 500 = 50, so 500 + 50 = 550. Step 2: 10% of 550 = 55. Step 3: 550 + 55 = …",
+    "hint": "Add 55 to 550.",
+    "answers": ["605"],
+    "working": "Step 1: 10% of 500 = 50, so 500 + 50 = 550. Step 2: 10% of 550 = 55. Step 3: 550 + 55 = 605. £605.",
+    "misconceptions": [
+      {
+        "answer": "600",
+        "message": "You added 10% of 500 twice. The second 10% is of 550, so 55."
+      },
+      {
+        "answer": "550",
+        "message": "That is after one year. Do the second year."
+      },
+      {
+        "answer": "55",
+        "message": "That is the second year's interest. Add it to 550."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R16#2",
+    "topic": "1MA1/R16",
+    "type": "cloze",
+    "stem": "£300 is put in a savings account paying 10% compound interest per year. How much is in the account after 2 years? The first step is done.",
+    "scaffold": "Step 1: 10% of 300 = 30, so 300 + 30 = 330. Step 2: 10% of 330 = …",
+    "hint": "10% of 330 is 33. Then add it to 330.",
+    "answers": ["363"],
+    "working": "Step 1: 10% of 300 = 30, so 300 + 30 = 330. Step 2: 10% of 330 = 33. Step 3: 330 + 33 = 363. £363.",
+    "misconceptions": [
+      {
+        "answer": "360",
+        "message": "You used 30 again. Year 2's 10% is of 330, which is 33."
+      },
+      {
+        "answer": "330",
+        "message": "That is after one year. Do year 2."
+      },
+      {
+        "answer": "33",
+        "message": "That is year 2's interest. Add it to 330."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R16#3",
+    "topic": "1MA1/R16",
+    "type": "cloze",
+    "stem": "A laptop costs £600 new. It loses 20% of its value every year. What is it worth after 2 years?",
+    "hint": "20% of 600 first. Write the new value before you start year 2.",
+    "answers": ["384"],
+    "working": "Year 1: 20% of 600 = 120, so 600 − 120 = 480. Year 2: 20% of 480 = 96, so 480 − 96 = 384. £384.",
+    "misconceptions": [
+      {
+        "answer": "360",
+        "message": "You took 20% of 600 twice. The second 20% is of 480."
+      },
+      {
+        "answer": "480",
+        "message": "That is after one year. Do the second year."
+      },
+      {
+        "answer": "96",
+        "message": "That is year 2's loss. Take it from 480."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R16#4",
+    "topic": "1MA1/R16",
+    "type": "cloze",
+    "stem": "A coat costs £120. In a sale the price is cut by 30%. Find the sale price.",
+    "hint": "One change only. 10% of 120 first.",
+    "answers": ["84"],
+    "working": "This is U554, a single change. 10% of 120 = 12, so 30% = 36. 120 − 36 = 84. £84.",
+    "misconceptions": [
+      {
+        "answer": "36",
+        "message": "That is the money off. Take it from 120."
+      },
+      {
+        "answer": "58.8",
+        "message": "You took 30% off twice. The sale has one cut."
+      },
+      {
+        "answer": "90",
+        "message": "You took 30 as pounds. 30% of 120 is 36."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/R16#5",
+    "topic": "1MA1/R16",
+    "type": "cloze",
+    "stem": "A town has 5000 people. The population rises by 20% in one year, then falls by 20% the next year. What is the population at the end?",
+    "hint": "Do the rise first and write the new number. The fall is 20% of that.",
+    "answers": ["4800"],
+    "working": "Up: 20% of 5000 = 1000, so 5000 + 1000 = 6000. Down: 20% of 6000 = 1200, so 6000 − 1200 = 4800. It does not go back to 5000.",
+    "misconceptions": [
+      {
+        "answer": "5000",
+        "message": "You cancelled the two changes. The fall is 20% of 6000, which is bigger than the rise."
+      },
+      {
+        "answer": "6000",
+        "message": "That is after the rise. Now take 20% of 6000 away."
+      },
+      {
+        "answer": "4000",
+        "message": "You took 20% of 5000 away. The fall is 20% of the new number, 6000."
+      }
+    ]
+  }
+]

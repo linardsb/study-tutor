@@ -1,0 +1,162 @@
+[
+  {
+    "id": "1MA1/G17/circle#1",
+    "topic": "1MA1/G17/circle",
+    "type": "cloze",
+    "stem": "Find the area of this circle in terms of pi. The first steps are done. Finish it.",
+    "figure": "<svg viewBox=\"0 0 130 120\" width=\"100%\" style=\"max-width:130px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A circle with radius 3 cm marked from the centre to the edge\"><title>A circle with radius 3 cm marked from the centre to the edge</title><circle cx=\"62\" cy=\"60\" r=\"46\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><circle cx=\"62\" cy=\"60\" r=\"2.5\" fill=\"#1d1d1b\"/><line x1=\"62\" y1=\"60\" x2=\"108\" y2=\"60\" stroke=\"#2b5797\" stroke-width=\"2\"/><text x=\"86\" y=\"54\" text-anchor=\"middle\" fill=\"#2b5797\">3 cm</text></svg>",
+    "scaffold": "Step 1, r = 3. Step 2, r² = 3 × 3 = 9. Step 3, 9 × π = …",
+    "hint": "Nine times π.",
+    "answers": [
+      "9pi",
+      "9 pi",
+      "9*pi",
+      "9xpi",
+      "pi*9",
+      "9pi cm2",
+      "9pi cm^2",
+      "9*pi cm2",
+      "9*pi cm^2"
+    ],
+    "working": "Step 1, r = 3. Step 2, r² = 3 × 3 = 9. Step 3, 9 × π = 9π. Step 4, 9π cm².",
+    "misconceptions": [
+      {
+        "answer": "6pi",
+        "message": "You doubled the radius. Square it: 3 × 3."
+      },
+      {
+        "answer": "9",
+        "message": "You dropped the π. Write the number times π, like 9pi."
+      },
+      {
+        "answer": "3pi",
+        "message": "That is π × r. Square the radius first."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G17/circle#2",
+    "topic": "1MA1/G17/circle",
+    "type": "cloze",
+    "stem": "Find the area of this circle in terms of pi. The first step is done. Finish it.",
+    "figure": "<svg viewBox=\"0 0 130 120\" width=\"100%\" style=\"max-width:130px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A circle with diameter 20 cm marked right across through the centre\"><title>A circle with diameter 20 cm marked right across through the centre</title><circle cx=\"62\" cy=\"60\" r=\"46\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><circle cx=\"62\" cy=\"60\" r=\"2.5\" fill=\"#1d1d1b\"/><line x1=\"16\" y1=\"60\" x2=\"108\" y2=\"60\" stroke=\"#1d1d1b\" stroke-width=\"2\" stroke-dasharray=\"5 3\"/><text x=\"62\" y=\"78\" text-anchor=\"middle\" fill=\"#1d1d1b\">20 cm</text></svg>",
+    "scaffold": "Step 1, r = 20 ÷ 2 = 10. …",
+    "hint": "Square your 10.",
+    "answers": [
+      "100pi",
+      "100 pi",
+      "100*pi",
+      "100xpi",
+      "pi*100",
+      "100pi cm2",
+      "100pi cm^2",
+      "100*pi cm2",
+      "100*pi cm^2"
+    ],
+    "working": "Step 1, r = 20 ÷ 2 = 10. Step 2, r² = 10 × 10 = 100. Step 3, 100 × π = 100π. Step 4, 100π cm².",
+    "misconceptions": [
+      {
+        "answer": "400pi",
+        "message": "You used the diameter, 20, as the radius. r is 10."
+      },
+      {
+        "answer": "20pi",
+        "message": "You doubled 10. Square it: 10 × 10."
+      },
+      {
+        "answer": "100",
+        "message": "You dropped the π. Write the number times π, like 100pi."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G17/circle#3",
+    "topic": "1MA1/G17/circle",
+    "type": "cloze",
+    "stem": "Find the area of this circle in terms of pi.",
+    "figure": "<svg viewBox=\"0 0 130 120\" width=\"100%\" style=\"max-width:130px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A circle with diameter 12 cm marked right across through the centre\"><title>A circle with diameter 12 cm marked right across through the centre</title><circle cx=\"62\" cy=\"60\" r=\"46\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><circle cx=\"62\" cy=\"60\" r=\"2.5\" fill=\"#1d1d1b\"/><line x1=\"16\" y1=\"60\" x2=\"108\" y2=\"60\" stroke=\"#1d1d1b\" stroke-width=\"2\" stroke-dasharray=\"5 3\"/><text x=\"62\" y=\"78\" text-anchor=\"middle\" fill=\"#1d1d1b\">12 cm</text></svg>",
+    "hint": "Halve the diameter first.",
+    "answers": [
+      "36pi",
+      "36 pi",
+      "36*pi",
+      "36xpi",
+      "pi*36",
+      "36pi cm2",
+      "36pi cm^2",
+      "36*pi cm2",
+      "36*pi cm^2"
+    ],
+    "working": "Step 1: r = 12 ÷ 2 = 6. Step 2: 6 × 6 = 36. Step 3: 36 × π = 36π. Step 4: 36π cm².",
+    "misconceptions": [
+      {
+        "answer": "144pi",
+        "message": "You used 12 as the radius. Halve the diameter first: r = 6."
+      },
+      {
+        "answer": "12pi",
+        "message": "You doubled the radius. Square it: 6 × 6."
+      },
+      {
+        "answer": "24pi",
+        "message": "That is the circumference, πd. Area is π × r × r."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G17/circle#4",
+    "topic": "1MA1/G17/circle",
+    "type": "cloze",
+    "stem": "Find the circumference (the distance round the edge) of this circle, in terms of pi.",
+    "figure": "<svg viewBox=\"0 0 130 120\" width=\"100%\" style=\"max-width:130px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A circle with radius 5 cm marked from the centre to the edge\"><title>A circle with radius 5 cm marked from the centre to the edge</title><circle cx=\"62\" cy=\"60\" r=\"46\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><circle cx=\"62\" cy=\"60\" r=\"2.5\" fill=\"#1d1d1b\"/><line x1=\"62\" y1=\"60\" x2=\"108\" y2=\"60\" stroke=\"#2b5797\" stroke-width=\"2\"/><text x=\"86\" y=\"54\" text-anchor=\"middle\" fill=\"#2b5797\">5 cm</text></svg>",
+    "hint": "This asks for the edge, not the inside. Circumference = π × d.",
+    "answers": [
+      "10pi",
+      "10 pi",
+      "10*pi",
+      "10xpi",
+      "pi*10",
+      "10pi cm",
+      "10*pi cm"
+    ],
+    "working": "Not area: this is circumference, C = πd. d = 2 × 5 = 10. C = 10 × π = 10π cm.",
+    "misconceptions": [
+      {
+        "answer": "25pi",
+        "message": "That is the area, πr². Circumference is π × d."
+      },
+      {
+        "answer": "5pi",
+        "message": "That is π × r. Circumference is π × d, and d is 10."
+      },
+      {
+        "answer": "20pi",
+        "message": "You doubled the diameter. Circumference is π × d, once."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G17/circle#5",
+    "topic": "1MA1/G17/circle",
+    "type": "cloze",
+    "stem": "A round pond is 6 m across. Taking π as 3, estimate its area in m².",
+    "figure": "<svg viewBox=\"0 0 130 120\" width=\"100%\" style=\"max-width:130px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A round pond drawn as a circle, 6 m across\"><title>A round pond drawn as a circle, 6 m across</title><circle cx=\"62\" cy=\"60\" r=\"46\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><circle cx=\"62\" cy=\"60\" r=\"2.5\" fill=\"#1d1d1b\"/><line x1=\"16\" y1=\"60\" x2=\"108\" y2=\"60\" stroke=\"#1d1d1b\" stroke-width=\"2\" stroke-dasharray=\"5 3\"/><text x=\"62\" y=\"78\" text-anchor=\"middle\" fill=\"#1d1d1b\">6 m</text></svg>",
+    "hint": "Across means diameter. Halve it.",
+    "answers": ["27", "27m2", "27 m^2"],
+    "working": "Step 1: r = 6 ÷ 2 = 3. Step 2: 3 × 3 = 9. Step 3: 9 × 3 = 27. Step 4: 27 m².",
+    "misconceptions": [
+      {
+        "answer": "108",
+        "message": "You used 6 as the radius. Across means the diameter, so r = 3."
+      },
+      {
+        "answer": "18",
+        "message": "That is 3 × 6, π times the diameter. Square the radius first."
+      },
+      {
+        "answer": "9",
+        "message": "That is r². Multiply by π, which is 3 here."
+      }
+    ]
+  }
+]

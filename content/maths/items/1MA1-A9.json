@@ -1,0 +1,116 @@
+[
+  {
+    "id": "1MA1/A9#1",
+    "topic": "1MA1/A9",
+    "type": "cloze",
+    "stem": "Write the equation of a line parallel to y = 4x + 1 that crosses the y-axis at 7. The first steps are done.",
+    "figure": "<svg viewBox=\"0 0 200 150\" width=\"100%\" style=\"max-width:200px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"Axes with the line y = 4x + 1 drawn and a point marked at 7 on the y-axis\">\n        <line x1=\"10\" y1=\"110\" x2=\"190\" y2=\"110\" stroke=\"#d9d7d0\" stroke-width=\"1.5\"/>\n        <line x1=\"70\" y1=\"6\" x2=\"70\" y2=\"144\" stroke=\"#d9d7d0\" stroke-width=\"1.5\"/>\n        <line x1=\"45\" y1=\"140\" x2=\"105\" y2=\"20\" stroke=\"#2b5797\" stroke-width=\"2.5\"/>\n        <circle cx=\"70\" cy=\"100\" r=\"3.5\" fill=\"#2b5797\"/>\n        <text x=\"108\" y=\"24\" fill=\"#2b5797\">y = 4x + 1</text>\n        <text x=\"60\" y=\"104\" text-anchor=\"end\" fill=\"#2b5797\">1</text>\n        <circle cx=\"70\" cy=\"40\" r=\"4\" fill=\"#c8372d\"/>\n        <text x=\"60\" y=\"44\" text-anchor=\"end\" fill=\"#c8372d\">7</text>\n      </svg>",
+    "scaffold": "Step 2: m = 4. Step 4: keep m, so y = 4x + c. Crossing the y-axis at 7 means c = 7. So the line is …",
+    "hint": "Put c = 7 into y = 4x + c.",
+    "answers": ["y=4x+7", "4x+7", "y=7+4x"],
+    "working": "Step 2: m = 4. Step 4: keep m, so y = 4x + c. Crossing the y-axis at 7 means c = 7. So the line is y = 4x + 7.",
+    "misconceptions": [
+      {
+        "answer": "y=7x+1",
+        "message": "You swapped m and c. m stays 4; only c changes, to 7."
+      },
+      {
+        "answer": "y=4x+1",
+        "message": "That is the original line. Change c to 7."
+      },
+      {
+        "answer": "y=x+7",
+        "message": "You dropped the 4. Parallel means the same m."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/A9#2",
+    "topic": "1MA1/A9",
+    "type": "cloze",
+    "stem": "Write the equation of the line parallel to y = 2x − 7 that passes through (3, 10). The first steps are done.",
+    "figure": "<svg viewBox=\"0 0 200 150\" width=\"100%\" style=\"max-width:200px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"Axes with the line y = 2x minus 7 drawn and the point (3, 10) marked above it\">\n        <line x1=\"10\" y1=\"100\" x2=\"190\" y2=\"100\" stroke=\"#d9d7d0\" stroke-width=\"1.5\"/>\n        <line x1=\"50\" y1=\"6\" x2=\"50\" y2=\"144\" stroke=\"#d9d7d0\" stroke-width=\"1.5\"/>\n        <line x1=\"40\" y1=\"142\" x2=\"150\" y2=\"32\" stroke=\"#2b5797\" stroke-width=\"2.5\"/>\n        <text x=\"120\" y=\"26\" fill=\"#2b5797\">y = 2x − 7</text>\n        <circle cx=\"86\" cy=\"20\" r=\"4\" fill=\"#c8372d\"/>\n        <text x=\"94\" y=\"18\" fill=\"#c8372d\">(3, 10)</text>\n        <line x1=\"60\" y1=\"130\" x2=\"100\" y2=\"90\" stroke=\"#5f5f5a\" stroke-width=\"1\" stroke-dasharray=\"3 3\"/>\n      </svg>",
+    "scaffold": "Step 2: m = 2. Step 4: keep m, so y = 2x + c. Step 5: put in x = 3 and y = 10: 10 = 2 × 3 + c. …",
+    "hint": "2 × 3 is 6. What has to be added to 6 to make 10?",
+    "answers": ["y=2x+4", "2x+4", "y=4+2x"],
+    "working": "Step 2: m = 2. Step 4: keep m, so y = 2x + c. Step 5: put in x = 3 and y = 10: 10 = 2 × 3 + c. So 10 = 6 + c and c = 4. The line is y = 2x + 4.",
+    "misconceptions": [
+      {
+        "answer": "y=2x+16",
+        "message": "You added 6 instead of taking it away. 10 = 6 + c, so c = 10 − 6."
+      },
+      {
+        "answer": "y=2x-7",
+        "message": "That is the original line. Its c does not take it through (3, 10)."
+      },
+      {
+        "answer": "y=2x+10",
+        "message": "You used the y-value as c. c is what is left after taking 2 × 3 away from 10."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/A9#3",
+    "topic": "1MA1/A9",
+    "type": "cloze",
+    "stem": "Which line is parallel to y = 5x − 2? (a) y = 2x − 5, (b) y = 5x + 3, (c) y = −5x − 2. Type a, b or c.",
+    "figure": "<svg viewBox=\"0 0 220 150\" width=\"100%\" style=\"max-width:220px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"Axes with y = 5x minus 2 dashed and three lines a, b and c: a is less steep, b is parallel to the dashed line, c slopes the other way\">\n        <line x1=\"10\" y1=\"90\" x2=\"210\" y2=\"90\" stroke=\"#d9d7d0\" stroke-width=\"1.5\"/>\n        <line x1=\"110\" y1=\"6\" x2=\"110\" y2=\"144\" stroke=\"#d9d7d0\" stroke-width=\"1.5\"/>\n        <line x1=\"88\" y1=\"140\" x2=\"128\" y2=\"20\" stroke=\"#5f5f5a\" stroke-width=\"2\" stroke-dasharray=\"5 3\"/>\n        <text x=\"130\" y=\"18\" fill=\"#5f5f5a\">y = 5x − 2</text>\n        <line x1=\"30\" y1=\"140\" x2=\"170\" y2=\"35\" stroke=\"#2b5797\" stroke-width=\"2\"/><text x=\"172\" y=\"36\" fill=\"#2b5797\">a</text>\n        <line x1=\"60\" y1=\"140\" x2=\"100\" y2=\"20\" stroke=\"#2e8b57\" stroke-width=\"2\"/><text x=\"102\" y=\"18\" fill=\"#2e8b57\">b</text>\n        <line x1=\"70\" y1=\"20\" x2=\"110\" y2=\"140\" stroke=\"#c8372d\" stroke-width=\"2\"/><text x=\"112\" y=\"140\" fill=\"#c8372d\">c</text>\n      </svg>",
+    "hint": "Read the number in front of x in each one.",
+    "answers": ["b", "(b)", "y=5x+3", "5x+3"],
+    "working": "Gradients: 2, 5 and −5. Only (b) has gradient 5, the same as y = 5x − 2.",
+    "misconceptions": [
+      {
+        "answer": "a",
+        "message": "Same numbers, swapped round. In (a) m is 2, not 5."
+      },
+      {
+        "answer": "c",
+        "message": "Same c does not make lines parallel. m has to match, and −5 is not 5."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/A9#4",
+    "topic": "1MA1/A9",
+    "type": "cloze",
+    "stem": "The graph shows a line. Which equation is parallel to it: (a) y = 3x − 4, (b) y = 2x + 3, (c) y = −3x + 2? Type a, b or c.",
+    "figure": "<svg viewBox=\"0 0 200 160\" width=\"100%\" style=\"max-width:200px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"A grid with a line through (0, 2) and (1, 5). The rise of 3 for 1 across is marked\">\n        <g stroke=\"#e9e7e0\" stroke-width=\"1\">\n          <line x1=\"20\" y1=\"20\" x2=\"20\" y2=\"150\"/><line x1=\"50\" y1=\"20\" x2=\"50\" y2=\"150\"/><line x1=\"80\" y1=\"20\" x2=\"80\" y2=\"150\"/><line x1=\"110\" y1=\"20\" x2=\"110\" y2=\"150\"/><line x1=\"140\" y1=\"20\" x2=\"140\" y2=\"150\"/><line x1=\"170\" y1=\"20\" x2=\"170\" y2=\"150\"/>\n          <line x1=\"20\" y1=\"20\" x2=\"170\" y2=\"20\"/><line x1=\"20\" y1=\"40\" x2=\"170\" y2=\"40\"/><line x1=\"20\" y1=\"60\" x2=\"170\" y2=\"60\"/><line x1=\"20\" y1=\"80\" x2=\"170\" y2=\"80\"/><line x1=\"20\" y1=\"100\" x2=\"170\" y2=\"100\"/><line x1=\"20\" y1=\"120\" x2=\"170\" y2=\"120\"/><line x1=\"20\" y1=\"140\" x2=\"170\" y2=\"140\"/>\n        </g>\n        <line x1=\"20\" y1=\"140\" x2=\"170\" y2=\"140\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <line x1=\"50\" y1=\"20\" x2=\"50\" y2=\"150\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <line x1=\"30\" y1=\"140\" x2=\"90\" y2=\"20\" stroke=\"#2b5797\" stroke-width=\"2.5\"/>\n        <circle cx=\"50\" cy=\"100\" r=\"3.5\" fill=\"#2b5797\"/><circle cx=\"80\" cy=\"40\" r=\"3.5\" fill=\"#2b5797\"/>\n        <text x=\"40\" y=\"104\" text-anchor=\"end\">2</text>\n        <text x=\"44\" y=\"44\" text-anchor=\"end\">5</text>\n        <text x=\"76\" y=\"154\" text-anchor=\"middle\">1</text>\n        <text x=\"46\" y=\"154\" text-anchor=\"middle\">0</text>\n        <line x1=\"50\" y1=\"100\" x2=\"80\" y2=\"100\" stroke=\"#c8372d\" stroke-width=\"1.5\" stroke-dasharray=\"3 2\"/>\n        <line x1=\"80\" y1=\"100\" x2=\"80\" y2=\"40\" stroke=\"#c8372d\" stroke-width=\"1.5\" stroke-dasharray=\"3 2\"/>\n        <text x=\"86\" y=\"74\" fill=\"#c8372d\">up 3</text>\n        <text x=\"58\" y=\"112\" fill=\"#c8372d\">1 across</text>\n      </svg>",
+    "hint": "How far does the line go up for each 1 across? That is m.",
+    "answers": ["a", "(a)", "y=3x-4", "3x-4"],
+    "working": "This is U980, reading a graph. From (0, 2) to (1, 5) the line goes up 3 for 1 across, so m = 3. It crosses at 2, so the line is y = 3x + 2. Parallel needs m = 3: (a) y = 3x − 4.",
+    "misconceptions": [
+      {
+        "answer": "b",
+        "message": "You matched the 2. On this graph the 2 is c, where the line crosses. Parallel needs the same m, which is 3."
+      },
+      {
+        "answer": "c",
+        "message": "The line on the graph goes up, so m is 3, not −3."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/A9#5",
+    "topic": "1MA1/A9",
+    "type": "cloze",
+    "stem": "Phone plan A costs C = 3n + 10 pounds a month, where n is the gigabytes used. Plan B charges the same per gigabyte but £5 more each month. Write the equation for plan B.",
+    "figure": "<svg viewBox=\"0 0 220 150\" width=\"100%\" style=\"max-width:220px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"Axes with n along the bottom and C up the side. Plan A is a line starting at 10. Plan B is a dashed parallel line starting higher, marked with a question mark\">\n        <line x1=\"30\" y1=\"130\" x2=\"210\" y2=\"130\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <line x1=\"30\" y1=\"10\" x2=\"30\" y2=\"130\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <text x=\"200\" y=\"145\" fill=\"#5f5f5a\">n</text>\n        <text x=\"12\" y=\"20\" fill=\"#5f5f5a\">C</text>\n        <line x1=\"30\" y1=\"100\" x2=\"190\" y2=\"40\" stroke=\"#2b5797\" stroke-width=\"2.5\"/>\n        <text x=\"192\" y=\"40\" fill=\"#2b5797\">A</text>\n        <text x=\"26\" y=\"104\" text-anchor=\"end\">10</text>\n        <line x1=\"30\" y1=\"85\" x2=\"190\" y2=\"25\" stroke=\"#c8372d\" stroke-width=\"2.5\" stroke-dasharray=\"5 3\"/>\n        <text x=\"192\" y=\"24\" fill=\"#c8372d\">B</text>\n        <text x=\"26\" y=\"89\" text-anchor=\"end\" fill=\"#c8372d\">?</text>\n      </svg>",
+    "hint": "Same price per gigabyte means the same m. Only the monthly charge, c, moves.",
+    "answers": ["C=3n+15", "3n+15", "C=15+3n"],
+    "working": "Same price per gigabyte means the same gradient, 3. £5 more a month moves c from 10 to 15. C = 3n + 15. On a graph the two plans are parallel lines.",
+    "misconceptions": [
+      {
+        "answer": "C=8n+10",
+        "message": "You added the 5 to the 3. The charge per gigabyte is the gradient and it stays 3."
+      },
+      {
+        "answer": "C=3n+5",
+        "message": "You replaced 10 with 5. It is £5 more, so 10 + 5 = 15."
+      },
+      {
+        "answer": "C=3n+50",
+        "message": "You multiplied 10 by 5. It is £5 more, not five times."
+      }
+    ]
+  }
+]

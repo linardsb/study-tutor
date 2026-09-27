@@ -1,0 +1,154 @@
+[
+  {
+    "id": "1MA1/G17/sphere#1",
+    "topic": "1MA1/G17/sphere",
+    "type": "cloze",
+    "stem": "Find the volume of this sphere in terms of pi. The first steps are done. Finish it.",
+    "figure": "<svg viewBox=\"0 0 130 120\" width=\"100%\" style=\"max-width:130px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A sphere with radius 6 cm marked from the centre to the edge\"><title>A sphere with radius 6 cm marked from the centre to the edge</title><circle cx=\"62\" cy=\"60\" r=\"46\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><ellipse cx=\"62\" cy=\"60\" rx=\"46\" ry=\"14\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.2\" stroke-dasharray=\"4 3\"/><circle cx=\"62\" cy=\"60\" r=\"2.5\" fill=\"#1d1d1b\"/><line x1=\"62\" y1=\"60\" x2=\"108\" y2=\"60\" stroke=\"#2b5797\" stroke-width=\"2\"/><text x=\"86\" y=\"40\" text-anchor=\"middle\" fill=\"#2b5797\">6 cm</text></svg>",
+    "scaffold": "Step 1, r = 6. Step 2, 6 × 6 × 6 = 216. Step 3, 216 ÷ 3 = 72, then 72 × 4 = 288. Step 4, 288 × π = …",
+    "hint": "288 times π.",
+    "answers": [
+      "288pi",
+      "288 pi",
+      "288*pi",
+      "288xpi",
+      "pi*288",
+      "288pi cm3",
+      "288pi cm^3",
+      "288*pi cm3",
+      "288*pi cm^3"
+    ],
+    "working": "Step 1, r = 6. Step 2, 6 × 6 × 6 = 216. Step 3, 216 ÷ 3 = 72, then 72 × 4 = 288. Step 4, 288 × π = 288π. Step 5, 288π cm³.",
+    "misconceptions": [
+      {
+        "answer": "216pi",
+        "message": "You skipped the 4/3. Divide 216 by 3, then multiply by 4."
+      },
+      {
+        "answer": "48pi",
+        "message": "You squared the radius. Cube it: 6 × 6 × 6."
+      },
+      {
+        "answer": "288",
+        "message": "You dropped the π. Write the number times π, like 288pi."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G17/sphere#2",
+    "topic": "1MA1/G17/sphere",
+    "type": "cloze",
+    "stem": "Find the volume of this sphere in terms of pi. The first steps are done. Finish it.",
+    "figure": "<svg viewBox=\"0 0 130 120\" width=\"100%\" style=\"max-width:130px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A sphere with diameter 6 cm marked right across through the centre\"><title>A sphere with diameter 6 cm marked right across through the centre</title><circle cx=\"62\" cy=\"60\" r=\"46\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><ellipse cx=\"62\" cy=\"60\" rx=\"46\" ry=\"14\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.2\" stroke-dasharray=\"4 3\"/><circle cx=\"62\" cy=\"60\" r=\"2.5\" fill=\"#1d1d1b\"/><line x1=\"16\" y1=\"60\" x2=\"108\" y2=\"60\" stroke=\"#2b5797\" stroke-width=\"2\"/><text x=\"62\" y=\"40\" text-anchor=\"middle\" fill=\"#2b5797\">6 cm</text></svg>",
+    "scaffold": "Step 1, r = 6 ÷ 2 = 3. Step 2, 3 × 3 × 3 = 27. …",
+    "hint": "27 ÷ 3, then × 4.",
+    "answers": [
+      "36pi",
+      "36 pi",
+      "36*pi",
+      "36xpi",
+      "pi*36",
+      "36pi cm3",
+      "36pi cm^3",
+      "36*pi cm3",
+      "36*pi cm^3"
+    ],
+    "working": "Step 1, r = 6 ÷ 2 = 3. Step 2, 3 × 3 × 3 = 27. Step 3, 27 ÷ 3 = 9, then 9 × 4 = 36. Step 4, 36 × π = 36π. Step 5, 36π cm³.",
+    "misconceptions": [
+      {
+        "answer": "27pi",
+        "message": "You skipped the 4/3. Divide 27 by 3, then multiply by 4."
+      },
+      {
+        "answer": "288pi",
+        "message": "You used 6 as the radius. The diameter is 6, so r = 3."
+      },
+      {
+        "answer": "12pi",
+        "message": "You squared the radius. The cube is 27, not 9."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G17/sphere#3",
+    "topic": "1MA1/G17/sphere",
+    "type": "cloze",
+    "stem": "A sphere has diameter 6 cm. Taking π as 3, find its volume in cm³.",
+    "figure": "<svg viewBox=\"0 0 130 120\" width=\"100%\" style=\"max-width:130px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A sphere with diameter 6 cm marked right across through the centre\"><title>A sphere with diameter 6 cm marked right across through the centre</title><circle cx=\"62\" cy=\"60\" r=\"46\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><ellipse cx=\"62\" cy=\"60\" rx=\"46\" ry=\"14\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.2\" stroke-dasharray=\"4 3\"/><circle cx=\"62\" cy=\"60\" r=\"2.5\" fill=\"#1d1d1b\"/><line x1=\"16\" y1=\"60\" x2=\"108\" y2=\"60\" stroke=\"#2b5797\" stroke-width=\"2\"/><text x=\"62\" y=\"40\" text-anchor=\"middle\" fill=\"#2b5797\">6 cm</text></svg>",
+    "hint": "Halve the diameter, then cube.",
+    "answers": ["108", "108cm3", "108 cm^3"],
+    "working": "Step 1: r = 6 ÷ 2 = 3. Step 2: 27. Step 3: 27 ÷ 3 = 9, then 9 × 4 = 36. Step 4: 36 × 3 = 108. Step 5: 108 cm³.",
+    "misconceptions": [
+      {
+        "answer": "864",
+        "message": "You used 6 as the radius. Halve the diameter: r = 3."
+      },
+      {
+        "answer": "36",
+        "message": "That is 4/3 × 27. Now multiply by π, which is 3 here."
+      },
+      {
+        "answer": "81",
+        "message": "That is 27 × 3. The 4/3 is missing."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G17/sphere#4",
+    "topic": "1MA1/G17/sphere",
+    "type": "cloze",
+    "stem": "A cone has radius 3 cm and perpendicular height 4 cm. Find its volume in terms of pi.",
+    "figure": "<svg viewBox=\"0 0 170 130\" width=\"100%\" style=\"max-width:170px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A cone with radius 3 cm and perpendicular height 4 cm\"><title>A cone with radius 3 cm and perpendicular height 4 cm</title><polygon points=\"80,12 30,100 130,100\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><ellipse cx=\"80\" cy=\"100\" rx=\"50\" ry=\"14\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><line x1=\"80\" y1=\"12\" x2=\"80\" y2=\"100\" stroke=\"#2b5797\" stroke-width=\"2\" stroke-dasharray=\"5 3\"/><circle cx=\"80\" cy=\"100\" r=\"2.5\" fill=\"#1d1d1b\"/><text x=\"84\" y=\"84\" fill=\"#2b5797\" stroke=\"#ffffff\" stroke-width=\"3\" paint-order=\"stroke\">4 cm</text><line x1=\"80\" y1=\"100\" x2=\"130\" y2=\"100\" stroke=\"#2b5797\" stroke-width=\"2\"/><text x=\"105\" y=\"126\" text-anchor=\"middle\" fill=\"#2b5797\">3 cm</text></svg>",
+    "hint": "A cone is not a sphere. Square the radius, times the height, divide by 3.",
+    "answers": [
+      "12pi",
+      "12 pi",
+      "12*pi",
+      "12xpi",
+      "pi*12",
+      "12pi cm3",
+      "12pi cm^3",
+      "12*pi cm3",
+      "12*pi cm^3"
+    ],
+    "working": "Not a sphere: this is a cone, U116. r² = 9. 9 × 4 = 36. 36 ÷ 3 = 12. V = 12 × π = 12π cm³.",
+    "misconceptions": [
+      {
+        "answer": "36pi",
+        "message": "You forgot the ÷ 3. A cone is a third of the cylinder round it."
+      },
+      {
+        "answer": "48pi",
+        "message": "You used the sphere's 4/3. A cone is ÷ 3 only, no × 4."
+      },
+      {
+        "answer": "12",
+        "message": "You dropped the π. Write the number times π, like 12pi."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/G17/sphere#5",
+    "topic": "1MA1/G17/sphere",
+    "type": "cloze",
+    "stem": "A globe has diameter 12 cm. Taking π as 3, find its volume in cm³.",
+    "figure": "<svg viewBox=\"0 0 130 120\" width=\"100%\" style=\"max-width:130px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A sphere with diameter 12 cm marked right across through the centre\"><title>A sphere with diameter 12 cm marked right across through the centre</title><circle cx=\"62\" cy=\"60\" r=\"46\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><ellipse cx=\"62\" cy=\"60\" rx=\"46\" ry=\"14\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.2\" stroke-dasharray=\"4 3\"/><circle cx=\"62\" cy=\"60\" r=\"2.5\" fill=\"#1d1d1b\"/><line x1=\"16\" y1=\"60\" x2=\"108\" y2=\"60\" stroke=\"#2b5797\" stroke-width=\"2\"/><text x=\"62\" y=\"40\" text-anchor=\"middle\" fill=\"#2b5797\">12 cm</text></svg>",
+    "hint": "Halve the diameter, then cube.",
+    "answers": ["864", "864cm3", "864 cm^3"],
+    "working": "Step 1: r = 12 ÷ 2 = 6. Step 2: 216. Step 3: 216 ÷ 3 = 72, then 72 × 4 = 288. Step 4: 288 × 3 = 864. Step 5: 864 cm³.",
+    "misconceptions": [
+      {
+        "answer": "6912",
+        "message": "You used 12 as the radius. Halve the diameter: r = 6."
+      },
+      {
+        "answer": "288",
+        "message": "That is 4/3 × 216. Now multiply by π, which is 3 here."
+      },
+      {
+        "answer": "648",
+        "message": "That is 216 × 3. The 4/3 is missing."
+      }
+    ]
+  }
+]

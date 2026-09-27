@@ -1,0 +1,115 @@
+[
+  {
+    "id": "1MA1/N10#1",
+    "topic": "1MA1/N10",
+    "type": "cloze",
+    "stem": "Write 7/20 as a percentage. The first steps are done.",
+    "scaffold": "Step 6: make the bottom 100. 20 × 5 = 100, so multiply the top by 5 as well: 7 × 5 = …",
+    "hint": "Work out 7 × 5. That many out of 100 is the percentage.",
+    "answers": ["35%", "35"],
+    "working": "Step 6: make the bottom 100. 20 × 5 = 100, so multiply the top by 5 as well: 7 × 5 = 35. 7/20 = 35/100 = 35%.",
+    "misconceptions": [
+      {
+        "answer": "7",
+        "message": "You kept the top as it was. Whatever you do to the bottom, do to the top: 7 × 5."
+      },
+      {
+        "answer": "12",
+        "message": "You added 5 to the top. Multiply, do not add."
+      },
+      {
+        "answer": "3.5",
+        "message": "That is 7 ÷ 2. The bottom went × 5, so the top does too."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/N10#2",
+    "topic": "1MA1/N10",
+    "type": "cloze",
+    "stem": "Write 0.45 as a fraction in its simplest form. The first step is done.",
+    "scaffold": "Step 5: read the place value. 0.45 is 45 hundredths, so 45/100. …",
+    "hint": "Which number divides into both 45 and 100?",
+    "answers": ["9/20"],
+    "working": "Step 5: read the place value. 0.45 is 45 hundredths, so 45/100. Simplify: 5 divides into both. 45 ÷ 5 = 9 and 100 ÷ 5 = 20, so 9/20.",
+    "misconceptions": [
+      {
+        "answer": "45/100",
+        "message": "Right so far, but not simplified. Divide top and bottom by 5."
+      },
+      {
+        "answer": "4/5",
+        "message": "You dropped a digit. 0.45 is 45 hundredths, not 4 fifths."
+      },
+      {
+        "answer": "45/10",
+        "message": "0.45 has two decimal places, so it is hundredths, not tenths."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/N10#3",
+    "topic": "1MA1/N10",
+    "type": "cloze",
+    "stem": "Write 5/8 as a percentage.",
+    "hint": "Divide 5 by 8 with short division first.",
+    "answers": ["62.5%", "62.5"],
+    "working": "5 ÷ 8: 8 into 5.000 gives 0.625. 0.625 × 100 = 62.5. So 62.5%.",
+    "misconceptions": [
+      {
+        "answer": "58",
+        "message": "You copied the digits. 5/8 is not 0.58. Divide 5 by 8."
+      },
+      {
+        "answer": "0.625",
+        "message": "That is the decimal. Multiply by 100 for the percentage."
+      },
+      {
+        "answer": "6.25",
+        "message": "One place short. Multiply the decimal by 100, so two places."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/N10#4",
+    "topic": "1MA1/N10",
+    "type": "cloze",
+    "stem": "Find 35% of £60.",
+    "hint": "10% of 60 is 6. Build 35% from that.",
+    "answers": ["21"],
+    "working": "This is U349, percentage of an amount. 10% of 60 = 6. 30% = 18. 5% = 3. 35% = 18 + 3 = 21. So £21.",
+    "misconceptions": [
+      {
+        "answer": "25",
+        "message": "You took 35 from 60. Find 35% of it: build it from 10% blocks."
+      },
+      {
+        "answer": "6",
+        "message": "That is 10% of 60. You need three of those and a half of one."
+      },
+      {
+        "answer": "2100",
+        "message": "You multiplied by 35. Per cent means out of 100, so 35% is 35/100."
+      }
+    ]
+  },
+  {
+    "id": "1MA1/N10#5",
+    "topic": "1MA1/N10",
+    "type": "cloze",
+    "stem": "Three shops sell the same trainers at the same full price. Shop A takes 1/4 off, shop B takes 0.3 off and shop C takes 27% off. Which shop takes the most off? Answer A, B or C.",
+    "hint": "Turn all three into percentages first.",
+    "answers": ["b", "shop b"],
+    "working": "All as percentages: 1/4 = 25%, 0.3 = 30%, 27%. The biggest is 30%, so shop (b).",
+    "misconceptions": [
+      {
+        "answer": "a",
+        "message": "1/4 is 25%. Both 0.3 and 27% are bigger than that."
+      },
+      {
+        "answer": "c",
+        "message": "27% beats 25%, but 0.3 is 30%, which is more."
+      }
+    ]
+  }
+]

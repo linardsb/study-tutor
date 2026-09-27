@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>U558 Probability trees</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="lesson">
+  <nav class="sections" aria-label="Sections"><a href="#picture">Picture</a><a href="#method">Method</a><a href="#worked">Example</a><a href="#watch">Watch out</a><a href="#quiz">Try it</a></nav>
+  <header>
+    <p class="crumb"><a href="../progress.html">Progress</a> · U558 · Maths · Foundation · Paper 1 (no calculator)</p>
+    <h1>Probability trees</h1>
+    <p class="aim">By the end you can draw a tree for two events and find the probability of any outcome.</p>
+  </header>
+
+  <section id="picture">
+    <p>A tree diagram (a drawing where each branch is one outcome) shows two events in a row. A bag holds 3 red and 2 blue counters. You take one, put it back, take another.</p>
+    <svg viewBox="0 0 470 230" width="100%" style="max-width:470px;display:block;margin:.5rem 0" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="14" aria-label="Tree diagram: first pick red 3/5 or blue 2/5, second pick the same, four ends">
+      <text x="80" y="14" fill="#5f5f5a" text-anchor="middle">first pick</text>
+      <text x="200" y="14" fill="#5f5f5a" text-anchor="middle">second pick</text>
+      <line x1="20" y1="120" x2="140" y2="56" stroke="#c8372d" stroke-width="2"/>
+      <line x1="20" y1="120" x2="140" y2="176" stroke="#2b5797" stroke-width="2"/>
+      <text x="62" y="80" fill="#c8372d">red 3/5</text>
+      <text x="62" y="162" fill="#2b5797">blue 2/5</text>
+      <line x1="140" y1="56" x2="260" y2="30" stroke="#c8372d" stroke-width="2"/>
+      <line x1="140" y1="56" x2="260" y2="90" stroke="#2b5797" stroke-width="2"/>
+      <line x1="140" y1="176" x2="260" y2="150" stroke="#c8372d" stroke-width="2"/>
+      <line x1="140" y1="176" x2="260" y2="206" stroke="#2b5797" stroke-width="2"/>
+      <text x="190" y="36" fill="#c8372d">3/5</text>
+      <text x="190" y="88" fill="#2b5797">2/5</text>
+      <text x="190" y="156" fill="#c8372d">3/5</text>
+      <text x="190" y="206" fill="#2b5797">2/5</text>
+      <circle cx="20" cy="120" r="3" fill="#1d1d1b"/>
+      <circle cx="140" cy="56" r="3" fill="#1d1d1b"/>
+      <circle cx="140" cy="176" r="3" fill="#1d1d1b"/>
+      <text x="270" y="34" fill="#1d1d1b">red, red: 3/5 × 3/5 = 9/25</text>
+      <text x="270" y="94" fill="#1d1d1b">red, blue: 3/5 × 2/5 = 6/25</text>
+      <text x="270" y="154" fill="#1d1d1b">blue, red: 2/5 × 3/5 = 6/25</text>
+      <text x="270" y="210" fill="#1d1d1b">blue, blue: 2/5 × 2/5 = 4/25</text>
+    </svg>
+    <p class="caption">Multiply along a branch. The four ends add up to 1. That is the check.</p>
+  </section>
+
+  <section id="worked">
+    <h2>Worked example</h2>
+    <div class="example">
+      <p><b>The bag above, with replacement. Find the probability of one red and one blue.</b></p>
+      <p><b>Step 1</b>, first pick: red 3/5, blue 2/5.<br>
+         <b>Step 2</b>, second pick: the same fractions, because the counter went back.<br>
+         <b>Step 3</b>, check: 3/5 + 2/5 = 1 on every set of branches.<br>
+         <b>Step 4</b>, multiply along: red then blue is 3/5 × 2/5 = 6/25, and blue then red is 2/5 × 3/5 = 6/25.<br>
+         <b>Step 5</b>, two paths fit, so add: 6/25 + 6/25 = <b>12/25</b>.</p>
+      <p><b>Same bag, without replacement. Find the probability of two reds.</b> Step 2 changes: after one red, 2 reds sit in 4 counters, so the second is 2/4. Step 4, 3/5 × 2/4 = 6/20 = <b>3/10</b>.</p>
+    </div>
+  </section>
+
+  <section id="method">
+    <h2>The method</h2>
+    <ol>
+      <li>Draw a branch for each outcome of the first event. Write its probability on it.</li>
+      <li>From the end of each branch, draw the branches for the second event.</li>
+      <li>Check each set of branches adds to 1.</li>
+      <li>Multiply along the branches to get the probability of one path.</li>
+      <li>If more than one path fits, add those paths together.</li>
+    </ol>
+    <p>With replacement the second set of fractions matches the first. Without replacement the bottom number drops by 1, and so does the top number of the colour you took.</p>
+
+    <details class="why">
+      <summary>Why do you multiply along a branch instead of adding?</summary>
+      <p>Along a branch both things have to happen. The second event takes a fraction of what the first one left. A fraction of a fraction is smaller. Adding would make it bigger.</p>
+    </details>
+
+    <details class="another">
+      <summary>Another way to see it</summary>
+      <p>Draw the 25 equally likely pairs as a grid, 5 columns by 5 rows.</p>
+      <svg viewBox="0 0 132 132" width="100%" style="max-width:132px;display:block;margin:.5rem 0" aria-label="A five by five grid with the top left three by three block shaded red and the bottom right two by two block shaded blue">
+        <rect x="2" y="2" width="76" height="76" fill="#fbe9e7"/>
+        <rect x="78" y="78" width="52" height="52" fill="#e8eef7"/>
+        <g stroke="#d9d7d0" stroke-width="1" fill="none">
+          <rect x="2" y="2" width="128" height="128" stroke="#1d1d1b"/>
+          <line x1="27.6" y1="2" x2="27.6" y2="130"/><line x1="53.2" y1="2" x2="53.2" y2="130"/><line x1="78.8" y1="2" x2="78.8" y2="130"/><line x1="104.4" y1="2" x2="104.4" y2="130"/>
+          <line x1="2" y1="27.6" x2="130" y2="27.6"/><line x1="2" y1="53.2" x2="130" y2="53.2"/><line x1="2" y1="78.8" x2="130" y2="78.8"/><line x1="2" y1="104.4" x2="130" y2="104.4"/>
+        </g>
+      </svg>
+      <p class="caption">Nine squares are red then red, four are blue then blue, twelve are one of each.</p>
+      <p>The grid stops matching without replacement. The second pick then has four options, so the square is not 5 by 5.</p>
+    </details>
+  </section>
+
+  <section id="watch">
+    <details open>
+      <summary><h2>Watch out</h2></summary>
+      <div class="watch">
+        <p>Along a branch you multiply. Across the ends you add. Adding along a branch loses the most marks.</p>
+        <p>Read the question for "put back" or "not replaced". That decides the second set of fractions.</p>
+      </div>
+    </details>
+  </section>
+
+  <section id="quiz" class="quiz" data-code="U558">
+    <h2>Try it</h2>
+    <p>Answer from memory, no calculator. Write fractions like 3/5 or decimals like 0.6. The working appears only after you check.</p>
+
+    <div class="q" data-a="MS80fDAuMjV8MjUl" data-wrong="MS8yPVRoYXQgaXMgb25lIGZsaXAuIFR3byBoZWFkcyBuZWVkcyBib3RoIGZsaXBzIHRvIGxhbmQgaGVhZHMufDE9WW91IGFkZGVkIDEvMiBhbmQgMS8yLiBBbG9uZyBhIGJyYW5jaCB5b3UgbXVsdGlwbHkufDIvND1Zb3UgYWRkZWQgdGhlIHRvcHMgYW5kIHRoZSBib3R0b21zLiBNdWx0aXBseSB0b3AgYnkgdG9wLCBib3R0b20gYnkgYm90dG9tLg==">
+      <p class="stem">1. A fair coin is flipped twice. What is the probability of two heads? The first step is done. Finish it.</p>
+      <div class="working faded"><p>Heads is 1/2 each time. …</p></div>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Multiply along the branch: 1/2 × 1/2.</p>
+      <div class="working" hidden><p>Heads is 1/2 each time. Along the branch: 1/2 × 1/2 = 1/4.</p></div>
+    </div>
+
+    <div class="q" data-a="NC8yNXwwLjE2fDE2JQ==" data-wrong="NC81PVlvdSBhZGRlZCAyLzUgYW5kIDIvNS4gQWxvbmcgYSBicmFuY2ggeW91IG11bHRpcGx5LnwyLzU9VGhhdCBpcyBvbmUgcGljay4gQm90aCBwaWNrcyBoYXZlIHRvIGJlIGJsdWUufDQvMjA9WW91IGRyb3BwZWQgdGhlIGJvdHRvbSBudW1iZXIgYnkgMS4gVGhlIGNvdW50ZXIgd2VudCBiYWNrLCBzbyBub3RoaW5nIGNoYW5nZXMu">
+      <p class="stem">2. A bag has 3 red and 2 blue counters. One is taken, put back, and another taken. What is the probability both are blue? The first step is done. Finish it.</p>
+      <div class="working faded"><p>The counter goes back, so blue is 2/5 both times. …</p></div>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Multiply along the branch: 2/5 × 2/5.</p>
+      <div class="working" hidden><p>The counter goes back, so blue is 2/5 both times. Along the branch: 2/5 × 2/5 = 4/25. As a decimal that is 0.16.</p></div>
+    </div>
+
+    <div class="q" data-a="MC40Mnw0MiV8MjEvNTA=" data-wrong="MC4wOT1UaGF0IGlzIHJhaW4gb24gYm90aCBkYXlzLiBFeGFjdGx5IG9uZSBtZWFucyBvbmUgd2V0IGRheSBhbmQgb25lIGRyeSBkYXkufDAuMjE9VGhhdCBpcyBvbmUgb2YgdGhlIHR3byBwYXRocy4gVGhlIG90aGVyIHBhdGggZml0cyBhcyB3ZWxsLnwwLjY9WW91IGRvdWJsZWQgMC4zLiBNdWx0aXBseSBhbG9uZyBlYWNoIHBhdGggZmlyc3QsIHRoZW4gYWRkIHRoZSB0d28u">
+      <p class="stem">3. The probability it rains on any day is 0.3. What is the probability it rains on exactly one of Saturday and Sunday?</p>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Not raining is 0.7. Two paths fit: wet then dry, and dry then wet.</p>
+      <div class="working" hidden><p>Not raining is 0.7. Rain then dry: 0.3 × 0.7 = 0.21. Dry then rain: 0.7 × 0.3 = 0.21. Add the two paths: 0.42.</p></div>
+    </div>
+
+    <div class="q" data-a="My81fDAuNnw2MCV8Ni8xMA==" data-wrong="Mi81PVRoYXQgaXMgdGhlIHByb2JhYmlsaXR5IGl0IGlzIHJlZC4gTm90IHJlZCBpcyBldmVyeXRoaW5nIGVsc2UufDEvNT1Zb3UgY291bnRlZCBvbmUgc2VjdGlvbiBvdXQgb2YgZml2ZS4gVGhyZWUgb2YgdGhlIGZpdmUgYXJlIGdyZWVuLnw5LzI1PVlvdSBtdWx0aXBsaWVkIGFzIGlmIHRoZXJlIHdlcmUgdHdvIHNwaW5zLiBJdCBpcyBzcHVuIG9uY2Uu">
+      <p class="stem">4. A spinner has 5 equal sections: 2 red and 3 green. It is spun once. What is the probability it does not land on red?</p>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>One spin, so there is no branch to multiply along. Count the sections.</p>
+      <div class="working" hidden><p>One event, so no tree is needed. Not red is the 3 green sections out of 5, which is 3/5. You could also do 1 − 2/5 = 3/5.</p></div>
+    </div>
+
+    <div class="q" data-a="MnxzdGVwIDI=" data-wrong="ND1TdGVwIDQgbXVsdGlwbGllZCBhbG9uZyB0aGUgYnJhbmNoLCB3aGljaCBpcyByaWdodC4gVGhlIGZyYWN0aW9ucyBnb2luZyBpbiB3ZXJlIHdyb25nLnwzPVN0ZXAgMyBjaGVja3MgZWFjaCBzZXQgYWRkcyB0byAxLCBhbmQgdGhlaXJzIGRpZC4gTG9vayBlYXJsaWVyLnwxNi8yNT1UaGF0IGlzIHRoZWlyIGFuc3dlci4gVGhlIHF1ZXN0aW9uIGFza3MgZm9yIGEgc3RlcCBudW1iZXIu">
+      <p class="stem">5. A bag has 4 green and 1 yellow sweet. Two are taken without replacement. Someone writes green 4/5, then green 4/5 again, then multiplies to get 16/25. Which step number did they get wrong first?</p>
+      <label>Your answer <input type="text" autocomplete="off"></label>
+      <button type="button" class="check">Check</button>
+      <p class="feedback" hidden></p>
+      <p class="hint" hidden>Read the method list. Which step writes the second set of branches?</p>
+      <div class="working" hidden><p>Step 2 writes the second set of branches. Without replacement one sweet is gone. So the second green is 3 out of 4, not 4 out of 5. Done properly: 4/5 × 3/4 = 12/20 = 3/5.</p></div>
+    </div>
+  </section>
+
+  <section id="teach-back">
+    <h2>Teach it back</h2>
+    <p>Explain to a friend who missed today how to find the probability of two sixes from two dice rolls. Draw the tree in words. Say it to Claude.</p>
+  </section>
+
+  <section id="source">
+    <details open>
+      <summary><h2>Where this comes from</h2></summary>
+      <p>Sparx Maths: search <b>U558</b>. Corbettmaths: on the <a href="https://corbettmaths.com/contents/">contents page</a> find "Tree diagrams".</p>
+    </details>
+  </section>
+
+  <footer>
+    <p>Stuck? Tell Claude which step. Cheat sheet: <a href="../reference/U558-probability-trees.html">U558</a>. Goes with U683 independent probability and U296 Venn diagrams.</p>
+  </footer>
+</main>
+<script src="../assets/read.js"></script>
+<script src="../assets/generate.js"></script>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>
