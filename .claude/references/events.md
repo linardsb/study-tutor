@@ -14,6 +14,7 @@ Source of truth: architecture D3. `data/events.jsonl` is the record; `data/state
 - `t` is UTC from `src/mcp/clock`, never the browser clock. `appendEvent` stamps it; a caller's `t` is overwritten. A `t` that is not a real date (`2026-02-30`) is refused.
 - `appendEvent` writes only the fields `KEYS` lists for that `(type, v)`; a stray caller field (a correct answer) never reaches the log. `tsc` fails if `KEYS` misses a field of the type.
 - Only `src/events/append.ts` writes under `data/`. It fsyncs per line, opens with `O_NOFOLLOW`, writes owner-only files, and refuses any path whose realpath is outside `data/` (`../`, absolute paths, symlinks, dangling symlinks). Only writers create `data/`; readers treat a missing folder as empty. The scripts take no path: they use `data/` in the folder they run from.
+- `photo.file` is relative to `data/` and must resolve inside it; `appendEvent` refuses the event otherwise, before anything is created.
 
 ## Routes
 
