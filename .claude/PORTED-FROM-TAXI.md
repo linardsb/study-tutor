@@ -10,7 +10,7 @@ stack and gate command (they fail open until then, so nothing breaks):
 
 | File | Taxi-specific content |
 |---|---|
-| `hooks/stop_check.py` | gate command `pnpm check`; `CODE_PREFIXES = apps/ services/ packages/ db/` |
+| `hooks/stop_check.py` | adapted 2026-09-27 (T1, #3): gate `bun run check`; `CODE_PREFIXES = src/ scripts/ app/ content/` plus the three config files and `bun.lock` |
 | `hooks/pre_tool_use.py` | guard 3 fences `app/` and `backend/` (the anketa); keep guards 1, 2, 4, 5, 6 |
 | `settings.json` | permission allow-list is pnpm / docker / gh; hooks block is generic |
 | `skills/piv-validate/SKILL.md` | the turbo gate and Redis-gated suites |

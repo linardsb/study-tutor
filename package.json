@@ -1,0 +1,16 @@
+{
+  "name": "study-tutor",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit && biome check . && bun test",
+    "test": "bun test",
+    "dev": "bun src/server.ts",
+    "build": "bun scripts/build.ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.14",
+    "@types/bun": "^1.4.2",
+    "typescript": "^7.0.2"
+  }
+}

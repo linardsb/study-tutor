@@ -113,7 +113,7 @@ dependencies. `zip` from macOS (`observed` at `/usr/bin/zip`) for the build.
 - `package.json` - scripts and dev dependencies
 - `tsconfig.json` - the `bun init` template plus `"types": ["bun"]`
 - `biome.json` - the `biome init` template with spaces, `e1` and `dist` force-ignored
-- `.gitattributes` - `*.bat text eol=crlf`
+- `.gitattributes` - `launchers/*.bat text eol=crlf`
 - `src/server.ts` - `startServer`, `openBrowser`, the `import.meta.main` block
 - `src/server.test.ts` - port fallback and the page
 - `scripts/build.ts` - three compiles, two zips
@@ -272,8 +272,11 @@ Darwin `observed` (the sketch opened a tab); win32 `expected`.
   }
   ```
 
-  Versions as `bun add` pins them. `.gitignore` gains `node_modules/` and `dist/`. `.gitattributes` holds
-  one line: `*.bat text eol=crlf`. Commit `bun.lock`.
+  Versions as `bun add` pins them (`@types/bun` pinned `^1.4.2`, not `bun init`'s `latest`; `typescript`
+  in `devDependencies`, not the `peerDependencies` `bun init` writes). `.gitignore` gains `node_modules/`
+  and `dist/`. `.gitattributes` holds one line: `launchers/*.bat text eol=crlf`. Scoped to `launchers/`
+  because a bare `*.bat` renormalises `e1/Open map.bat` and `e1/Open case.bat` in git's index, which
+  breaks the "e1 untouched" criterion (`observed` 2026-09-27). Commit `bun.lock`.
 - **PATTERN**: the templates printed under Patterns to Follow.
 - **GOTCHA**: `bun init` writes a `CLAUDE.md` only when none exists; confirm, do not assume. Biome formats
   `tsconfig.json` and `package.json` too, so run `bunx biome format --write .` once before the first check.
@@ -305,7 +308,8 @@ Darwin `observed` (the sketch opened a tab); win32 `expected`.
 
 - **IMPLEMENT**: one test with `bun:test`. Pick `base = 20000 + Math.floor(Math.random() * 30000)`.
   `first = startServer([base])`; `second = startServer([base, base + 1])`; expect `second.port` to be
-  `base + 1`; `fetch` `/` on it → 200 and body contains `Study tutor`; `fetch` `/nope` → 404;
+  `base + 1`; `fetch` `/` on it → 200, `content-type` is `text/html; charset=utf-8` and body contains `Study tutor`;
+  `fetch` `/nope` → 404;
   `startServer([base])` throws `No free port`; `startServer([base, 0]).port` is neither `0` nor `base`.
   Stop all three with `stop(true)`.
 - **PATTERN**: the sketch under Patterns passed with the first four assertions (`observed`, 1 pass).
@@ -363,8 +367,8 @@ Darwin `observed` (the sketch opened a tab); win32 `expected`.
 
 ### CREATE `scripts/build.ts`
 
-- **IMPLEMENT**: a Bun script, no dependencies. Refuse with a message if `Bun.which("zip")` is null
-  (the build runs on the dev Mac; `observed`: `/usr/bin/zip`). Clear `dist/` with
+- **IMPLEMENT**: a Bun script, no dependencies. Refuse with a message if `Bun.which("zip")` or
+  `Bun.which("codesign")` is null (the build runs on the dev Mac; `observed`: both in `/usr/bin`). Clear `dist/` with
   `fs.rmSync("dist", { recursive: true, force: true })` from `node:fs` (never a shell delete: guard 2
   blocks the recursive-force form in any Bash text). Stage two folders, `dist/stage/windows/StudyTutor/`
   and `dist/stage/mac/StudyTutor/`. Three `Bun.spawnSync` compiles, each `["bun", "build", "--compile",
@@ -376,6 +380,12 @@ Darwin `observed` (the sketch opened a tab); win32 `expected`.
   | `bun-windows-x64` | `dist/stage/windows/StudyTutor/StudyTutor` | Bun appends `.exe` |
   | `bun-darwin-arm64` | `dist/stage/mac/StudyTutor/StudyTutor-arm64` | |
   | `bun-darwin-x64` | `dist/stage/mac/StudyTutor/StudyTutor-x64` | the one this Intel Mac can run |
+
+  After each darwin compile run `["codesign", "--force", "--sign", "-", outfile]`. Reason (`observed`
+  2026-09-27): the darwin-x64 compile keeps Bun's own Developer ID signature and invalidates it
+  (`codesign -vv`: "code or signature have been modified"); a quarantined binary with an invalid signature
+  gets Gatekeeper's "damaged" dialog with no Open Anyway. The arm64 cross-compile comes out ad hoc already;
+  re-signing both keeps them uniform. After the re-sign both verify as valid `Signature=adhoc`.
 
   Copy `launchers/Start.bat` and `launchers/README.txt` into the windows folder, `launchers/Start.command`
   (chmod 755 after copy) and `README.txt` into the mac folder. Zip with `cwd` set to the stage folder so
@@ -426,6 +436,9 @@ Darwin `observed` (the sketch opened a tab); win32 `expected`.
 - **PATTERN**: the doc's own `observed`/`expected` register.
 - **GOTCHA**: write the mac leg from Level 4 step 2 (this machine, macOS 15.7.3, Intel) and the fresh
   machines' legs from what Linards reports (Level 4 steps 4 and 5). Do not write a leg that has not run.
+  The session cannot click Gatekeeper dialogs, so the dev-Mac dialog count is `pending` too; the
+  `spctl -a -t exec` verdict on quarantined copies (`rejected, source=no usable signature`) stands in as
+  the observed proxy.
   If a leg is still owed when the PR opens, write `pending` with the owner and the date expected.
 - **VALIDATE**: `grep -n 'S1 result' docs/prd/study-tutor-v2.architecture.md && grep -n 'Q11. Settled'
   docs/prd/study-tutor-v2.architecture.md`
@@ -616,5 +629,7 @@ legs.
 - R3 A parent's browser may not be the default one the OS opens; irrelevant to S1, the URL is printed.
 
 ## AMENDMENTS
+
+- 2026-09-27 — After implementation (report `.claude/reports/s1-spike-and-repo-skeleton-report.md`): Task 1's `.gitattributes` scoped to `launchers/*.bat`; Task 3 asserts the `content-type` header; Task 5 re-signs both mac binaries ad hoc and checks for `codesign`; Task 7's dev-Mac dialog count is `pending` with the `spctl` verdict recorded instead. The plan's `Signature=adhoc` observation (Task 4 GOTCHA) held for the arm64 build only.
 
 - 2026-09-27 — Q1–Q4 decided by Linards on the plan's recommendations: heredoc edit of the stop hook, keep the `xattr -d` line in `Start.command`, both mac binaries in one zip, launchers under `launchers/`. No task changes.

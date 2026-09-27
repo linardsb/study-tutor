@@ -5,3 +5,7 @@
 # study data never ships in the repo
 data/
 .env
+
+# build outputs and dependencies
+node_modules/
+dist/
