@@ -331,7 +331,7 @@ ladder, never the reverse).
 - **GOTCHA**: T5's file list names `src/flow/ladder.ts` as its own. T2 creates it because replay needs the
   rung rule; T5 updates it (Q4). Keep it free of any import from `src/events` or `src/mcp`.
 - **VALIDATE**: `bun test src/flow` with `ladder.test.ts` as a table: `afterRetest` for every rung × pass/fail
-  (10 rows: 0→2, 1→2, 2→3, 3→4, 4→4 on pass; all → 1 on fail), `afterLesson` 0→1 and 3→3, `afterRed` 1→1,
+  (10 rows typed `[Rung, boolean, OnLadder]`: 0→2, 1→2, 2→3, 3→4, 4→4 on pass; all → 1 on fail), `afterLesson` 0→1 and 3→3, `afterRed` 1→1,
   2→1, 4→1, 0→0.
 - **SATISFIES**: AC 4 (rung and next-due).
 
@@ -446,13 +446,14 @@ ladder, never the reverse).
 
   `appendEvent`:
   1. `file = resolveInData(dataDir, EVENTS_FILE)`.
-  2. `const obj = { v: event.v, t: "", ...event }; obj.t = now();` then `line = JSON.stringify(obj)` (key
-     order `v, t, type, …` as in `events.md`; assigning `t` after the spread means a caller's `t` can never
-     win); `parsed = parseEvent(line)`; if null, throw `Refused: not a valid ${event.type} v${event.v} event`
+  2. `const obj: Record<string, unknown> = Object.assign({ v: event.v, t: "" }, event); obj.t = now();` then `line = JSON.stringify(obj)` (key
+     order `v, t, type, …` as in `events.md`; assigning `t` last means a caller's `t` can never win; the
+     spread literal `{ v: event.v, t: "", ...event }` fails `tsc` with TS2783); `parsed = parseEvent(line)`; if null, throw `Refused: not a valid ${event.type} v${event.v} event`
      and write nothing.
   3. `fd = fs.openSync(file, APPEND, 0o600)` with
-     `const APPEND = fs.constants.O_WRONLY | fs.constants.O_APPEND | fs.constants.O_CREAT | (fs.constants.O_NOFOLLOW ?? 0)`
-     (module constant). `O_NOFOLLOW` makes the open itself fail with `ELOOP` if `events.jsonl` became a
+     `const APPEND = fs.constants.O_RDWR | fs.constants.O_APPEND | fs.constants.O_CREAT | (fs.constants.O_NOFOLLOW ?? 0)`
+     (module constant; read-write because this step reads the last byte, and `readSync` on a write-only
+     fd throws `EBADF`). `O_NOFOLLOW` makes the open itself fail with `ELOOP` if `events.jsonl` became a
      symlink after `resolveInData` checked it, which closes the check-then-open race; Windows has no such
      flag, hence `?? 0`. Mode `0o600` is owner-only, as D11 asks of `data/`. If `fs.fstatSync(fd).size > 0`, read the last byte with
      `fs.readSync(fd, buf, 0, 1, size - 1)` and prefix `"\n"` when it is not `\n` (a hand edit or torn write
@@ -766,7 +767,7 @@ ladder, never the reverse).
      replay-check → expected exit 0; `jq` the rungs and `xp.total` of `state.json` vs `state.v1.json` →
      expected identical. Record the diff line count. Restore `replay.ts` from its `.bak`.
   3. **Code change that lowers a rung.** Restore `state.v1.json` to `state.json`. Change `afterRetest` so
-     a pass does not climb (`return passed ? rung : 1`). Run replay-check → expected exit 1, the falls
+     a pass does not climb (`return passed ? (rung === 0 ? 1 : rung) : 1`; `passed ? rung : 1` does not type-check). Run replay-check → expected exit 1, the falls
      printed, `shasum state.json` unchanged. Restore `ladder.ts` from its `.bak`.
   4. **Genuine fall.** With the real code, append one failed `retest` for a topic at rung ≥ 2
      (`bun -e '…' "$T/data"`, path read from `process.argv[1]`: `observed` that `bun -e '…' arg1` puts
@@ -1020,4 +1021,11 @@ here and are observed in T11.
   opens with `O_NOFOLLOW` and mode `0o600`; caller `t` can no longer win; `writeState` copy fallback on
   Windows; `state.prev.json` backup and fall report in the truncated-log case; tests 12–14 in
   `append.test.ts`; Task 13b records decisions in the ticket file. Q2–Q9 closed as decisions; Q1 stays.
-
+- 2026-09-27 — Implementation (report `.claude/reports/t2-events-append-replay-report.md`). Q1 overridden
+  in writing by Linards ("i dont have 14 days now"). Superseded in the tasks above: Task 6 `Object.assign`
+  instead of the spread literal (TS2783) and `O_RDWR` instead of `O_WRONLY` (`EBADF` on the last-byte
+  read); Task 2 test tuple `[Rung, boolean, OnLadder]` (TS2769); Task 12 step 3 mutation made type-correct.
+  Task 8: tests 1 and 5 share the expected `TOPICS`/`XP` constants, so the `NEXT_DAYS[3]` mutation turns
+  both red as predicted; the time zone mutation is observed red at `xp.byWeek` only, because `bun:test`
+  stops at the first failing `expect`; a `CASES` mutation (drop `usage@1` → TS2741) was added. Task 10: a
+  topic present in the new replay but absent from the stored state gets no change line.

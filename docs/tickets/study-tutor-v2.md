@@ -133,7 +133,7 @@ left at ticket level.
   guardrail pair (re-test score vs XP) is computable from state; no model call anywhere in `src/flow`.
 - **Context.** PRD O1 (mechanism and evidence), R6, guardrail metrics · architecture "Code holds the flow",
   D2, "Gaming" · CLAUDE.md "Flow in code".
-- **Files.** `src/flow/{ladder,xp,boss,session,next}.ts` and tests, one route in `src/server.ts`.
+- **Files.** `src/flow/{ladder,xp,boss,session,next}.ts` (`ladder.ts` created by T2; T5 updates it) and tests, one route in `src/server.ts`.
 - **Size.** ~700–1000 lines.
 - **Depends on.** T4.
 
@@ -174,7 +174,7 @@ left at ticket level.
   appears in any response to the browser (test); `src/providers/openai-compatible.ts` as the only model
   call (`POST ${base_url}/chat/completions`, `image_url` parts for vision, JSON asked for in the prompt and
   parsed in code); presets as labels over the same three fields, no Gemini; usage from each response
-  becomes a token-count event and the monthly total is shown on the setup page. S2 run: hint, teach-back
+  becomes a token-count event (`usage` v1, defined in T2) and the monthly total is shown on the setup page. S2 run: hint, teach-back
   mark, one vision mark through OpenAI, Anthropic compat, OpenRouter, Groq, Ollama; result and Q12
   recorded. AC: provider mocked tests for success, non-JSON, HTTP error, timeout; one real S2 run logged.
 - **Context.** Architecture D4, D11, S2, Q12 · `.claude/references/model-jobs.md` (Provider) · PRD
@@ -225,7 +225,7 @@ left at ticket level.
   `data/` absent); `src/updates.ts` reads the GitHub releases feed on start (the only outbound call beyond
   the provider) and shows "update available" on the map; `replay-check` from T2 runs on start after an
   update; a manual update test: install v1, log ten events, replace the binary and folders with v2, state
-  survives; parent README with the macOS right-click → Open screenshot and the 30-minute setup path.
+  survives; on the Windows PC also: `state.json` replaced while open in Notepad, and two appends at once (the T2 `append-many.ts` helper twice) give whole lines; parent README with the macOS right-click → Open screenshot and the 30-minute setup path.
   AC: an update never touches `data/` (test on a temp tree); the releases feed being down does not block
   start.
 - **Context.** Architecture D10, D6, "Delayed feedback" · PRD constraints 1 and 6, E2, Q6.
