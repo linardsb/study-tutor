@@ -9,7 +9,7 @@ content/maths/
   topics.json        [{ id: "1MA1/R9" or "1MA1/G17/cone", title, aliases: ["U349"], prerequisites: ["1MA1/N12"], tier: "F" }]
   items/<topic>.json [{ id, topic, type, stem, figure?, scaffold?, hint?, params?, answers?, working?, mark_scheme?, misconceptions: [{ answer, message }] }]
   generators.js      GEN["U349"] = (rng) => ({ stem, answers[], working, hint, wrong: { "4.5": "..." } })   (v1 shape, kept)
-  lessons/           HTML, one per topic, served as-is; quiz.js posts attempts
+  lessons/           HTML, one per topic; each quiz section names its items file in `data-items` and `app/quiz.js` renders and posts
   reference/         HTML method sheets, one per topic; the source `teachback_mark` marks against
 ```
 
@@ -28,4 +28,4 @@ Topic id is the exam-board specification statement (Edexcel `1MA1/...`, AQA `830
 
 ## Carry-over from v1
 
-The 21 lessons, 21 reference sheets and `generate.js` come from `~/Desktop/Matis_study_tutor/` (master, PRD Q1). Lesson markup does not change; `quiz.js` supplies Sure/Not sure and posting. Hand-written `.q` items in lessons are converted once into `items/` by a script and then the lesson reads them from there.
+The 21 lessons, 21 reference sheets and `generate.js` come from `~/Desktop/Matis_study_tutor/` (master, PRD Q1). `quiz.js` supplies Sure/Not sure and posting. The hand-written `.q` items were converted once into `items/` (T3) and stripped from the lessons (T4); `scripts/strip-lessons.test.ts` fails if a `.q` block or a `../assets` link comes back.

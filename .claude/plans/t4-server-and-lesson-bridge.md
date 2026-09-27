@@ -611,8 +611,9 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
   under `base` (`expected`). `Bun.file(dir).exists()` is false, so `/content/maths/lessons/` is 404, not a
   listing.
 - **GOTCHA**: `routes` is typed in `@types/bun` 1.4.2 (`serve.d.ts:672`, `observed`). A method not in
-  the route object reaches `fetch`, which answers 405 for anything but GET/HEAD and 404 for a GET of
-  `/api/state` with a trailing segment. Good enough; no explicit 405 per route.
+  the route object reaches `fetch`, which answers 405 for anything but GET/HEAD (so `POST /api/state` is
+  405) and 404 for a GET of a route path that has no file under `app/`. Good enough; no explicit 405 per
+  route.
 - **GOTCHA**: `currentState` is synchronous file I/O inside a request handler. Fine here: one pupil, one
   browser, a log of kilobytes. Do not make it async to look tidy.
 - **GOTCHA**: `dataDir` is `root/data`, never a request-supplied path. The only user-supplied path in this
@@ -635,11 +636,14 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
      `/content/maths/lessons/0001-U349-percentage-of-an-amount.html` 200 and body contains
      `data-items="/content/maths/items/1MA1-R9-of-an-amount.json"` and not `class="q"`;
      `/content/maths/lessons/` 404; `/practice.html` 200.
-  2. traversal, each 404: `/../package.json`, `/%2e%2e/package.json`, `/content/../package.json`,
+  2. traversal, each 404: `/../package.json`, `/%2e%2e/package.json`, `/..%2fpackage.json`,
+     `/%2e%2e%2fpackage.json`, `/content/../package.json`, `/content/..%2fsrc%2fserver.ts`,
      `/content/..%2f..%2fpackage.json`, `/content/maths/../../src/server.ts`; and `/data/events.jsonl`
-     404 after an event has been posted (the log exists, the route does not).
-  3. methods: `POST /quiz.js` 405; `POST /api/state` 404 (falls to static, no such file); `GET /api/event`
-     404.
+     404 after an event has been posted (the log exists, the route does not). Every target exists on disk
+     outside the served folder, so a raw join would serve it (the first five alone did not make
+     Mutation A bite: their targets do not exist either way).
+  3. methods: `POST /quiz.js` 405; `POST /api/state` 405 (falls to static, which answers the method before
+     the path); `GET /api/event` 404 (GET is static's method, and `app/api/event` does not exist).
   4. end to end (AC #3): `POST /api/event` with
      `{ v: 1, type: "attempt", item: "1MA1/R9/of-an-amount#1", topic: "U349", correct: false, sure: true, answer: "4.5" }`
      → 201, body `topic` resolved; `GET /api/state` → 200, `confidentWrong["1MA1/R9/of-an-amount#1"].topic`
@@ -677,7 +681,7 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
   4. `escapeHtml(s)`: v1 lines 63-67.
   5. `mark(item, typed)`: `const val = norm(typed); const ok = item.answers.some((a) => norm(a) === val); const named = ok ? null : (item.misconceptions.find((m) => norm(m.answer) === val)?.message ?? null); return { ok, named };`
   6. `itemFromGenerated(topicId, spec, seed)`: `{ id: `${topicId}#gen`, topic: topicId, stem: spec.stem, hint: spec.hint, answers: spec.answers, working: spec.working, misconceptions: Object.entries(spec.wrong || {}).map(([answer, message]) => ({ answer, message })), seed }`.
-  7. `postAttempt(item, ok, sure, typed)`: `fetch("/api/event", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ v: 1, type: "attempt", item: item.id, topic: item.topic, correct: ok, sure, answer: typed, ...(item.seed === undefined ? {} : { seed: item.seed }) }) })`; returns the promise; on a non-2xx or a thrown fetch, the caller shows "Not saved. Check the tutor window is still open." after the feedback text.
+  7. `postAttempt(item, ok, sure, typed)`: `fetch("/api/event", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ v: 1, type: "attempt", item: item.id, topic: item.topic, correct: ok, sure, answer: typed, ...(item.seed === undefined ? {} : { seed: item.seed }) }) })`; resolves to `res.ok`, `false` on a thrown fetch; `check()` appends "Not saved. Check the tutor window is still open." to the feedback text when it resolves `false`.
   8. `buildItem(item, number)`: v1 lines 78-120 without the base64: stem `${number}. ${item.stem}`; if
      `item.figure`, a `<div class="figure">` with `innerHTML = item.figure` (pack content, trusted, the
      same bytes v1 had inline); if `item.scaffold`, `<div class="working faded"><p>` with the text;
@@ -721,7 +725,9 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
 - **IMPLEMENT**: `await import(path.resolve(import.meta.dir, "../../app/quiz.js"))` then
   `const quiz = (globalThis as { quiz?: … }).quiz` (mirror `src/content/generators.ts:21-22`). Tests:
   1. `norm` parity: for each row of the table in `src/marking/normalise.test.ts` (copy the input
-     strings), `quiz.norm(s) === normaliseAnswer(s)`.
+     strings) plus rows that reach every `replace` step the table misses (`30π`, `36 cm²`, `2³`, `5º`,
+     `3 deg`, `€1,000.50`, `+4`, `007`, `12 degrees`, `y = 7x + 1`, `3.`), `quiz.norm(s) === normaliseAnswer(s)`.
+     Without the `π` row the plan's mutation does not bite.
   2. `lcg` parity: `quiz.lcg(24301)` and `lcg(24301)` from `scripts/test-generators.ts` give the same
      first ten values.
   3. `mark` on a fixture item with `answers: ["9", "9.0"]` and misconceptions `[{ answer: "y=7x+1",
@@ -738,9 +744,10 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
 
 ### 12. CREATE `app/index.html`
 
-- **IMPLEMENT**: `<!doctype html>`, `lang="en-GB"`, `<link rel="stylesheet" href="/style.css">`,
-  `<main class="lesson">`, `<h1>Study tutor</h1>`, one line of prose ("Pick a lesson. Practice gives you
-  fresh numbers on any topic."), `<p><a href="/practice.html">Practice</a></p>`, then `<ol>` of 21
+- **IMPLEMENT** (built in Phase 1, because Task 4's test 5 reads it): `<!doctype html>`, `lang="en-GB"`,
+  `<link rel="stylesheet" href="/style.css">`, `<main class="lesson">` with a `<header>` and `<section>`
+  wrappers so the donor `.lesson` layout applies, `<h1>Study tutor</h1>`, one line of prose ("Pick a lesson.
+  Practice gives you fresh numbers on any topic."), `<p><a href="/practice.html">Practice</a></p>`, then `<ol>` of 21
   `<li><a href="/content/maths/lessons/<file>">U349 Percentage of an amount</a></li>` in file order
   (the text is the lesson `<title>`). Add the E1 line from the v1 hello page: "When you are done, close
   this tab, then close the window that started the tutor." No script.
@@ -755,7 +762,8 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
 
 ### 13. CREATE `app/practice.html` and `app/practice.js`
 
-- **IMPLEMENT**: `practice.html` is the donor with: `href="/style.css"`; the `.picker` div empty
+- **IMPLEMENT**: `practice.html` is the donor with: `href="/style.css"`; the crumb reads "Lessons" and
+  links to `/` (the donor's "Progress" has no page until T6); the `.picker` div empty
   (filled by script); the "After a set" section reduced to "Anything you got wrong is the next session."
   plus `<a href="/">Lessons</a>`; scripts `/content/maths/generators.js`, `/quiz.js`, `/practice.js`.
   `practice.js`: fetch `/content/maths/topics.json`; for each row append
@@ -802,7 +810,8 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
 
 - **VALIDATE**: `bun run check` green (tsc, Biome, `bun test`). Test count: 108 on `main` a3c87b7
   (`observed`, 12 files) + 3 (state) + 6 (event) + 4 (quiz) + 5 (strip) + ~8 (server) + 1 (append)
-  − 5 (convert) − 1 (the replaced `Bun.which` test) ≈ 129 (`derived`; record `observed`).
+  − 5 (convert) − 1 (the replaced `Bun.which` test) ≈ 129 (`derived`; `observed` 126: the server file has
+  6 tests, not ~8, and its ladder test replaces the old one rather than adding).
   `bun scripts/test-generators.ts` still `all 6300 runs pass`.
 - **SATISFIES**: every AC
 
@@ -1030,4 +1039,8 @@ and `server.test.ts` 2 as the answer to a "path traversal" alert, the way PR #23
 
 ## AMENDMENTS
 
-(none yet)
+- 2026-09-27 (implementation, `.claude/reports/t4-server-and-lesson-bridge-report.md`): Task 9 test 3
+  expected 404 for `POST /api/state`; the handler in Task 8 gives 405, and the test now asserts that. Task 9
+  test 2 gained three encoded traversal targets that exist on disk. Task 11 test 1 gained eleven `norm` rows.
+  Task 12 moved to Phase 1. Task 10 item 7 states the `Promise<boolean>` shape. Task 13 names the crumb. Q3's
+  follow-up ticket is not yet opened. Tasks above carry the edits inline.

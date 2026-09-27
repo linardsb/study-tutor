@@ -15,6 +15,10 @@ Source of truth: architecture D3. `data/events.jsonl` is the record; `data/state
 - `appendEvent` writes only the fields `KEYS` lists for that `(type, v)`; a stray caller field (a correct answer) never reaches the log. `tsc` fails if `KEYS` misses a field of the type.
 - Only `src/events/append.ts` writes under `data/`. It fsyncs per line, opens with `O_NOFOLLOW`, writes owner-only files, and refuses any path whose realpath is outside `data/` (`../`, absolute paths, symlinks, dangling symlinks). Only writers create `data/`; readers treat a missing folder as empty. The scripts take no path: they use `data/` in the folder they run from.
 
+## Routes
+
+`POST /api/event` takes a body without `t`, resolves a U-code in `topic` and `topics[].topic` to the topic id, and appends through `appendEvent`; a refusal is 400 and writes nothing, not even `data/`. `GET /api/state` is `replay` of the log and refreshes `state.json` when it is missing or behind; an empty log creates nothing. Both live in `src/api/`.
+
 ## Replay
 
 `replay(lines) → State` in `src/events/replay.ts` is a pure reducer with one case per `(type, v)`. It reads no clock and no file. Lines are walked in file order, never sorted by `t`: a PC clock change can write an earlier `t` after a later one. Unreadable lines are skipped and counted, never fatal (a pupil may hand-edit the log). Every day, week and month is the London day of `t` (`localDay`). A leading byte-order mark is stripped. Every map in `State` has no prototype, so a topic or item id such as `__proto__` or `constructor` is an ordinary key.
