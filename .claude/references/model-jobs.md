@@ -23,6 +23,14 @@ Jobs planned: `guess_first`, `hint`, `teachback_mark`, `dan_wrong_step` (O2, scr
 
 `src/providers/openai-compatible.ts` is the only network call to a model: `POST ${base_url}/chat/completions` with `Authorization: Bearer ${key}`. Vision goes as `image_url` content parts. Presets are labels over the same three fields (OpenAI, OpenRouter, Groq, Mistral, DeepSeek, Ollama, LM Studio, Anthropic compat). No Gemini preset. Usage from each response feeds the monthly token counter event.
 
+- `chatJson(dataDir, messages, opts)` reads the config itself, so no caller holds the key. Returns `{ok:true, value, text}` or `{ok:false, reason}` with `reason` one of `no-model | cap | timeout | network | http | not-json | bad-response` (`http` adds `status`). It never throws and never logs or returns the key or the provider's body.
+- One call at a time per process (a module-level queue), so each call's cap check sees the last call's usage.
+- The cap (`config.cap`, tokens per London month from `state.tokens`) is checked before the fetch; at or over it, `cap` and no request.
+- Every 200 with a JSON object body appends `usage@1` before the reply is parsed, so a non-JSON reply still counts. No usable `usage` → an estimate (4 characters per token, a flat 1,000 per image, never the base64) marked `estimated: true`.
+- `Authorization` is sent only when the key is non-empty (Ollama, LM Studio take none). The reply-length field is per preset (`limitField`: Ollama ignores `max_completion_tokens`). No `response_format`, no `temperature`.
+- `parseJsonReply` accepts bare JSON or one fenced block (Anthropic compat fences every reply), after an optional `<think>` block. No hunting for JSON in prose.
+- No retry in the provider: the retry-once rule belongs to the job, which alone knows the shape.
+
 ## Guard
 
 Structural first (answer withheld), then a regex pass on every reply (emoji, exclamation marks, "you will get a grade"), then, when configured, a small-model shadow judge that logs `would_block` and never blocks in v1.

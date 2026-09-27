@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Settings</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+  #setup label { display: block; margin: 1rem 0 0.25rem; font-weight: 600; }
+  #setup input, #setup select { font: inherit; padding: 0.4rem; width: 100%; max-width: 28rem; box-sizing: border-box; }
+  #setup [hidden] { display: none; }
+  #setup button { margin-top: 1.5rem; font: inherit; padding: 0.5rem 1.25rem; }
+</style>
+</head>
+<body>
+<main class="lesson">
+  <header>
+    <p class="crumb"><a href="/">Lessons</a> · settings</p>
+    <h1>Settings</h1>
+    <p class="aim">These settings are for a parent.</p>
+  </header>
+
+  <form id="setup" novalidate>
+    <section>
+      <h2>Model</h2>
+      <p>Pick "No model" to use the tutor without one. Lessons and practice work either way.</p>
+      <label for="preset">Provider</label>
+      <select id="preset" name="preset"></select>
+
+      <div id="model-fields">
+        <label for="base_url">Address</label>
+        <input id="base_url" name="base_url" type="url" autocomplete="off" spellcheck="false">
+        <label for="model">Model name</label>
+        <input id="model" name="model" type="text" autocomplete="off" spellcheck="false">
+        <label for="key">Key</label>
+        <input id="key" name="key" type="password" autocomplete="off" spellcheck="false">
+        <p class="note" id="key-note"></p>
+      </div>
+    </section>
+
+    <section id="limit">
+      <h2>Monthly limit</h2>
+      <label for="cap">Tokens per month</label>
+      <input id="cap" name="cap" type="number" min="1" step="1">
+      <p class="note">This counts tokens on this computer. Set a money limit in your provider's account as well.</p>
+      <p id="usage"></p>
+    </section>
+
+    <section>
+      <h2>Weekly target</h2>
+      <label for="weeklyTarget">Days a week with some practice</label>
+      <input id="weeklyTarget" name="weeklyTarget" type="number" min="1" max="7" step="1">
+    </section>
+
+    <button type="submit">Save</button>
+    <p id="error" role="alert"></p>
+    <p id="saved" hidden>Saved. <a href="/">Back to the lessons</a></p>
+  </form>
+</main>
+<script src="/setup.js"></script>
+</body>
+</html>

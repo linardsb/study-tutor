@@ -72,6 +72,8 @@ export type UsageV1 = Line<"usage", 1> & {
   model: string;
   input: number;
   output: number;
+  // The provider reported no usable token counts, so input and output are estimated.
+  estimated?: true;
 };
 
 export type Event =
@@ -145,7 +147,12 @@ const FIELDS: { [K in EventKey]: (o: Obj) => boolean } = {
   "squad@1": (o) =>
     str(o.squad) && str(o.week) && str(o.topic) && outOf(o.score, o.of),
   "photo@1": (o) => str(o.item) && str(o.topic) && str(o.file),
-  "usage@1": (o) => str(o.job) && str(o.model) && int(o.input) && int(o.output),
+  "usage@1": (o) =>
+    str(o.job) &&
+    str(o.model) &&
+    int(o.input) &&
+    int(o.output) &&
+    (o.estimated === undefined || o.estimated === true),
 };
 
 type Own<K extends EventKey> = Exclude<keyof EventByKey[K], "v" | "t" | "type">;
@@ -159,7 +166,7 @@ export const KEYS = {
   "xp@1": ["amount", "reason"],
   "squad@1": ["squad", "week", "topic", "score", "of"],
   "photo@1": ["item", "topic", "file"],
-  "usage@1": ["job", "model", "input", "output"],
+  "usage@1": ["job", "model", "input", "output", "estimated"],
 } as const satisfies { [K in EventKey]: readonly Own<K>[] };
 // A field added to an event type and not to KEYS fails here, so append never drops it.
 type Missing = {

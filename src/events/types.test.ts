@@ -53,6 +53,10 @@ test.each([
     "a day that rolls over",
     VALID_ATTEMPT.replace("2026-10-03T17:42:10Z", "2026-02-30T10:00:00Z"),
   ],
+  [
+    "a usage marked estimated false",
+    `{"v":1,"t":"2026-10-08T16:00:00Z","type":"usage","job":"hint","model":"m","input":1,"output":1,"estimated":false}`,
+  ],
   ["a string version", VALID_ATTEMPT.replace('"v":1', '"v":"1"')],
   ["an array type", VALID_ATTEMPT.replace('"attempt"', '["attempt"]')],
   [

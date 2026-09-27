@@ -7,6 +7,7 @@ import {
   readLines,
   readStoredState,
   resolveInData,
+  writeDataFile,
   writeState,
 } from "./append";
 import { replay } from "./replay";
@@ -320,5 +321,51 @@ test(
       file: "intake/2026-10-14-1800.jpg",
     });
     expect(readLines(data)).toHaveLength(1);
+  }),
+);
+
+test.skipIf(process.platform === "win32")(
+  "writeDataFile writes the text owner-only",
+  withTemp((_dir, data) => {
+    writeDataFile(data, "config.json", '{"v":1}\n');
+    const file = path.join(data, "config.json");
+    expect(fs.readFileSync(file, "utf8")).toBe('{"v":1}\n');
+    expect(fs.statSync(file).mode & 0o777).toBe(0o600);
+    expect(fs.existsSync(`${file}.tmp`)).toBe(false);
+  }),
+);
+
+test.skipIf(process.platform === "win32")(
+  "writeDataFile: a leftover 0644 temp file still ends owner-only",
+  withTemp((_dir, data) => {
+    fs.mkdirSync(data);
+    const tmp = path.join(data, "config.json.tmp");
+    fs.writeFileSync(tmp, "old", { mode: 0o644 });
+    fs.chmodSync(tmp, 0o644);
+    writeDataFile(data, "config.json", "{}\n");
+    expect(fs.statSync(path.join(data, "config.json")).mode & 0o777).toBe(
+      0o600,
+    );
+  }),
+);
+
+test(
+  "writeDataFile: a path that leaves data is refused and nothing is written outside",
+  withTemp((dir, data) => {
+    expect(() => writeDataFile(data, "../x.json", "{}")).toThrow(/Refused/);
+    expect(fs.existsSync(path.join(dir, "x.json"))).toBe(false);
+    expect(fs.existsSync(path.join(dir, "x.json.tmp"))).toBe(false);
+  }),
+);
+
+test(
+  "writeDataFile: a config.json symlinked out of data is refused and its target untouched",
+  withTemp((dir, data) => {
+    const outside = path.join(dir, "outside.json");
+    fs.writeFileSync(outside, "keep\n");
+    fs.mkdirSync(data);
+    fs.symlinkSync(outside, path.join(data, "config.json"));
+    expect(() => writeDataFile(data, "config.json", "{}")).toThrow(/Refused/);
+    expect(fs.readFileSync(outside, "utf8")).toBe("keep\n");
   }),
 );

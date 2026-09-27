@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { getConfig, getUsage, postConfig } from "./api/config";
 import { postEvent } from "./api/event";
 import { currentState } from "./api/state";
 import { loadTopics } from "./content/pack";
@@ -123,20 +124,68 @@ async function postEventRoute(
   return json(r.status, r.body);
 }
 
+/** A read route: refuseForeign, then the handler, with a thrown read as a plain 500. */
+function readRoute(
+  req: Request,
+  what: string,
+  handler: () => { status: number; body: unknown },
+): Response {
+  const refused = refuseForeign(req);
+  if (refused) return refused;
+  try {
+    const r = handler();
+    return json(r.status, r.body);
+  } catch (err) {
+    console.error(`Could not read ${what}: ${(err as Error).message}`);
+    return json(500, { error: `Could not read ${what}` });
+  }
+}
+
+async function postConfigRoute(
+  req: Request,
+  dataDir: string,
+): Promise<Response> {
+  const refused = refuseForeign(req);
+  if (refused) return refused;
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return json(400, { error: "Body is not JSON" });
+  }
+  const r = postConfig(body, dataDir);
+  return json(r.status, r.body);
+}
+
+/** Every /api route. Exported so the key-leak test walks the same table the server serves. */
+export function apiRoutes(opts: ServerOptions) {
+  const { dataDir, topics } = opts;
+  return {
+    "/api/state": { GET: (req: Request) => getState(req, dataDir) },
+    "/api/event": {
+      POST: (req: Request) => postEventRoute(req, dataDir, topics),
+    },
+    "/api/config": {
+      GET: (req: Request) =>
+        readRoute(req, "the settings", () => getConfig(dataDir)),
+      POST: (req: Request) => postConfigRoute(req, dataDir),
+    },
+    "/api/usage": {
+      GET: (req: Request) =>
+        readRoute(req, "the token count", () => getUsage(dataDir)),
+    },
+  };
+}
+
 /** Binds 127.0.0.1 on the first free port in the list; `0` asks the OS for any free port. */
 export function startServer(ports: readonly number[], opts: ServerOptions) {
-  const { root, dataDir, topics } = opts;
+  const { root } = opts;
   for (const port of ports) {
     try {
       return Bun.serve({
         hostname: "127.0.0.1",
         port,
-        routes: {
-          "/api/state": { GET: (req) => getState(req, dataDir) },
-          "/api/event": {
-            POST: (req) => postEventRoute(req, dataDir, topics),
-          },
-        },
+        routes: apiRoutes(opts),
         fetch: (req) => serveStatic(req, root),
       });
     } catch (err) {

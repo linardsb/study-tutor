@@ -46,7 +46,12 @@
 
   <footer>
     <p>When you are done, close this tab, then close the window that started the tutor.</p>
+    <p><a href="/setup.html">Settings</a> (for a parent)</p>
   </footer>
 </main>
+<script>
+// First run: no settings saved yet, so the parent sets up (or picks "No model") before anything else.
+fetch("/api/config").then((r) => r.json()).then((c) => { if (!c.configured) location.replace("/setup.html"); }).catch(() => {});
+</script>
 </body>
 </html>
