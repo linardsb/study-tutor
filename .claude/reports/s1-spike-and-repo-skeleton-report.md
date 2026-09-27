@@ -37,7 +37,7 @@ All `observed` on 2026-09-27, macOS 15.7.3 Intel, Bun 1.3.4, TypeScript 7.0.2, B
   `lsof` shows the listener on `127.0.0.1:4731` only.
 - `bun run build`: three compiles plus two ad hoc re-signs in about 9.5 s (runtimes already cached);
   `dist/StudyTutor-windows.zip` 41,128,211 bytes (`StudyTutor.exe` 115,691,608, `Start.bat`, `README.txt`);
-  `dist/StudyTutor-mac.zip` 46,808,601 bytes (`StudyTutor-arm64` 59,868,368, `StudyTutor-x64` 65,996,352,
+  `dist/StudyTutor-mac.zip` 46,808,601 bytes (`StudyTutor-arm64` 59,867,200, `StudyTutor-x64` 65,995,184 after the ad hoc re-sign,
   `Start.command` 755, `README.txt`); both extract to one `StudyTutor/` folder.
 - Extracted mac zip in a scratch folder: `./StudyTutor/Start.command` picked the x64 binary, printed the
   URL, curl 200.
