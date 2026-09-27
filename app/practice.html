@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice: fresh questions</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main class="lesson practice">
+  <header>
+    <p class="crumb"><a href="/">Lessons</a> · practice · Maths · Foundation</p>
+    <h1>Practice</h1>
+    <p class="aim">Fresh numbers every time. Tick the topics you want, then press Mixed 6.</p>
+  </header>
+
+  <section id="pick">
+    <h2>Topics</h2>
+    <p>The questions do not say which topic they came from. That is the point: you pick the method.</p>
+    <div class="picker"></div>
+    <div class="controls">
+      <button type="button" id="mix">Mixed 6</button>
+      <button type="button" class="ghost" id="all">Tick all</button>
+      <button type="button" class="ghost" id="none">Untick all</button>
+    </div>
+    <p class="note" id="status"></p>
+  </section>
+
+  <section id="set"></section>
+
+  <section id="what-next">
+    <h2>After a set</h2>
+    <p>Anything you got wrong is the next session.</p>
+    <p><a href="/">Lessons</a></p>
+  </section>
+</main>
+<script src="/content/maths/generators.js"></script>
+<script src="/quiz.js"></script>
+<script src="/practice.js"></script>
+</body>
+</html>

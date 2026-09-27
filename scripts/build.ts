@@ -77,6 +77,16 @@ copyLauncher("README.txt", STAGE.windows);
 copyLauncher("Start.command", STAGE.mac, 0o755);
 copyLauncher("README.txt", STAGE.mac);
 
+// The pages and the content pack sit beside the binary, read from disk at run time (D10).
+// Nothing from data/, e1/ or src/.
+for (const stage of Object.values(STAGE)) {
+  for (const folder of ["app", "content"]) {
+    fs.cpSync(folder, path.join(stage, "StudyTutor", folder), {
+      recursive: true,
+    });
+  }
+}
+
 run(
   ["zip", "-qr", "../../StudyTutor-windows.zip", "StudyTutor"],
   STAGE.windows,

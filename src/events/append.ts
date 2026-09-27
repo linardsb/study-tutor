@@ -53,14 +53,15 @@ export function resolveInData(dataDir: string, rel: string): string {
   return real;
 }
 
-/** Appends one event to data/events.jsonl, fsynced before returning. The only writer of that file. */
+/**
+ * Appends one event to data/events.jsonl, fsynced before returning. The only writer of that file.
+ * Validates first, so a refused event creates nothing, not even `data/`.
+ */
 export function appendEvent(
   dataDir: string,
   event: NewEvent,
   now: () => string = utcNow,
 ): Event {
-  fs.mkdirSync(dataDir, { recursive: true });
-  const file = resolveInData(dataDir, EVENTS_FILE);
   // Key order v, t, type, ... as in events.md. Only the type's own fields are copied, so a
   // caller's t never wins and a stray field (a correct answer) never reaches the log.
   const obj: Record<string, unknown> = {
@@ -78,6 +79,8 @@ export function appendEvent(
   if (parsed === null) {
     throw new Error(`Refused: not a valid ${event.type} v${event.v} event`);
   }
+  fs.mkdirSync(dataDir, { recursive: true });
+  const file = resolveInData(dataDir, EVENTS_FILE);
   const fd = fs.openSync(file, APPEND, OWNER_ONLY);
   try {
     // A hand edit or torn write can leave no trailing newline; without one the new line joins it.

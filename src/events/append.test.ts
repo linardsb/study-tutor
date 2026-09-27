@@ -251,3 +251,13 @@ test(
     expect(fs.existsSync(data)).toBe(false);
   }),
 );
+
+test(
+  "a refused event creates no data folder",
+  withTemp((_dir, data) => {
+    expect(() =>
+      appendEvent(data, { v: 1, type: "attempt" } as NewEvent, AT),
+    ).toThrow("Refused");
+    expect(fs.existsSync(data)).toBe(false);
+  }),
+);

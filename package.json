@@ -6,8 +6,7 @@
     "check": "tsc --noEmit && biome check . && bun test",
     "test": "bun test",
     "dev": "bun src/server.ts",
-    "build": "bun scripts/build.ts",
-    "convert": "bun scripts/convert-lessons.ts && biome format --write content/maths/items"
+    "build": "bun scripts/build.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.14",
