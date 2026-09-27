@@ -54,6 +54,7 @@ bun install
 bun run check          # tsc --noEmit + biome check + bun test — the gate the stop hook runs
 bun test               # quick loop
 bun run dev            # src/server.ts, opens the browser on localhost
+bun src/server.ts --mcp   # MCP over stdio (T10); the harness closing stdin stops it
 bun run build          # scripts/build.ts → dist/StudyTutor-windows.zip, dist/StudyTutor-mac.zip
 bun scripts/test-generators.ts   # 300 runs per generator
 ```

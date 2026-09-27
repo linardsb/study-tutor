@@ -79,6 +79,19 @@ export function appendEvent(
   if (parsed === null) {
     throw new Error(`Refused: not a valid ${event.type} v${event.v} event`);
   }
+  // photo.file is relative to data/ and must resolve inside it (D11): the one path an event carries.
+  if (parsed.type === "photo") {
+    try {
+      resolveInData(dataDir, parsed.file);
+    } catch (err) {
+      const m = (err as Error).message;
+      throw new Error(
+        m.startsWith("Refused")
+          ? m
+          : `Refused: ${parsed.file} is not in the data folder`,
+      );
+    }
+  }
   fs.mkdirSync(dataDir, { recursive: true });
   const file = resolveInData(dataDir, EVENTS_FILE);
   const fd = fs.openSync(file, APPEND, OWNER_ONLY);

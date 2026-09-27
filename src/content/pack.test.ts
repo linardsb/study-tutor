@@ -3,7 +3,13 @@ import { mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { normaliseAnswer } from "../marking/normalise";
-import { itemsFileName, loadTopics, subjectDir, toItemView } from "./pack";
+import {
+  itemsFileName,
+  loadItems,
+  loadTopics,
+  subjectDir,
+  toItemView,
+} from "./pack";
 import type { Item, ItemType } from "./types";
 
 const ITEM_TYPES: Record<ItemType, true> = {
@@ -152,4 +158,11 @@ test("no exam-board wording in items, lessons or reference sheets", async () => 
     for (const re of BOARD)
       expect(re.test(body), `${f} matches ${re}`).toBe(false);
   }
+});
+
+test("loadItems: a topic's items in file order, and [] for a topic with no file", async () => {
+  const items = await loadItems("maths", "1MA1/R9/of-an-amount");
+  expect(items).toHaveLength(5); // observed, pack.test.ts items test
+  for (const item of items) expect(item.topic).toBe("1MA1/R9/of-an-amount");
+  expect(await loadItems("maths", "1MA1/none")).toEqual([]);
 });

@@ -36,6 +36,33 @@ export async function loadTopics(
   return rows as Topic[];
 }
 
+/** The items file of one topic; a topic with no file is an empty list, never a throw (a pack may add a topic before its items). */
+export async function loadItems(
+  subject: string,
+  topicId: string,
+  root = process.cwd(),
+): Promise<Item[]> {
+  const file = path.join(
+    subjectDir(subject, root),
+    "items",
+    itemsFileName(topicId),
+  );
+  const f = Bun.file(file);
+  if (!(await f.exists())) return [];
+  const rows: unknown = await f.json();
+  const shaped =
+    Array.isArray(rows) &&
+    rows.every(
+      (i) =>
+        typeof i?.id === "string" &&
+        i.topic === topicId &&
+        typeof i.stem === "string" &&
+        Array.isArray(i.misconceptions),
+    );
+  if (!shaped) throw new Error(`${file}: not a list of items`);
+  return rows as Item[];
+}
+
 /** The item without its answer, at runtime: what a job gets until an `attempt` event exists for it. */
 export function toItemView(item: Item): ItemView {
   const { answers, working, mark_scheme, misconceptions, ...view } = item;
