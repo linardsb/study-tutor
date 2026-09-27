@@ -21,9 +21,26 @@ export function appRoot(): string {
 }
 
 /**
- * `/x` from app/, `/content/x` from content/. A `..` cannot escape: the path is normalised with a
- * leading slash before it is joined, so `/../x` becomes `/x` and lands under the folder.
+ * The file under `root/folder` that the URL path `rel` names, or null when it names none. The URL is
+ * split on `/` and joined segment by segment: a `..` or a `\` in a segment is refused outright, and
+ * the join must land strictly inside the folder. Nothing is normalised first: `path.win32.normalize`
+ * reads a leading `//` as a UNC root, which turned `/../data/x` into `root/data/x` (PR #26 F1).
+ * `p` is the platform's `path` and is a parameter so the tests can run the Windows rules on any OS.
  */
+export function staticPath(
+  root: string,
+  folder: string,
+  rel: string,
+  p: typeof path = path,
+): string | null {
+  const segments = rel.split("/").filter((s) => s !== "");
+  if (segments.some((s) => s === ".." || s.includes("\\"))) return null;
+  const base = p.join(root, folder);
+  const file = p.join(base, ...segments);
+  return file.startsWith(base + p.sep) ? file : null;
+}
+
+/** `/x` from app/, `/content/x` from content/. */
 async function serveStatic(req: Request, root: string): Promise<Response> {
   if (req.method !== "GET" && req.method !== "HEAD")
     return new Response("Method not allowed", { status: 405 });
@@ -39,7 +56,9 @@ async function serveStatic(req: Request, root: string): Promise<Response> {
   const [folder, rel] = pathname.startsWith("/content/")
     ? ["content", pathname.slice("/content".length)]
     : ["app", pathname];
-  const file = Bun.file(path.join(root, folder, path.normalize(`/${rel}`)));
+  const target = staticPath(root, folder, rel);
+  if (target === null) return new Response("Not found", { status: 404 });
+  const file = Bun.file(target);
   if (!(await file.exists())) return new Response("Not found", { status: 404 });
   return new Response(file, { headers: { "cache-control": "no-cache" } });
 }
@@ -51,6 +70,58 @@ function json(status: number, body: unknown): Response {
   });
 }
 
+const LOCAL_HOSTS = new Set(["127.0.0.1", "localhost"]);
+
+/**
+ * The API answers the tutor's own pages and nothing else. A page on another site in the same browser
+ * can send a simple cross-origin request (a `text/plain` body needs no preflight), and a hostname that
+ * resolves to loopback (DNS rebinding) makes the request look same-origin to the browser. So: the Host
+ * must be loopback, an Origin when present must be this server, and a POST body must be declared JSON.
+ * `curl` sends no Origin and passes. Returns the refusal, or null to continue (PR #26 F3).
+ */
+export function refuseForeign(req: Request): Response | null {
+  const host = req.headers.get("host") ?? "";
+  if (!LOCAL_HOSTS.has(host.replace(/:\d+$/, "")))
+    return json(403, { error: "Refused: not a local request" });
+  const origin = req.headers.get("origin");
+  if (origin !== null && origin !== `http://${host}`)
+    return json(403, { error: "Refused: not the tutor's own page" });
+  if (req.method === "POST") {
+    const type = req.headers.get("content-type") ?? "";
+    if (!/^application\/json\b/i.test(type))
+      return json(415, { error: "Body must be application/json" });
+  }
+  return null;
+}
+
+function getState(req: Request, dataDir: string): Response {
+  const refused = refuseForeign(req);
+  if (refused) return refused;
+  try {
+    return json(200, currentState(dataDir));
+  } catch (err) {
+    console.error(`Could not read the record: ${(err as Error).message}`);
+    return json(500, { error: "Could not read the record" });
+  }
+}
+
+async function postEventRoute(
+  req: Request,
+  dataDir: string,
+  topics: readonly Topic[],
+): Promise<Response> {
+  const refused = refuseForeign(req);
+  if (refused) return refused;
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return json(400, { error: "Body is not JSON" });
+  }
+  const r = postEvent(body, dataDir, topics);
+  return json(r.status, r.body);
+}
+
 /** Binds 127.0.0.1 on the first free port in the list; `0` asks the OS for any free port. */
 export function startServer(ports: readonly number[], opts: ServerOptions) {
   const { root, dataDir, topics } = opts;
@@ -60,18 +131,9 @@ export function startServer(ports: readonly number[], opts: ServerOptions) {
         hostname: "127.0.0.1",
         port,
         routes: {
-          "/api/state": { GET: () => json(200, currentState(dataDir)) },
+          "/api/state": { GET: (req) => getState(req, dataDir) },
           "/api/event": {
-            POST: async (req) => {
-              let body: unknown;
-              try {
-                body = await req.json();
-              } catch {
-                return json(400, { error: "Body is not JSON" });
-              }
-              const r = postEvent(body, dataDir, topics);
-              return json(r.status, r.body);
-            },
+            POST: (req) => postEventRoute(req, dataDir, topics),
           },
         },
         fetch: (req) => serveStatic(req, root),

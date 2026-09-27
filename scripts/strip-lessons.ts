@@ -3,7 +3,11 @@ import path from "node:path";
 import { itemsFileName, loadTopics } from "../src/content/pack";
 import type { Topic } from "../src/content/types";
 
-/** `../assets/` and `../page` links become the paths the binary serves. Applied to lessons and reference sheets. */
+/**
+ * `../assets/` and `../page` links become the paths the binary serves. Applied to lessons and reference
+ * sheets. The `#explore` section goes with `solids.js` and `three.min.js`: without them its "drag the
+ * shape" prose sat above an empty div (PR #26 F4).
+ */
 const LINKS: [RegExp, string][] = [
   [/href="\.\.\/assets\/style\.css"/g, 'href="/style.css"'],
   [
@@ -18,6 +22,7 @@ const LINKS: [RegExp, string][] = [
     /[ \t]*<script src="\.\.\/assets\/(read|solids|vendor\/three\.min)\.js"><\/script>\r?\n/g,
     "",
   ],
+  [/[ \t]*<section id="explore">[\s\S]*?<\/section>\r?\n(\r?\n)?/g, ""],
   [/href="\.\.\/progress\.html"/g, 'href="/"'],
   [/href="\.\.\/reference\//g, 'href="/content/maths/reference/'],
   [/href="\.\.\/lessons\//g, 'href="/content/maths/lessons/'],
