@@ -103,3 +103,5 @@ Figures at `ad9ec44` (observed, `wc -l`; `git diff --stat origin/main..HEAD`):
 ## Pushed
 
 See the final line of this file, written after the push.
+
+Pushed: `ad9ec44` (fixes) and `cf504dd` (this report) to `feature/e1-map-and-detective-case-v1-folder`; PR #20 head confirmed by `gh pr view` after the push.
