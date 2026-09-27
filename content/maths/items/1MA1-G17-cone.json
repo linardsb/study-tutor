@@ -6,7 +6,7 @@
     "stem": "Find the volume of this cone in terms of pi. The first steps are done. Finish it.",
     "figure": "<svg viewBox=\"0 0 170 130\" width=\"100%\" style=\"max-width:170px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A cone with radius 6 cm and perpendicular height 5 cm\"><title>A cone with radius 6 cm and perpendicular height 5 cm</title><polygon points=\"80,12 30,100 130,100\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><ellipse cx=\"80\" cy=\"100\" rx=\"50\" ry=\"14\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><line x1=\"80\" y1=\"12\" x2=\"80\" y2=\"100\" stroke=\"#2b5797\" stroke-width=\"2\" stroke-dasharray=\"5 3\"/><circle cx=\"80\" cy=\"100\" r=\"2.5\" fill=\"#1d1d1b\"/><text x=\"84\" y=\"84\" fill=\"#2b5797\" stroke=\"#ffffff\" stroke-width=\"3\" paint-order=\"stroke\">5 cm</text><line x1=\"80\" y1=\"100\" x2=\"130\" y2=\"100\" stroke=\"#2b5797\" stroke-width=\"2\"/><text x=\"105\" y=\"126\" text-anchor=\"middle\" fill=\"#2b5797\">6 cm</text></svg>",
     "scaffold": "Step 1, r = 6. Step 2, 6 × 6 = 36. Step 3, 36 × 5 = 180. Step 4, 180 ÷ 3 = 60. Step 5, 60 × π = …",
-    "hint": "60 times π.",
+    "hint": "Multiply what you have by π.",
     "answers": [
       "60pi",
       "60 pi",
@@ -26,7 +26,7 @@
       },
       {
         "answer": "60",
-        "message": "You dropped the π. Write the number times π, like 60pi."
+        "message": "You dropped the π. Write your number, then pi."
       },
       {
         "answer": "20pi",
@@ -61,7 +61,7 @@
       },
       {
         "answer": "8",
-        "message": "You dropped the π. Write the number times π, like 8pi."
+        "message": "You dropped the π. Write your number, then pi."
       },
       {
         "answer": "24",
@@ -99,7 +99,7 @@
       },
       {
         "answer": "25",
-        "message": "You dropped the π. Write the number times π, like 25pi."
+        "message": "You dropped the π. Write your number, then pi."
       }
     ]
   },
@@ -121,7 +121,7 @@
       "36*pi cm3",
       "36*pi cm^3"
     ],
-    "working": "Not a cone: this is a sphere, U617. r³ = 27. 27 ÷ 3 = 9, then 9 × 4 = 36. V = 36 × π = 36π cm³.",
+    "working": "Not a cone: this is volume of a sphere. r³ = 27. 27 ÷ 3 = 9, then 9 × 4 = 36. V = 36 × π = 36π cm³.",
     "misconceptions": [
       {
         "answer": "9pi",
@@ -133,7 +133,7 @@
       },
       {
         "answer": "36",
-        "message": "You dropped the π. Write the number times π, like 36pi."
+        "message": "You dropped the π. Write your number, then pi."
       }
     ]
   },

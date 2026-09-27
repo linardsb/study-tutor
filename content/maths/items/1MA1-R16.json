@@ -77,7 +77,7 @@
     "stem": "A coat costs £120. In a sale the price is cut by 30%. Find the sale price.",
     "hint": "One change only. 10% of 120 first.",
     "answers": ["84"],
-    "working": "This is U554, a single change. 10% of 120 = 12, so 30% = 36. 120 − 36 = 84. £84.",
+    "working": "This is percentage increase and decrease, a single change. 10% of 120 = 12, so 30% = 36. 120 − 36 = 84. £84.",
     "misconceptions": [
       {
         "answer": "36",

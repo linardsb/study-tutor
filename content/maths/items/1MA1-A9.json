@@ -12,7 +12,7 @@
     "misconceptions": [
       {
         "answer": "y=7x+1",
-        "message": "You swapped m and c. m stays 4; only c changes, to 7."
+        "message": "You swapped m and c. m is the number in front of x and stays the same; only c changes."
       },
       {
         "answer": "y=4x+1",
@@ -77,7 +77,7 @@
     "figure": "<svg viewBox=\"0 0 200 160\" width=\"100%\" style=\"max-width:200px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"A grid with a line through (0, 2) and (1, 5). The rise of 3 for 1 across is marked\">\n        <g stroke=\"#e9e7e0\" stroke-width=\"1\">\n          <line x1=\"20\" y1=\"20\" x2=\"20\" y2=\"150\"/><line x1=\"50\" y1=\"20\" x2=\"50\" y2=\"150\"/><line x1=\"80\" y1=\"20\" x2=\"80\" y2=\"150\"/><line x1=\"110\" y1=\"20\" x2=\"110\" y2=\"150\"/><line x1=\"140\" y1=\"20\" x2=\"140\" y2=\"150\"/><line x1=\"170\" y1=\"20\" x2=\"170\" y2=\"150\"/>\n          <line x1=\"20\" y1=\"20\" x2=\"170\" y2=\"20\"/><line x1=\"20\" y1=\"40\" x2=\"170\" y2=\"40\"/><line x1=\"20\" y1=\"60\" x2=\"170\" y2=\"60\"/><line x1=\"20\" y1=\"80\" x2=\"170\" y2=\"80\"/><line x1=\"20\" y1=\"100\" x2=\"170\" y2=\"100\"/><line x1=\"20\" y1=\"120\" x2=\"170\" y2=\"120\"/><line x1=\"20\" y1=\"140\" x2=\"170\" y2=\"140\"/>\n        </g>\n        <line x1=\"20\" y1=\"140\" x2=\"170\" y2=\"140\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <line x1=\"50\" y1=\"20\" x2=\"50\" y2=\"150\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <line x1=\"30\" y1=\"140\" x2=\"90\" y2=\"20\" stroke=\"#2b5797\" stroke-width=\"2.5\"/>\n        <circle cx=\"50\" cy=\"100\" r=\"3.5\" fill=\"#2b5797\"/><circle cx=\"80\" cy=\"40\" r=\"3.5\" fill=\"#2b5797\"/>\n        <text x=\"40\" y=\"104\" text-anchor=\"end\">2</text>\n        <text x=\"44\" y=\"44\" text-anchor=\"end\">5</text>\n        <text x=\"76\" y=\"154\" text-anchor=\"middle\">1</text>\n        <text x=\"46\" y=\"154\" text-anchor=\"middle\">0</text>\n        <line x1=\"50\" y1=\"100\" x2=\"80\" y2=\"100\" stroke=\"#c8372d\" stroke-width=\"1.5\" stroke-dasharray=\"3 2\"/>\n        <line x1=\"80\" y1=\"100\" x2=\"80\" y2=\"40\" stroke=\"#c8372d\" stroke-width=\"1.5\" stroke-dasharray=\"3 2\"/>\n        <text x=\"86\" y=\"74\" fill=\"#c8372d\">up 3</text>\n        <text x=\"58\" y=\"112\" fill=\"#c8372d\">1 across</text>\n      </svg>",
     "hint": "How far does the line go up for each 1 across? That is m.",
     "answers": ["a", "(a)", "y=3x-4", "3x-4"],
-    "working": "This is U980, reading a graph. From (0, 2) to (1, 5) the line goes up 3 for 1 across, so m = 3. It crosses at 2, so the line is y = 3x + 2. Parallel needs m = 3: (a) y = 3x − 4.",
+    "working": "This is identifying graphs, reading a graph. From (0, 2) to (1, 5) the line goes up 3 for 1 across, so m = 3. It crosses at 2, so the line is y = 3x + 2. Parallel needs m = 3: (a) y = 3x − 4.",
     "misconceptions": [
       {
         "answer": "b",
@@ -105,7 +105,7 @@
       },
       {
         "answer": "C=3n+5",
-        "message": "You replaced 10 with 5. It is £5 more, so 10 + 5 = 15."
+        "message": "You replaced 10 with 5. It is £5 more, so add 5 to the monthly charge."
       },
       {
         "answer": "C=3n+50",

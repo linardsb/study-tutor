@@ -6,7 +6,7 @@
     "stem": "Find the side marked x. The first steps are done. Finish it.",
     "figure": "<svg viewBox=\"0 0 240 135\" width=\"100%\" style=\"max-width:240px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A right-angled triangle with a 30° angle at the bottom left, hypotenuse 12 cm, and the vertical side opposite the angle marked x\"><title>A right-angled triangle with a 30° angle at the bottom left, hypotenuse 12 cm, and the vertical side opposite the angle marked x</title><polygon points=\"20,110 180,110 180,25\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><polyline points=\"168,110 168,98 180,98\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><path d=\"M 46 110 A 26 26 0 0 0 43 97\" fill=\"none\" stroke=\"#2b5797\" stroke-width=\"1.5\"/><text x=\"50\" y=\"104\" fill=\"#2b5797\" font-weight=\"700\">30°</text><text x=\"62\" y=\"52\" fill=\"#1d1d1b\" font-weight=\"700\">12 cm</text><text x=\"185\" y=\"72\" fill=\"#1d1d1b\" font-weight=\"700\">x</text><text x=\"100\" y=\"126\" text-anchor=\"middle\" fill=\"#1d1d1b\" font-weight=\"700\"></text></svg>",
     "scaffold": "Step 1, label from the 30°: H = 12, x is O. Step 2, have H, want O. Step 3, SOH. Step 4, sin 30° = x ÷ 12, and sin 30° = ½. Step 5, x is on top, so multiply: 12 × ½ = …",
-    "hint": "Half of 12.",
+    "hint": "sin 30° = x ÷ 12. Read sin 30° from the table.",
     "answers": ["6", "6cm"],
     "working": "Step 1, label from the 30°: H = 12, x is O. Step 2, have H, want O. Step 3, SOH. Step 4, sin 30° = x ÷ 12, and sin 30° = ½. Step 5, x is on top, so multiply: 12 × ½ = 6. Step 6, 6 cm.",
     "misconceptions": [
@@ -20,7 +20,7 @@
       },
       {
         "answer": "3",
-        "message": "You halved twice. 12 × ½ is 6."
+        "message": "You halved twice. Multiply 12 by ½ once."
       }
     ]
   },
@@ -45,7 +45,7 @@
       },
       {
         "answer": "2",
-        "message": "You halved twice. 8 × ½ is 4."
+        "message": "You halved twice. Multiply 8 by ½ once."
       }
     ]
   },
@@ -81,7 +81,7 @@
     "figure": "<svg viewBox=\"0 0 240 135\" width=\"100%\" style=\"max-width:240px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A right-angled triangle with the unknown angle theta at the bottom left, hypotenuse 10 cm and the vertical side opposite the angle 5 cm\"><title>A right-angled triangle with the unknown angle theta at the bottom left, hypotenuse 10 cm and the vertical side opposite the angle 5 cm</title><polygon points=\"20,110 180,110 180,25\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><polyline points=\"168,110 168,98 180,98\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><path d=\"M 46 110 A 26 26 0 0 0 43 97\" fill=\"none\" stroke=\"#2b5797\" stroke-width=\"1.5\"/><text x=\"50\" y=\"104\" fill=\"#2b5797\" font-weight=\"700\">θ</text><text x=\"62\" y=\"52\" fill=\"#1d1d1b\" font-weight=\"700\">10 cm</text><text x=\"185\" y=\"72\" fill=\"#1d1d1b\" font-weight=\"700\">5 cm</text><text x=\"100\" y=\"126\" text-anchor=\"middle\" fill=\"#1d1d1b\" font-weight=\"700\"></text></svg>",
     "hint": "Two sides given, angle wanted. Write O ÷ H, then find that value in the table.",
     "answers": ["30", "30degrees"],
-    "working": "Not a side: this is find an angle, U545. sin θ = 5 ÷ 10 = ½. sin 30° = ½, so θ = 30°.",
+    "working": "Not a side: this is find an angle. sin θ = 5 ÷ 10 = ½. sin 30° = ½, so θ = 30°.",
     "misconceptions": [
       {
         "answer": "0.5",
@@ -89,7 +89,7 @@
       },
       {
         "answer": "60",
-        "message": "½ is cos 60°, but you have O and H, so it is sin. sin 30° = ½."
+        "message": "½ is cos 60°, but you have O and H, so it is sin: find which angle has sin ½."
       },
       {
         "answer": "5",

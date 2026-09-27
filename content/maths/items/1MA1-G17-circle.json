@@ -6,7 +6,7 @@
     "stem": "Find the area of this circle in terms of pi. The first steps are done. Finish it.",
     "figure": "<svg viewBox=\"0 0 130 120\" width=\"100%\" style=\"max-width:130px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A circle with radius 3 cm marked from the centre to the edge\"><title>A circle with radius 3 cm marked from the centre to the edge</title><circle cx=\"62\" cy=\"60\" r=\"46\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><circle cx=\"62\" cy=\"60\" r=\"2.5\" fill=\"#1d1d1b\"/><line x1=\"62\" y1=\"60\" x2=\"108\" y2=\"60\" stroke=\"#2b5797\" stroke-width=\"2\"/><text x=\"86\" y=\"54\" text-anchor=\"middle\" fill=\"#2b5797\">3 cm</text></svg>",
     "scaffold": "Step 1, r = 3. Step 2, r² = 3 × 3 = 9. Step 3, 9 × π = …",
-    "hint": "Nine times π.",
+    "hint": "Multiply what you have by π.",
     "answers": [
       "9pi",
       "9 pi",
@@ -26,7 +26,7 @@
       },
       {
         "answer": "9",
-        "message": "You dropped the π. Write the number times π, like 9pi."
+        "message": "You dropped the π. Write your number, then pi."
       },
       {
         "answer": "3pi",
@@ -65,7 +65,7 @@
       },
       {
         "answer": "100",
-        "message": "You dropped the π. Write the number times π, like 100pi."
+        "message": "You dropped the π. Write your number, then pi."
       }
     ]
   },
