@@ -47,6 +47,17 @@ function project(stored: unknown): Stored | null {
   return out;
 }
 
+/** One line per saved rung that is lower in `now`, each ending with why. */
+function falls(stored: Stored, now: State, why: string): string[] {
+  const out: string[] = [];
+  for (const [id, rung] of Object.entries(stored.rungs)) {
+    const replayed = now.topics[id]?.rung ?? 0;
+    if (replayed < rung)
+      out.push(`${id}: saved ${rung}, now ${replayed} (${why})`);
+  }
+  return out;
+}
+
 function write(dataDir: string, state: State): void {
   // The state this build replaces is always one file away.
   copyState(dataDir, STATE_FILE, "state.prev.json");
@@ -87,13 +98,7 @@ export function replayCheck(dataDir: string): CheckResult {
       before === null
         ? "the log is shorter than the saved progress"
         : "the log no longer matches the saved progress";
-    const changes: string[] = [];
-    for (const [id, rung] of Object.entries(stored.rungs)) {
-      const replayed = now.topics[id]?.rung ?? 0;
-      if (replayed < rung) {
-        changes.push(`${id}: saved ${rung}, now ${replayed} (${why})`);
-      }
-    }
+    const changes = falls(stored, now, why);
     write(dataDir, now);
     return { ok: true, wrote: now, truncated: true, changes };
   }

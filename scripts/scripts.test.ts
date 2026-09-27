@@ -23,7 +23,7 @@ function withTemp(fn: (dir: string) => void) {
 }
 
 test.each(["replay-check.ts", "synth-events.ts"])(
-  "%s refuses a --data outside the current folder and creates nothing",
+  "%s refuses --data and creates nothing",
   (script) =>
     withTemp((dir) => {
       const cwd = path.join(dir, "app");
@@ -31,8 +31,9 @@ test.each(["replay-check.ts", "synth-events.ts"])(
       const outside = path.join(dir, "elsewhere");
       const r = run(cwd, script, ["--data", outside, "--n", "2"]);
       expect(r.exitCode).toBe(1);
-      expect(r.stderr.toString()).toContain("outside the current folder");
+      expect(r.stderr.toString()).toContain("--data was removed");
       expect(fs.existsSync(outside)).toBe(false);
+      expect(fs.existsSync(path.join(cwd, "data"))).toBe(false);
     })(),
 );
 
@@ -45,12 +46,10 @@ test(
 );
 
 test(
-  "a --data inside the current folder is used",
+  "the scripts use data/ in the folder they run from",
   withTemp((dir) => {
-    expect(
-      run(dir, "synth-events.ts", ["--data", "d", "--n", "5"]).exitCode,
-    ).toBe(0);
-    expect(run(dir, "replay-check.ts", ["--data", "d"]).exitCode).toBe(0);
-    expect(fs.existsSync(path.join(dir, "d", "state.json"))).toBe(true);
+    expect(run(dir, "synth-events.ts", ["--n", "5"]).exitCode).toBe(0);
+    expect(run(dir, "replay-check.ts", []).exitCode).toBe(0);
+    expect(fs.existsSync(path.join(dir, "data", "state.json"))).toBe(true);
   }),
 );

@@ -1,7 +1,13 @@
 import { replayCheck } from "../src/events/check";
-import { dataArg } from "./data-arg";
 
-const data = dataArg();
+// No path from the command line: the log is always data/ in the folder this runs from.
+if (process.argv.includes("--data")) {
+  console.error(
+    "--data was removed: run this from the folder that holds data/.",
+  );
+  process.exit(1);
+}
+const data = "data";
 
 try {
   const result = replayCheck(data);

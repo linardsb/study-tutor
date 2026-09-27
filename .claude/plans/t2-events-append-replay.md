@@ -713,7 +713,7 @@ ladder, never the reverse).
      the state this build replaced is always one file away (recovery for any case the check lets through).
      Then write `replay(lines)`; `changes` lists each topic whose rung differs between `stored` and
      `before` (can only be a rise here) and an XP line when `before.xp.total !== stored xp.total`.
-- **IMPLEMENT** (`scripts/replay-check.ts`): `--data <dir>` argument (default `"data"`), calls
+- **IMPLEMENT** (`scripts/replay-check.ts`) (PR #23 review H1: `--data` later removed; both scripts use `data/` in the folder they run from): `--data <dir>` argument (default `"data"`), calls
   `replayCheck`, prints `changes` or the falls, exits 0 or 1. Refusal text, plain English, for a parent:
   ```
   Stopped: this version of the tutor would lower progress on 2 topics.
@@ -738,18 +738,18 @@ ladder, never the reverse).
   6. **Old state shape.** A stored state with only `{ lines: 33, topics: { "1MA1/R9": { rung: 3 } }, xp: { total: 205 }, weeks: {} }`
      (renamed and missing fields): ok.
   7. **Broken state.json** (`"{"`) → ok, rebuilt.
-- **VALIDATE**: `bun test src/events/check.test.ts`; `bun scripts/replay-check.ts --data <tmp with fixture>`
+- **VALIDATE**: `bun test src/events/check.test.ts`; `bun scripts/replay-check.ts` run from a temp folder whose `data/` holds the fixture
   prints the rebuild line and exits 0 (`echo $?`).
 - **SATISFIES**: AC 5 (replay-check refuses a falling rung).
 
 ### 11. CREATE `scripts/synth-events.ts`
 
-- **IMPLEMENT**: `bun scripts/synth-events.ts --data <dir> --n 200 --seed 1`. A seeded PRNG
+- **IMPLEMENT**: `bun scripts/synth-events.ts --data <dir> --n 200 --seed 1` (`--data` later removed, see Task 10). A seeded PRNG
   (mulberry32, inline, ten lines), a clock that starts at `2026-10-05T16:00:00Z` and steps 2–30 hours per
   event, five topic ids, and `n` events drawn from: lesson `session` end, `attempt` (+ an `xp` 10),
   `retest` (pass with probability 0.7, + `xp` 20), `teachback`, `usage`. Each through `appendEvent(dir,
   event, clock)`, so the log is produced by the real writer. Prints the line count.
-- **VALIDATE**: `R=$PWD; cd "$T" && bun "$R/scripts/synth-events.ts" --data data --n 200 --seed 1 && wc -l data/events.jsonl` (PR #23 review H1: `--data` must resolve inside the current folder, so every script step below runs from inside `$T`)
+- **VALIDATE**: `R=$PWD; cd "$T" && bun "$R/scripts/synth-events.ts" --n 200 --seed 1 && wc -l data/events.jsonl` (PR #23 review H1: the scripts take no path and use `data/` in the current folder, so every script step below runs from inside `$T`)
   → `200` (an `xp` counts toward `n`); running it twice with the same seed into two fresh dirs gives
   byte-identical files (`cmp`).
 - **SATISFIES**: AC 9 (S5 needs 200 synthetic events).
@@ -760,7 +760,7 @@ ladder, never the reverse).
   committed yet, so `git checkout -- <file>` cannot revert an untracked file: before each code edit below,
   `cp <file> "$T/<name>.bak"`, and after the step `cp` it back; `git diff --stat` and `bun run check` green
   after step 3 prove the tree is restored.
-  1. From inside `$T`: `bun "$R/scripts/synth-events.ts" --data data --n 200 --seed 1`; `bun "$R/scripts/replay-check.ts" --data data`
+  1. From inside `$T`: `bun "$R/scripts/synth-events.ts" --n 200 --seed 1`; `bun "$R/scripts/replay-check.ts"`
      → exit 0, rebuilt. `cp "$T/data/state.json" "$T/state.v1.json"`.
   2. **Shape change, rungs and XP kept.** In the working tree, change the state shape: rename `flame` to
      `weeks`, add `retests: number` to `TopicState` (incremented in `retest@1`), `shape: 2`. Run
@@ -873,7 +873,7 @@ bun run check
 
 All steps use only what this ticket ships (`synth-events.ts`, `replay-check.ts`, `appendEvent`).
 
-1. `R=$PWD; T=$(mktemp -d); cd "$T"; bun "$R/scripts/synth-events.ts" --data data --n 200 --seed 1; bun "$R/scripts/replay-check.ts" --data data; echo $?`
+1. `R=$PWD; T=$(mktemp -d); cd "$T"; bun "$R/scripts/synth-events.ts" --n 200 --seed 1; bun "$R/scripts/replay-check.ts"; echo $?`
    → a rebuild line, `0`. `head -3 "$T/data/events.jsonl"` shows `{"v":1,"t":"…Z","type":…`.
 2. S5 steps 2–4 (Task 12), each with its exit code and `shasum` recorded.
 3. `ln -s /etc "$T/data/link"; bun -e 'import {resolveInData} from "./src/events/append"; resolveInData(process.argv[1], "link/passwd")' "$T/data"`
