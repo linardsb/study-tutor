@@ -227,6 +227,24 @@ S5  Question:      does replay hold across a schema change?
 - Mac, a fresh Apple silicon machine: `pending`, owner Linards, expected 2026-10-04. Level 4 step 5.
 - Decision by the rule: `pending` until both fresh-machine legs are in.
 
+**S5 result (2026-09-27).** Run by the T2 implementing session on the dev Mac (Bun 1.3.4), in a scratch
+directory, against the real writer (`appendEvent`) and the real check (`scripts/replay-check.ts`).
+
+- 200 synthetic events (`bun scripts/synth-events.ts --n 200 --seed 1`): 200 lines, 0 skipped on replay;
+  a second run with the same seed gave a byte-identical log (`cmp`). First `replay-check`: rebuilt, exit 0
+  (`observed`). Rungs `A5 4, G20 4, R9 3, N12 1, S4 1`, XP 1,140.
+- Shape change, rungs and XP kept: `flame` renamed to `weeks`, `retests` added per topic, `shape: 2`.
+  `replay-check` against the shape-1 `state.json`: exit 0; rungs and `xp.total` identical to shape 1 by
+  `jq` (`observed`); the two state files differ by 33 `diff` lines (the renamed key and the new field).
+- Code change that lowers a rung: `afterRetest` made to stop climbing on a pass. `replay-check`: exit 1,
+  three topics listed (`G20 4 → 1`, `A5 4 → 1`, `R9 3 → 1`), `state.json` SHA-1 unchanged (`observed`).
+- Genuine fall: with the real code, one failed `retest` for R9 (rung 3) appended after the last state
+  write. `replay-check`: exit 0, R9 now rung 1, `lines` 201, old state kept as `state.prev.json`
+  (`observed`). The check compares the stored `lines` prefix, so a real fall is not a refusal.
+- Decision by the rule: identical rungs and XP → ship. The startup `replay --check` ships in T2 anyway
+  (`src/events/check.ts`), because a code change that lowers a rung is only caught by running it; T11
+  wires it into start.
+
 PRD experiments E1–E5 stand. E1 (adherence on the existing folder) runs before any of this is built.
 
 ## Open questions
