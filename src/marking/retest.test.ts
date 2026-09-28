@@ -195,7 +195,7 @@ test("register: no exclamation mark and no emoji in either page or any exported 
     expect(clean(s)).toEqual({ s, bang: false, emoji: false });
 });
 
-test("no page writes a file: no storage or file API under app/, and every POST goes to /api/event or /api/config", () => {
+test("no page writes a file: no storage or file API under app/, and every POST goes to /api/event, /api/config or /api/chat", () => {
   const files = fs
     .readdirSync(app)
     .filter((f) => f.endsWith(".js") || f.endsWith(".html"));
@@ -216,8 +216,9 @@ test("no page writes a file: no storage or file API under app/, and every POST g
       posts.push(`${f}:${m[1]}`);
   }
   expect(posts.length).toBeGreaterThan(2);
+  // /api/chat saves a teach-back only through postEvent, on the server, like /api/event.
   for (const p of posts)
-    expect({ p, ok: /:\/api\/(event|config)$/.test(p) }).toEqual({
+    expect({ p, ok: /:\/api\/(event|config|chat)$/.test(p) }).toEqual({
       p,
       ok: true,
     });

@@ -1,13 +1,18 @@
 import { expect, test } from "bun:test";
 import path from "node:path";
 import { lcg } from "../../scripts/test-generators";
+import { loadCasePack } from "../api/case";
 import { loadGenerators } from "../content/generators";
 import type { Generated, Misconception } from "../content/types";
+import { findItem } from "../flow/chat";
 import { normaliseAnswer } from "./normalise";
 
 type QuizItem = {
   id: string;
   topic: string;
+  stem: string;
+  hint: string;
+  working: string;
   answers: string[];
   misconceptions: Misconception[];
   seed?: number;
@@ -20,6 +25,7 @@ type Quiz = {
     typed: string,
   ) => { ok: boolean; named: string | null };
   itemFromGenerated: (topic: string, spec: Generated, seed: number) => QuizItem;
+  chatHref: (item: { id: string; seed?: number }) => string;
 };
 
 // The browser file sets a global, the way generators.js does; nothing in it touches document at load.
@@ -85,4 +91,47 @@ test("itemFromGenerated carries the topic, the seed and every wrong key as a mis
   expect(item.misconceptions.map((m) => m.answer)).toEqual(
     Object.keys(spec.wrong),
   );
+});
+
+test("chatHref keeps the whole id (with its #) in the query, and the seed for a generated item", () => {
+  const id = "1MA1/R9/of-an-amount#1";
+  const plain = new URL(quiz.chatHref({ id }), "http://x");
+  expect(plain.pathname).toBe("/chat.html");
+  expect(plain.searchParams.get("item")).toBe(id);
+  expect(plain.hash).toBe("");
+  expect(plain.searchParams.has("seed")).toBe(false);
+  const gen = new URL(
+    quiz.chatHref({ id: "1MA1/R9/of-an-amount#gen", seed: 4294967295 }),
+    "http://x",
+  );
+  expect(gen.searchParams.get("item")).toBe("1MA1/R9/of-an-amount#gen");
+  expect(gen.searchParams.get("seed")).toBe("4294967295");
+});
+
+test("the chat panel rebuilds the same generated question practice showed", async () => {
+  const pack = await loadCasePack("maths");
+  let compared = 0;
+  for (const t of pack.topics) {
+    const gen = pack.gens[t.aliases[0] ?? ""];
+    if (typeof gen !== "function") continue;
+    for (const seed of [0, 1, 4294967295]) {
+      // Built the way buildQuiz does it in the browser, with the browser's own lcg.
+      const shown = quiz.itemFromGenerated(t.id, gen(quiz.lcg(seed)), seed);
+      const served = findItem(pack, `${t.id}#gen`, seed);
+      const pick = (i: Partial<QuizItem> | null) => ({
+        stem: i?.stem,
+        answers: i?.answers,
+        working: i?.working,
+        hint: i?.hint,
+        misconceptions: i?.misconceptions,
+      });
+      expect({ t: t.id, seed, i: pick(served) }).toEqual({
+        t: t.id,
+        seed,
+        i: pick(shown),
+      });
+      compared += 1;
+    }
+  }
+  expect(compared).toBeGreaterThan(0);
 });

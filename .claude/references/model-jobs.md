@@ -17,6 +17,8 @@ export const hint = defineJob({
 
 Rules: one retry on invalid JSON, then `fallback`. No job receives `answers` or `mark_scheme` for a numeric item before the attempt event. Jobs that mark (`teachback`, `examiner`) receive the mark scheme and return marks per line, never a corrected solution. Every job ships a test with the provider mocked for: valid output, invalid JSON twice, provider down.
 
+Retry table (`src/jobs/define.ts`, T9): `not-json`, `shape` (the validator refused it) and `guard` (the reply guard refused it) get the one retry; `no-model`, `cap`, `timeout`, `network`, `http` and `bad-response` go straight to the fallback. A reply is one fenced block only; a two-block reply is `not-json`. The answer guard is typed: `src/jobs/view.ts` is the only producer of `PreAttempt` (the stripped view) and `PostAttempt` (the full item, minted only once `hasAttempt` finds an attempt event, matched on id and seed for a `#gen` item). A pre-attempt job takes `PreAttempt`, and a raw `Item` does not type-check as either.
+
 Jobs planned: `guess_first`, `hint`, `teachback_mark`, `dan_wrong_step` (O2, scripted from the misconception bank), `examiner_mark` (O3, vision), `intake_read` (sheet or photo → topic codes).
 
 ## Provider

@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { caseForDay, loadCasePack } from "./api/case";
+import { getChat, postChat } from "./api/chat";
 import { getConfig, getUsage, postConfig } from "./api/config";
 import { postEvent } from "./api/event";
 import { lessonUrls } from "./api/lessons";
@@ -207,6 +208,56 @@ async function postConfigRoute(
   return json(r.status, r.body);
 }
 
+/** Bun's per-request idle limit; the server passes itself to a route handler as the second argument. */
+type IdleControl = { timeout(req: Request, seconds: number): void };
+
+async function getChatRoute(
+  req: Request,
+  root: string,
+  dataDir: string,
+  pack: CasePack | undefined,
+): Promise<Response> {
+  const refused = refuseForeign(req);
+  if (refused) return refused;
+  try {
+    const loaded = pack ?? (await loadCasePack("maths", root));
+    const r = getChat(dataDir, loaded, new URL(req.url).searchParams);
+    return json(r.status, r.body);
+  } catch (err) {
+    console.error(`Could not open the item: ${(err as Error).message}`);
+    return json(500, { error: "Could not open the item" });
+  }
+}
+
+async function postChatRoute(
+  req: Request,
+  server: IdleControl,
+  root: string,
+  dataDir: string,
+  pack: CasePack | undefined,
+): Promise<Response> {
+  const refused = refuseForeign(req);
+  if (refused) return refused;
+  // One job can take 240 s (two tries at the provider's 120 s timeout). Bun's types document a 120 s
+  // idle cut; on 1.3.4 a 140 s request was not cut at the default (observed, T9 Level 4), but one was
+  // at an explicit idleTimeout of 1 s. A dropped teach-back would still be saved, unseen, and resubmitted.
+  server.timeout(req, 0);
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return json(400, { error: "Body is not JSON" });
+  }
+  try {
+    const loaded = pack ?? (await loadCasePack("maths", root));
+    const r = await postChat(body, dataDir, loaded, { dataDir });
+    return json(r.status, r.body);
+  } catch (err) {
+    console.error(`Could not answer the chat: ${(err as Error).message}`);
+    return json(500, { error: "Could not answer the chat" });
+  }
+}
+
 /** Every /api route. Exported so the key-leak test walks the same table the server serves. */
 export function apiRoutes(opts: ServerOptions) {
   const { root, dataDir, topics, pack, update } = opts;
@@ -246,6 +297,11 @@ export function apiRoutes(opts: ServerOptions) {
     "/api/usage": {
       GET: (req: Request) =>
         readRoute(req, "the token count", () => getUsage(dataDir)),
+    },
+    "/api/chat": {
+      GET: (req: Request) => getChatRoute(req, root, dataDir, pack),
+      POST: (req: Request, server: IdleControl) =>
+        postChatRoute(req, server, root, dataDir, pack),
     },
     "/api/update": { GET: (req: Request) => getUpdate(req, update) },
   };
