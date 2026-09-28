@@ -9,7 +9,7 @@ Source of truth: architecture D3. `data/events.jsonl` is the record; `data/state
 ```
 
 - `v` is the event-version for that `type`. A shape change bumps `v` and adds a reducer case; old lines are never rewritten.
-- `type` is one of: `session` · `attempt` · `retest` · `teachback` · `intake` · `xp` · `squad` · `photo` · `usage`. `usage` carries a model job's token counts, because the monthly token count needs an event and no other type holds tokens. Add to the union in `src/events/types.ts` first; `tsc` fails until the parser table and the reducer table both have the new `type@v` key.
+- `type` is one of: `session` · `attempt` · `retest` · `teachback` · `intake` · `xp` · `squad` · `photo` · `usage` · `case`. `usage` carries a model job's token counts, because the monthly token count needs an event and no other type holds tokens. `case` is one detective-case answer with its 1 to 3 bet. Add to the union in `src/events/types.ts` first; `tsc` fails until the parser table and the reducer table both have the new `type@v` key.
 - A `(type, v)` shape may be edited in place until the first GitHub release whose build can append it; after that, a change is a new `v`.
 - `t` is UTC from `src/mcp/clock`, never the browser clock. `appendEvent` stamps it; a caller's `t` is overwritten. A `t` that is not a real date (`2026-02-30`) is refused.
 - `appendEvent` writes only the fields `KEYS` lists for that `(type, v)`; a stray caller field (a correct answer) never reaches the log. `tsc` fails if `KEYS` misses a field of the type.
@@ -22,9 +22,9 @@ Source of truth: architecture D3. `data/events.jsonl` is the record; `data/state
 
 ## Replay
 
-`replay(lines) → State` in `src/events/replay.ts` is a pure reducer with one case per `(type, v)`. It reads no clock and no file. Lines are walked in file order, never sorted by `t`: a PC clock change can write an earlier `t` after a later one. Unreadable lines are skipped and counted, never fatal (a pupil may hand-edit the log). Every day, week and month is the London day of `t` (`localDay`). A leading byte-order mark is stripped. Every map in `State` has no prototype, so a topic or item id such as `__proto__` or `constructor` is an ordinary key.
+`replay(lines) → State` in `src/events/replay.ts` is a pure reducer with one case per `(type, v)`. It reads no clock and no file. Lines are walked in file order, never sorted by `t`: a PC clock change can write an earlier `t` after a later one. Unreadable lines are skipped and counted, never fatal (a pupil may hand-edit the log). Every day, week and month is the London day of `t` (`localDay`), except a case, which is keyed by its own `day` field (the day it was picked for), not the London day of `t`. A leading byte-order mark is stripped. Every map in `State` has no prototype, so a topic or item id such as `__proto__` or `constructor` is an ordinary key.
 
-State keys: `shape` (bump on a type change), `lines` (log lines it was built from), `skipped`, `hash` (sha256 of those lines), `topics` (id → `rung` 0–4, `nextDue`, `rag`), `xp` (`total`, `byWeek`), `flame` (ISO week → distinct days of real work), `confidentWrong` (item id → the pupil's wrong answer), `calibration` (ISO week → Sure/correct counts), `tokens` (YYYY-MM → input + output).
+State keys: `shape` (bump on a type change; now 2), `lines` (log lines it was built from), `skipped`, `hash` (sha256 of those lines), `topics` (id → `rung` 0–4, `nextDue`, `rag`), `xp` (`total`, `byWeek`), `flame` (ISO week → distinct days of real work), `confidentWrong` (item id → the pupil's wrong answer), `calibration` (ISO week → Sure/correct counts), `cases` (day → `kind`, `topic`, `item`, `bets` pairs of bet and correct in answer order), `caseSeed` (topic a confident-wrong case sends back tomorrow, or null), `tokens` (YYYY-MM → input + output).
 
 Compatibility contract: `lines`, `topics[id].rung` and `xp.total` keep their paths across shape versions, or `project` in `src/events/check.ts` changes in the same PR. `hash` is read when present.
 

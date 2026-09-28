@@ -2,6 +2,15 @@ import path from "node:path";
 import { subjectDir } from "./pack";
 import type { Generator } from "./types";
 
+/** Seeded generator, so a failure can be reproduced from the seed printed with it. The browser copy is in app/quiz.js. */
+export function lcg(seed: number): () => number {
+  let s = seed >>> 0;
+  return () => {
+    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+}
+
 /** One table per generators.js file. The file writes one global, so a repeat import must not re-read it. */
 const tables = new Map<string, Record<string, Generator>>();
 

@@ -22,6 +22,8 @@ export interface Topic {
   aliases: string[];
   prerequisites: string[];
   tier: Tier;
+  /** Set only on a concept topic: the rule three contrasting instances show, and wrong rules a pupil might invent. Both are pupil-facing text. */
+  concept?: { rule: string; distractors: string[] };
 }
 
 /** A named wrong answer and what to say about it. `message` names the mistake, never the right answer. */
@@ -69,3 +71,10 @@ export interface Generated {
   type?: GeneratedAnswerType;
 }
 export type Generator = (rng: () => number) => Generated;
+
+/** A subject's topics, every topic's items and its generator table: what the detective case reads. */
+export type CasePack = {
+  topics: readonly Topic[];
+  items: ReadonlyMap<string, readonly Item[]>; // topic id → its items
+  gens: Readonly<Record<string, Generator>>; // generator code (aliases[0]) → generator
+};

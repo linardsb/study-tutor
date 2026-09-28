@@ -16,6 +16,18 @@ export function subjectDir(subject: string, root = process.cwd()): string {
   return path.resolve(root, "content", subject);
 }
 
+/** `concept` is absent, or a rule with at least one distractor, all non-empty strings. */
+const conceptShaped = (c: unknown): boolean =>
+  c === undefined ||
+  (typeof c === "object" &&
+    c !== null &&
+    typeof (c as { rule?: unknown }).rule === "string" &&
+    Array.isArray((c as { distractors?: unknown }).distractors) &&
+    (c as { distractors: unknown[] }).distractors.length > 0 &&
+    (c as { distractors: unknown[] }).distractors.every(
+      (d) => typeof d === "string" && d.length > 0,
+    ));
+
 export async function loadTopics(
   subject: string,
   root = process.cwd(),
@@ -30,7 +42,8 @@ export async function loadTopics(
         typeof t.title === "string" &&
         Array.isArray(t.aliases) &&
         Array.isArray(t.prerequisites) &&
-        (t.tier === "F" || t.tier === "H"),
+        (t.tier === "F" || t.tier === "H") &&
+        conceptShaped(t.concept),
     );
   if (!shaped) throw new Error(`${file}: not a list of topic rows`);
   return rows as Topic[];

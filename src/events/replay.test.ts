@@ -53,12 +53,17 @@ test("six-week history: rungs, next-due, XP, flame, pool, calibration, tokens", 
   expect(s.tokens).toEqual({ "2026-10": 1500, "2026-11": 600 });
   expect(s.lines).toBe(33);
   expect(s.skipped).toBe(0);
-  expect(s.shape).toBe(1);
+  expect(s.shape).toBe(2);
 });
 
 test("guard: derived state carries no correct answer or mark scheme", () => {
   const json = JSON.stringify(replay(SIX_WEEKS));
-  for (const key of ['"answers"', '"markScheme"', '"mark_scheme"']) {
+  for (const key of [
+    '"answers"',
+    '"markScheme"',
+    '"mark_scheme"',
+    '"working"',
+  ]) {
     expect(json).not.toContain(key);
   }
 });
@@ -88,13 +93,15 @@ test("bad lines are skipped and counted, never fatal", () => {
     `{"v":2,"t":"2026-10-05T16:21:00Z","type":"attempt","item":"x","topic":"1MA1/R9","correct":true,"sure":true,"answer":"1"}`,
     `{"v":1,"t":"2026-10-05T16:21:00Z","type":"login"}`,
     `{"v":1,"t":"2026-10-05T16:21:00Z","type":"attempt","item":"x","correct":true,"sure":true,"answer":"1"}`,
+    // day is an invalid Date (month 13): isDay threw and every state route was a 500 (PR #31 F2)
+    `{"v":1,"t":"2026-10-05T16:21:00Z","type":"case","day":"2026-13-01","kind":"rule","topic":"1MA1/A12","pick":"x","bet":1,"correct":true,"reask":false}`,
   ];
   const lines = [...SIX_WEEKS.slice(0, 10), ...bad, ...SIX_WEEKS.slice(10)];
   const s = replay(lines);
   expect(s.topics).toEqual(TOPICS);
   expect(s.xp).toEqual(XP);
-  expect(s.skipped).toBe(4);
-  expect(s.lines).toBe(37);
+  expect(s.skipped).toBe(5);
+  expect(s.lines).toBe(38);
 });
 
 test.each([...EVENT_KEYS])(
@@ -108,6 +115,54 @@ test.each([...EVENT_KEYS])(
     expect(replay(lines).skipped).toBe(0);
   },
 );
+
+const CASE_LINES = fs
+  .readFileSync(path.join(FIXTURES, "case.v1.jsonl"), "utf8")
+  .split("\n")
+  .filter(Boolean);
+
+test("case: one record a day, the re-ask joins it, the seed is set by bet 3 and wrong and cleared by the next first answer, and the day counts in the flame", () => {
+  const two = replay(CASE_LINES);
+  expect(two.cases).toEqual({
+    "2026-10-06": {
+      kind: "mistake",
+      topic: "1MA1/R9/of-an-amount",
+      item: "1MA1/R9/of-an-amount#1",
+      bets: [
+        [3, false],
+        [2, true],
+      ],
+    },
+  });
+  expect(two.caseSeed).toBe("1MA1/R9/of-an-amount");
+  expect(two.flame["2026-W41"]).toContain("2026-10-06");
+  expect(two.topics["1MA1/R9/of-an-amount"]?.rung).toBe(0);
+
+  // The next day's first answer clears the seed; t is after London midnight but day says 07 (the case's day).
+  const next = `{"v":1,"t":"2026-10-07T23:30:00Z","type":"case","day":"2026-10-07","kind":"rule","topic":"1MA1/A12","pick":"x","bet":1,"correct":true,"reask":false}`;
+  const three = replay([...CASE_LINES, next]);
+  expect(three.caseSeed).toBeNull();
+  expect(Object.keys(three.cases)).toEqual(["2026-10-06", "2026-10-07"]);
+  expect(three.cases["2026-10-07"]).toEqual({
+    kind: "rule",
+    topic: "1MA1/A12",
+    item: null,
+    bets: [[1, true]],
+  });
+  expect(three.flame["2026-W41"]).toContain("2026-10-08"); // 23:30Z on the 7th is the 8th in BST
+
+  // A repeat first answer for a day already recorded (two tabs) changes nothing.
+  const repeat = `{"v":1,"t":"2026-10-07T23:31:00Z","type":"case","day":"2026-10-07","kind":"mistake","topic":"1MA1/G16","item":"1MA1/G16#1","pick":"y","bet":3,"correct":false,"reask":false}`;
+  const four = replay([...CASE_LINES, next, repeat]);
+  expect(four.cases["2026-10-07"]).toEqual(three.cases["2026-10-07"]);
+  expect(four.caseSeed).toBeNull();
+
+  // A re-ask with no first answer on record (hand edit) is kept as the day's only pair.
+  const orphan = replay([CASE_LINES[1] as string]);
+  expect(orphan.cases["2026-10-06"]?.bets).toEqual([[2, true]]);
+  expect(orphan.cases["2026-10-06"]?.item).toBeNull();
+  expect(orphan.caseSeed).toBeNull();
+});
 
 test("a topic named constructor is its own topic", () => {
   const s = replay([

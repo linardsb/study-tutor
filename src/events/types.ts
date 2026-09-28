@@ -8,6 +8,7 @@ export const EVENT_TYPES = [
   "squad",
   "photo",
   "usage",
+  "case",
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 type Line<T extends EventType, V extends number> = { v: V; t: string; type: T };
@@ -73,6 +74,16 @@ export type UsageV1 = Line<"usage", 1> & {
   input: number;
   output: number;
 };
+export type CaseV1 = Line<"case", 1> & {
+  day: string; // the London day the case was picked for (YYYY-MM-DD), so an answer after midnight still lands on its case
+  kind: "mistake" | "rule";
+  topic: string;
+  item?: string; // the item behind a mistake case; absent for a rule case
+  pick: string; // the option text the pupil chose
+  bet: 1 | 2 | 3;
+  correct: boolean;
+  reask: boolean; // the second case after a confident-wrong first answer
+};
 
 export type Event =
   | SessionV1
@@ -83,7 +94,8 @@ export type Event =
   | XpV1
   | SquadV1
   | PhotoV1
-  | UsageV1;
+  | UsageV1
+  | CaseV1;
 export type EventByKey = { [E in Event as `${E["type"]}@${E["v"]}`]: E };
 export type EventKey = keyof EventByKey;
 /** An event before `append` stamps `t`. */
@@ -100,6 +112,15 @@ const optStr = (x: unknown) => x === undefined || str(x);
 const optInt = (x: unknown) => x === undefined || int(x);
 const oneOf = (x: unknown, allowed: readonly string[]) =>
   str(x) && allowed.includes(x as string);
+/**
+ * A real YYYY-MM-DD: 2026-02-30 rolls to 2 March and is refused, the same check `t` gets below.
+ * 2026-13-01 gives an invalid Date, whose toISOString throws, so the NaN check comes first (PR #31 F2).
+ */
+export const isDay = (x: unknown): x is string => {
+  if (!str(x) || !/^\d{4}-\d{2}-\d{2}$/.test(x)) return false;
+  const d = new Date(`${x}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === x;
+};
 const outOf = (n: unknown, of: unknown) =>
   int(n) && int(of) && (n as number) <= (of as number);
 
@@ -146,6 +167,15 @@ const FIELDS: { [K in EventKey]: (o: Obj) => boolean } = {
     str(o.squad) && str(o.week) && str(o.topic) && outOf(o.score, o.of),
   "photo@1": (o) => str(o.item) && str(o.topic) && str(o.file),
   "usage@1": (o) => str(o.job) && str(o.model) && int(o.input) && int(o.output),
+  "case@1": (o) =>
+    isDay(o.day) &&
+    oneOf(o.kind, ["mistake", "rule"]) &&
+    str(o.topic) &&
+    optStr(o.item) &&
+    str(o.pick) &&
+    (o.bet === 1 || o.bet === 2 || o.bet === 3) &&
+    bool(o.correct) &&
+    bool(o.reask),
 };
 
 type Own<K extends EventKey> = Exclude<keyof EventByKey[K], "v" | "t" | "type">;
@@ -160,6 +190,7 @@ export const KEYS = {
   "squad@1": ["squad", "week", "topic", "score", "of"],
   "photo@1": ["item", "topic", "file"],
   "usage@1": ["job", "model", "input", "output"],
+  "case@1": ["day", "kind", "topic", "item", "pick", "bet", "correct", "reask"],
 } as const satisfies { [K in EventKey]: readonly Own<K>[] };
 // A field added to an event type and not to KEYS fails here, so append never drops it.
 type Missing = {
