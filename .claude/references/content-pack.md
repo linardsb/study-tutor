@@ -6,7 +6,8 @@ Source of truth: architecture D5. One pack per subject under `content/<subject>/
 
 ```
 content/maths/
-  topics.json        [{ id: "1MA1/R9" or "1MA1/G17/cone", title, aliases: ["U349"], prerequisites: ["1MA1/N12"], tier: "F" }]
+  topics.json        [{ id: "1MA1/R9" or "1MA1/G17/cone", title, aliases: ["U349"], prerequisites: ["1MA1/N12"], tier: "F", concept?: { rule, distractors[] } }]
+                     a concept topic gives O5 an invent-the-rule case
   items/<topic>.json [{ id, topic, type, stem, figure?, scaffold?, hint?, params?, answers?, working?, mark_scheme?, misconceptions: [{ answer, message }] }]
   generators.js      GEN["U349"] = (rng) => ({ stem, answers[], working, hint, wrong: { "4.5": "..." } })   (v1 shape, kept)
   lessons/           HTML, one per topic; each quiz section names its items file in `data-items` and `app/quiz.js` renders and posts
@@ -20,7 +21,7 @@ content/maths/
 | generator, cloze, label, sequence, vocab | `src/marking/<type>.ts`, deterministic |
 | short, extended, practical-method | `teachback_mark` or `examiner_mark` job with `mark_scheme`; fallback is "not marked yet" |
 
-`misconceptions` are per item and are the only source for O2's scripted wrong steps and O5's planted mistakes. An item with none cannot appear in O2 or O5.
+`misconceptions` are per item and are the only source for O2's scripted wrong steps and O5's planted mistakes. An item with none cannot appear in O2 or O5. A rule case comes from a topic's `concept` block and three generator rolls; it needs no item.
 
 ## Keys and licence
 

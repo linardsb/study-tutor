@@ -48,6 +48,7 @@ export const MCP_WRITABLE: Record<EventType, boolean> = {
   squad: false,
   photo: false,
   usage: false,
+  case: false, // the page marks the pick and the bet, as with attempt (T7 merge)
 };
 const WRITABLE = EVENT_TYPES.filter((t) => MCP_WRITABLE[t]);
 
