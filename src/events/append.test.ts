@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import {
   appendEvent,
+  ownerAccount,
   readLines,
   readStoredState,
   resolveInData,
@@ -439,4 +440,10 @@ test("restrictToOwner runs icacls on Windows only, and a failure warns without t
   } finally {
     err.mockRestore();
   }
+});
+
+test("ownerAccount qualifies the user with USERDOMAIN when it is set (#34)", () => {
+  expect(ownerAccount({ USERDOMAIN: "SCHOOL" }, "pupil")).toBe("SCHOOL\\pupil");
+  expect(ownerAccount({ USERDOMAIN: "" }, "pupil")).toBe("pupil");
+  expect(ownerAccount({}, "pupil")).toBe("pupil");
 });
