@@ -36,6 +36,7 @@ No scope direction was given. The reviewer's steer was "F1 first, F2 can go into
 
 - `bun run check`: exit 0, **336 pass, 0 fail**, 31 files (observed). 329 + 7 new cases = 336 (derived: F1 2, F2 1, F3 2, F5 1, F6 1; F4 is an extra entry inside an existing test).
 - `bun scripts/test-generators.ts`: all 6300 runs pass (observed).
+- The `listZip` test is skipped where `unzip` is not on PATH (a stock Windows PC), as the zip test beside it is; added in the follow-up commit, `bun run check` again 336 / 0, exit 0 (observed).
 
 ## Stale-claim sweep
 

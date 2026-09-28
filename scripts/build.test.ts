@@ -147,6 +147,9 @@ test.skipIf(Bun.which("zip") === null)(
   }),
 );
 
-test("listZip throws when unzip cannot list the file", () => {
-  expect(() => listZip("/no/such/StudyTutor.zip")).toThrow("exited");
-});
+test.skipIf(Bun.which("unzip") === null)(
+  "listZip throws when unzip cannot list the file",
+  () => {
+    expect(() => listZip("/no/such/StudyTutor.zip")).toThrow("exited");
+  },
+);
