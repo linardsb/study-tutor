@@ -10,8 +10,9 @@ Review: https://github.com/linardsb/study-tutor/pull/33#issuecomment-5868282154 
 - New failure mode of the mechanism: the check needs `typeof of === "number"`, so a non-number `of` skips it. That case still reaches `appendEvent`'s parser, which refuses it (review, "Checked and clean", non-integer re-tests). Nothing is written for either path.
 
 **F2 (Low)** `src/flow/boss.ts` `boss()`: each due topic's slots are built first, a topic with none is dropped, and then the three-topic cap applies. If no due topic has a question, `boss()` returns null and `pickStep` falls through to a lesson (`src/flow/next.ts:79-81` already handles null).
-- Test: `boss.test.ts` "a due topic with no generator and no items takes no place in the boss". With `gens` and `items` emptied, one due topic gives null. With A (no items) due before B, the boss is `[B]`.
+- Test: `boss.test.ts` "a due topic with no generator and no items takes no place in the boss". With `gens` and `items` emptied, one due topic gives null. With A (no items) due first and B, C, D (items, no generators) after it, the boss is `[B, C, D]`.
 - Against the unfixed code: failed (observed). After the fix: passes (observed).
+- Mutation M4 (the cap moved ahead of the filter, so a question-less topic still takes a place): the test fails, the boss is missing D (`1MA1/P8`) (observed). A first version of this test had only A and B due, which never reaches the cap of 3; it was rewritten with four due topics in this round.
 
 **F3 (Low)** Two assertions that could not fail.
 - `boss.test.ts` "unlabelled and answer-free" now asserts `not.toBeNull()` first. Mutation M1 (`boss()` returns null): old test 1 pass, new test 1 fail (observed).
@@ -19,7 +20,7 @@ Review: https://github.com/linardsb/study-tutor/pull/33#issuecomment-5868282154 
 
 **F4, fetch half (Low)** `properties.test.ts` "no model call anywhere in src/flow" now matches `\bfetch\b` in place of the literal `fetch(`. Mutation M3 (append `// globalThis.fetch` to `boss.ts`): old test 1 pass, new test 1 fail (observed). No `fetch` appears in `src/flow` today, so there are no false positives.
 
-**F5 (Low, numbers)** Both surfaces now cite one run. `bun run check` on the fixed tree, 2026-09-28: exit 0, 301 pass, 0 fail, 63,483 expect() calls, 28 files, 9.50 s (observed). The PR body no longer cites `last-gate.json` for counts.
+**F5 (Low, numbers)** Both surfaces now cite one run. `bun run check` on the final fixed tree (after the M4 rewrite), 2026-09-28: exit 0, 301 pass, 0 fail, 63,485 expect() calls, 28 files, 7.43 s (observed). The PR body no longer cites `last-gate.json` for counts.
 
 ## Disputed (won't fix)
 
@@ -40,9 +41,9 @@ Commands run on 2026-09-28 before the edits, over the plan, the report, the PR b
 | grep -n | Hits before | Action |
 |---|---|---|
 | `299` | PR body :24; report :39 | Both now 301 from the one run above |
-| `63,476` | PR body :24; report :39 | Both now 63,483 |
-| `11\.46` | PR body :24 | Replaced with 9.50 s |
-| `11\.06` | report :39 | Replaced with 9.50 s |
+| `63,476` | PR body :24; report :39 | Both now 63,485 |
+| `11\.46` | PR body :24 | Replaced with 7.43 s |
+| `11\.06` | report :39 | Replaced with 7.43 s |
 | `last-gate` | PR body :24 | Citation removed |
 | `none is due` | plan :300 (the Task 7 code snippet) | Left as a plan snippet; dated line added under the plan's Amendments |
 | `fetch(` / `provider import` | report :35; PR body "What changed"; plan :396 | Report and PR body now say "`fetch` reference"; plan :396 is the task instruction and is correct |
@@ -52,4 +53,8 @@ Commands run on 2026-09-28 before the edits, over the plan, the report, the PR b
 
 ## Validation
 
-`bun run check` (tsc, biome, bun test), 2026-09-28, final tree: exit 0; 301 pass, 0 fail, 63,483 expect() calls, 9.50 s; biome 4 warnings, the same `app/style.css` ones from `main` (observed).
+`bun run check` (tsc, biome, bun test), 2026-09-28, final tree: exit 0; 301 pass, 0 fail, 63,485 expect() calls, 7.43 s; biome 4 warnings, the same `app/style.css` ones from `main` (observed).
+
+## Pushed
+
+Two commits on `feature/t5-flow`: `9223cbd` (the fixes) and the one after it (the F2 cap test rewritten with four due topics, and the final figures). `git log --oneline 3c353f5..origin/feature/t5-flow` lists both. The PR body's Validation, size line and "Notes for the reviewer" were updated with `gh pr edit 33 --body-file` after the second push.

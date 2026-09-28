@@ -36,7 +36,7 @@
 
 ## Validation results
 
-- `bun run check`: 301 pass, 0 fail, 63,483 expect() calls, 9.50 s (observed, 2026-09-28 run on the PR #33 round-1 fix tree; before the fixes: 299 pass, 63,476 calls). tsc and biome are clean, since `check` runs them first.
+- `bun run check`: 301 pass, 0 fail, 63,485 expect() calls, 7.43 s (observed, 2026-09-28 run on the final PR #33 round-1 fix tree; before the fixes: 299 pass, 63,476 calls). tsc and biome are clean, since `check` runs them first.
 - Level 1b complexity lint on the 9 named files: 0 diagnostics (observed).
 - `bun scripts/test-generators.ts`: all 6300 runs pass (observed).
 - `bun test src/flow/properties.test.ts`: 6 pass in 5.54 s, and 7.45 s and 7.56 s on later runs under load (observed). The histories average 85.6 lines (60 events plus their xp lines), which gives 742,190 prefix parses over 200 seeds (observed). That is 2.0× the spike's 370,819 (derived: 742,190 / 370,819), which accounts for the gap from the spike's 2.78 s.
