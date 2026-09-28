@@ -2,6 +2,7 @@ import { expect, test } from "bun:test";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { startFakeProvider } from "../scripts/fake-provider";
 import { loadTopics } from "./content/pack";
 import { appendEvent } from "./events/append";
 import { addDays, isoWeek, localDay } from "./mcp/clock";
@@ -621,3 +622,112 @@ test(
     ).not.toThrow();
   }),
 );
+
+/** A JSON POST to the tutor's API from its own page. */
+const postJson =
+  (get: (p: string, init?: RequestInit) => Promise<Response>) =>
+  (p: string, body: unknown) =>
+    get(p, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+test(
+  "api: /api/chat with no model answers a hint with the lesson's own hint",
+  withServer(async (get) => {
+    const post = postJson(get);
+    expect(
+      (await post("/api/config", { preset: "none", weeklyTarget: 3 })).status,
+    ).toBe(200);
+    const res = await post("/api/chat", {
+      job: "hint",
+      item: "1MA1/R9/of-an-amount#1",
+      text: "not sure",
+    });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      kind: "text",
+      by: "fallback",
+      text: "20% is two lots of 10%.",
+    });
+  }),
+);
+
+test(
+  "api: /api/chat end to end through the real provider module and a fake provider",
+  withServer(async (get, _dir, opts) => {
+    const fake = startFakeProvider({ mode: "valid" });
+    try {
+      const post = postJson(get);
+      const saved = await post("/api/config", {
+        preset: "custom",
+        base_url: fake.url,
+        model: "fake",
+        key: "",
+        cap: 50_000,
+        weeklyTarget: 3,
+      });
+      expect(saved.status).toBe(200);
+      const id = "1MA1/R9/of-an-amount#1";
+      appendEvent(opts.dataDir, {
+        v: 1,
+        type: "attempt",
+        item: id,
+        topic: "1MA1/R9/of-an-amount",
+        correct: true,
+        sure: true,
+        answer: "9",
+      });
+      const marked = await post("/api/chat", {
+        job: "teachback_mark",
+        item: id,
+        text: "Find 10% of 45\nDouble it",
+      });
+      expect(marked.status).toBe(200);
+      expect(await marked.json()).toMatchObject({
+        kind: "marks",
+        score: 2,
+        of: 2,
+        saved: true,
+      });
+      const types = fs
+        .readFileSync(path.join(opts.dataDir, "events.jsonl"), "utf8")
+        .trim()
+        .split("\n")
+        .map((l) => JSON.parse(l) as { type: string; amount?: number });
+      expect(types.map((e) => e.type)).toEqual([
+        "attempt",
+        "usage",
+        "teachback",
+        "xp",
+      ]);
+      expect(types[3]?.amount).toBe(15);
+
+      const hinted = await post("/api/chat", {
+        job: "hint",
+        item: "1MA1/R9/of-an-amount#2",
+        text: "not sure",
+      });
+      expect(await hinted.json()).toEqual({
+        kind: "text",
+        by: "model",
+        text: "Start with 10%.",
+      });
+    } finally {
+      fake.stop();
+    }
+  }),
+);
+
+test("chat.html holds 'This is an AI' in static markup, outside every region the script fills", () => {
+  const html = fs.readFileSync(path.join(root, "app", "chat.html"), "utf8");
+  const note = html.indexOf("This is an AI");
+  expect(note).toBeGreaterThan(-1);
+  for (const id of ["item", "before", "after", "log"]) {
+    const at = html.indexOf(`id="${id}"`);
+    expect({ id, found: at > -1 }).toEqual({ id, found: true });
+    expect({ id, noteFirst: note < at }).toEqual({ id, noteFirst: true });
+  }
+  expect(html).toMatch(/\.ai-note\s*\{[^}]*position:\s*sticky/);
+});

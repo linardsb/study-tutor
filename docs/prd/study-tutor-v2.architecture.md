@@ -308,6 +308,7 @@ PRD experiments E1–E5 stand. E1 (adherence on the existing folder) runs before
   fenced block (6 of 8 vision calls this session did not parse; all 4 whose text was captured had two
   blocks), which the single-block rule reads as not JSON. That is a
   prompt and job question for T9, not a transport one; no adapter is needed for the transport.
+  T9: a job takes one fenced block only; two blocks is not-json, one retry, then fallback (`src/jobs/define.ts`).
 - Q13. Where does the parent digest go with no outbound channel: a page, a file in `data/digest/`, or
   both? Depends on Q7.
 - Q14. Does the maths pack keep Sparx U-codes as the primary key until Edexcel is confirmed (Q2), or

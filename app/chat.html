@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ask the tutor</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+  .ai-note { position: sticky; top: 0; z-index: 1; margin: 0 0 1rem; padding: 0.5rem 0.75rem; background: var(--grey-bg); border: 1px solid var(--line); }
+  #chat label { display: block; margin: 1rem 0 0.25rem; font-weight: 600; }
+  #chat textarea { font: inherit; padding: 0.4rem; width: 100%; box-sizing: border-box; }
+  #chat button { margin-top: 0.5rem; font: inherit; padding: 0.4rem 1rem; }
+  #chat [hidden] { display: none; }
+  #log li { margin: 0.5rem 0; }
+  #log .you { color: var(--muted); }
+  #log .working { white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<main class="lesson">
+  <p class="ai-note" role="note">This is an AI. It can be wrong. It will not give you the answer before you have tried.</p>
+  <header>
+    <p class="crumb"><a href="/">Lessons</a> · ask the tutor</p>
+    <h1 id="title">Ask the tutor</h1>
+  </header>
+
+  <section id="item">
+    <p class="stem" id="stem">Loading the question.</p>
+    <div class="figure" id="figure" hidden></div>
+    <div class="working faded" id="scaffold" hidden><p></p></div>
+  </section>
+
+  <div id="chat">
+    <p class="note" id="no-model" hidden>No model is set up, so you get the tutor's built-in help.</p>
+
+    <section id="before" hidden>
+      <form id="guess-form">
+        <label for="guess">How would you do this one? A rough guess is fine.</label>
+        <textarea id="guess" rows="3"></textarea>
+        <button type="submit">Check my guess</button>
+      </form>
+      <form id="hint-form">
+        <label for="working">Your working so far (you can leave this empty)</label>
+        <textarea id="working" rows="3"></textarea>
+        <button type="submit">Hint</button>
+      </form>
+    </section>
+
+    <section id="after" hidden>
+      <form id="teach-form">
+        <label for="teach">Explain how you did it, one step per line.</label>
+        <textarea id="teach" rows="6"></textarea>
+        <button type="submit">Mark my steps</button>
+      </form>
+    </section>
+
+    <ol id="log"></ol>
+  </div>
+</main>
+<script src="/chat.js"></script>
+</body>
+</html>

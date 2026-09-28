@@ -75,6 +75,15 @@
     };
   }
 
+  /* the chat panel for one item. Ids hold "#", so a hand-built query would cut the id into a fragment */
+  function chatHref(item) {
+    const q =
+      item.seed === undefined
+        ? { item: item.id }
+        : { item: item.id, seed: String(item.seed) };
+    return `/chat.html?${new URLSearchParams(q)}`;
+  }
+
   const NOT_SAVED = " Not saved. Check the tutor window is still open.";
 
   /* one attempt per item; the promise resolves to whether the tutor accepted it */
@@ -151,6 +160,15 @@
       hint.textContent = item.hint;
       q.appendChild(hint);
     }
+    /* a named tab: the quiz keeps its progress and repeat clicks reuse one panel */
+    const ask = document.createElement("p");
+    ask.className = "ask";
+    const link = document.createElement("a");
+    link.target = "tutor";
+    link.href = chatHref(item);
+    link.textContent = "Ask the tutor";
+    ask.appendChild(link);
+    q.appendChild(ask);
     const work = document.createElement("div");
     work.className = "working";
     work.hidden = true;
@@ -439,5 +457,13 @@
   }
 
   const root = typeof window === "undefined" ? globalThis : window;
-  root.quiz = { norm, lcg, mark, itemFromGenerated, buildQuiz, initQuiz };
+  root.quiz = {
+    norm,
+    lcg,
+    mark,
+    itemFromGenerated,
+    chatHref,
+    buildQuiz,
+    initQuiz,
+  };
 })();
