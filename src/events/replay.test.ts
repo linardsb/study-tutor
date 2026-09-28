@@ -53,7 +53,15 @@ test("six-week history: rungs, next-due, XP, flame, pool, calibration, tokens", 
   expect(s.tokens).toEqual({ "2026-10": 1500, "2026-11": 600 });
   expect(s.lines).toBe(33);
   expect(s.skipped).toBe(0);
-  expect(s.shape).toBe(2);
+  expect(s.shape).toBe(3);
+  expect(s.retests).toEqual({
+    "2026-W41": { score: 4, of: 6 },
+    "2026-W42": { score: 5, of: 6 },
+    "2026-W43": { score: 3, of: 3 },
+    "2026-W45": { score: 2, of: 3 },
+    "2026-W46": { score: 3, of: 3 },
+  });
+  expect(s.session).toBeNull();
 });
 
 test("guard: derived state carries no correct answer or mark scheme", () => {
@@ -162,6 +170,22 @@ test("case: one record a day, the re-ask joins it, the seed is set by bet 3 and 
   expect(orphan.cases["2026-10-06"]?.bets).toEqual([[2, true]]);
   expect(orphan.cases["2026-10-06"]?.item).toBeNull();
   expect(orphan.caseSeed).toBeNull();
+});
+
+test("case: a second re-ask the same day is ignored", () => {
+  const reask = CASE_LINES[1] as string;
+  const again = reask.replace('"bet":2', '"bet":1');
+  const s = replay([...CASE_LINES, again]);
+  expect(s.cases["2026-10-06"]?.bets).toEqual([
+    [3, false],
+    [2, true],
+  ]);
+  // No first answer on record: the orphan re-ask is the pair, and a second re-ask joins it once.
+  const orphan = replay([reask, again, again]);
+  expect(orphan.cases["2026-10-06"]?.bets).toEqual([
+    [2, true],
+    [1, true],
+  ]);
 });
 
 test("a topic named constructor is its own topic", () => {

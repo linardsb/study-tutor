@@ -4,6 +4,7 @@ import {
   afterRed,
   afterRetest,
   type OnLadder,
+  passes,
   type Rung,
 } from "./ladder";
 
@@ -34,4 +35,19 @@ test("afterRed sends 1 pass or better back to learning, leaves rung 0", () => {
   expect(afterRed(2)).toBe(1);
   expect(afterRed(4)).toBe(1);
   expect(afterRed(0)).toBe(0);
+});
+
+const PASSES: [number, number, boolean][] = [
+  [3, 3, true],
+  [2, 3, true],
+  [1, 3, false],
+  [0, 3, false],
+  [4, 6, true],
+  [3, 6, false],
+  [0, 0, false],
+  [1, 1, true],
+];
+
+test.each(PASSES)("passes(%p, %p) is %p", (score, of, ok) => {
+  expect(passes(score, of)).toBe(ok);
 });

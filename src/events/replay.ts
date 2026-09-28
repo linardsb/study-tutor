@@ -6,6 +6,7 @@ import {
   NEXT_DAYS,
   type Rung,
 } from "../flow/ladder";
+import { type OpenSession, onSession } from "../flow/session";
 import { addDays, isoWeek, localDay } from "../mcp/clock";
 import {
   type Event,
@@ -33,7 +34,7 @@ export type CaseRecord = {
   bets: [1 | 2 | 3, boolean][]; // (bet, correct) in answer order: the first answer, then the re-ask if there was one
 };
 export type State = {
-  shape: 2; // bump when this type changes
+  shape: 3; // bump when this type changes
   lines: number; // log lines this state was built from, skipped lines included
   skipped: number; // lines replay could not read
   hash: string; // sha256 of those lines, so the check can tell a hand edit from a code change
@@ -48,6 +49,8 @@ export type State = {
   cases: Record<string, CaseRecord>; // London day the case was for → the day's answers (O5)
   caseSeed: string | null; // topic a confident-wrong case sends back tomorrow; cleared by the next day's first answer
   tokens: Record<string, number>; // YYYY-MM → input + output
+  session: OpenSession | null; // the open session, or null when idle
+  retests: Record<string, { score: number; of: number }>; // ISO week → summed re-test score and of
 };
 
 function topic(s: State, id: string): TopicState {
@@ -70,6 +73,7 @@ function work(s: State, t: string): void {
 
 const CASES: { [K in EventKey]: (s: State, e: EventByKey[K]) => void } = {
   "session@1": (s, e) => {
+    s.session = onSession(s.session, e);
     if (e.topic === undefined) return;
     const ts = topic(s, e.topic);
     if (e.phase !== "end" || e.mode !== "lesson") return;
@@ -108,6 +112,11 @@ const CASES: { [K in EventKey]: (s: State, e: EventByKey[K]) => void } = {
     ts.rung = r;
     ts.nextDue = addDays(localDay(e.t), NEXT_DAYS[r]);
     work(s, e.t);
+    const week = isoWeek(localDay(e.t));
+    const sum = s.retests[week] ?? { score: 0, of: 0 };
+    sum.score += e.score;
+    sum.of += e.of;
+    s.retests[week] = sum;
   },
   "teachback@1": (s, e) => {
     topic(s, e.topic);
@@ -154,7 +163,8 @@ const CASES: { [K in EventKey]: (s: State, e: EventByKey[K]) => void } = {
     if (e.reask) {
       // A re-ask with no first answer on record (hand edit) is kept as the day's only pair.
       if (rec === undefined) s.cases[e.day] = fresh();
-      else rec.bets.push([e.bet, e.correct]);
+      // At most one re-ask a day (T7 AC 6, PR #31 F9): a second one from another tab is ignored.
+      else if (rec.bets.length < 2) rec.bets.push([e.bet, e.correct]);
       return;
     }
     if (rec !== undefined) return; // the first answer of a day is the record; a repeat post changes nothing
@@ -169,7 +179,7 @@ export const dict = <V>(): Record<string, V> => Object.create(null);
 /** Pure: the same lines always give the same state. Reads no clock and no file. */
 export function replay(lines: readonly string[]): State {
   const s: State = {
-    shape: 2,
+    shape: 3,
     lines: 0,
     skipped: 0,
     hash: "",
@@ -181,6 +191,8 @@ export function replay(lines: readonly string[]): State {
     cases: dict(),
     caseSeed: null,
     tokens: dict(),
+    session: null,
+    retests: dict(),
   };
   const hash = createHash("sha256");
   // File order, never sorted by t: a PC clock change can write an earlier t after a later one.

@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { loadTopics } from "./content/pack";
+import { appendEvent } from "./events/append";
 import { isoWeek, localDay } from "./mcp/clock";
 import {
   apiRoutes,
@@ -307,7 +308,7 @@ test(
     );
     expect(state.calibration[isoWeek(localDay(event.t))]?.sureWrong).toBe(1);
     const log = path.join(opts.dataDir, "events.jsonl");
-    expect(fs.readFileSync(log, "utf8").trim().split("\n")).toHaveLength(1);
+    expect(fs.readFileSync(log, "utf8").trim().split("\n")).toHaveLength(2);
     expect(fs.existsSync(path.join(opts.dataDir, "state.json"))).toBe(true);
 
     const refused = await post(JSON.stringify({ v: 1, type: "nope" }));
@@ -315,7 +316,7 @@ test(
     expect(((await refused.json()) as { error: string }).error).toStartWith(
       "Refused",
     );
-    expect(fs.readFileSync(log, "utf8").trim().split("\n")).toHaveLength(1);
+    expect(fs.readFileSync(log, "utf8").trim().split("\n")).toHaveLength(2);
 
     const notJson = await post("not json");
     expect(notJson.status).toBe(400);
@@ -433,6 +434,44 @@ test(
       headers: { origin: "https://evil.example" },
     });
     expect(foreign.status).toBe(403);
+  }),
+);
+
+test(
+  "api: /api/next gives a lesson on an empty record, takes ?day=, refuses a bad day and a foreign Origin",
+  withServer(async (get, _dir, opts) => {
+    type NextBody = {
+      day: string;
+      flame: { week: string; days: number; target: number };
+      step: { kind: string; topic?: string };
+    };
+    const empty = await get("/api/next?day=2026-10-10");
+    expect(empty.status).toBe(200);
+    const body = (await empty.json()) as NextBody;
+    expect(body.day).toBe("2026-10-10");
+    expect(body.step).toMatchObject({
+      kind: "lesson",
+      topic: "1MA1/R9/of-an-amount",
+    });
+    expect(body.flame).toEqual({ week: "2026-W41", days: 0, target: 3 });
+    expect((await get("/api/next")).status).toBe(200);
+    expect((await get("/api/next?day=2026-02-30")).status).toBe(400);
+    expect((await get("/api/next?day=today")).status).toBe(400);
+    const foreign = await get("/api/next", {
+      headers: { origin: "https://evil.example" },
+    });
+    expect(foreign.status).toBe(403);
+
+    appendEvent(opts.dataDir, {
+      v: 1,
+      type: "intake",
+      door: "sheet",
+      topics: [{ topic: "1MA1/P8", rag: "R" }],
+    });
+    const red = (await (
+      await get("/api/next?day=2026-10-10")
+    ).json()) as NextBody;
+    expect(red.step).toMatchObject({ kind: "lesson", topic: "1MA1/P8" });
   }),
 );
 

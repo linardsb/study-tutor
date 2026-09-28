@@ -49,7 +49,8 @@ export function hash(s: string): number {
   return h >>> 0;
 }
 
-function shuffle<T>(list: readonly T[], rng: () => number): T[] {
+/** Fisher-Yates with the given rng; the input is not changed. */
+export function shuffle<T>(list: readonly T[], rng: () => number): T[] {
   const out = [...list];
   for (let i = out.length - 1; i > 0; i -= 1) {
     const j = Math.floor(rng() * (i + 1));
