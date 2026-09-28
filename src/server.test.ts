@@ -14,6 +14,7 @@ import {
   startServer,
   staticPath,
 } from "./server";
+import { checkForUpdate, RELEASES_PAGE } from "./updates";
 
 // The repo root: pack.test.ts reads content/maths the same way.
 const root = process.cwd();
@@ -720,6 +721,38 @@ test(
   }),
 );
 
+test(
+  "api: /api/update is dev with no update when no check ran, and answers the check's result",
+  withTemp(async (_dir, opts) => {
+    const plain = startServer([0], opts);
+    const url = `${RELEASES_PAGE}tag/v0.2.0`;
+    const found = startServer([0], {
+      ...opts,
+      update: Promise.resolve({
+        version: "0.1.0",
+        update: { version: "0.2.0", url },
+      }),
+    });
+    try {
+      const a = await fetch(`http://127.0.0.1:${plain.port}/api/update`);
+      expect(a.status).toBe(200);
+      expect(await a.json()).toEqual({ version: "dev", update: null });
+      const b = await fetch(`http://127.0.0.1:${found.port}/api/update`);
+      expect(await b.json()).toEqual({
+        version: "0.1.0",
+        update: { version: "0.2.0", url },
+      });
+      const foreign = await fetch(`http://127.0.0.1:${found.port}/api/update`, {
+        headers: { origin: "https://evil.example" },
+      });
+      expect(foreign.status).toBe(403);
+    } finally {
+      plain.stop(true);
+      found.stop(true);
+    }
+  }),
+);
+
 test("chat.html holds 'This is an AI' in static markup, outside every region the script fills", () => {
   const html = fs.readFileSync(path.join(root, "app", "chat.html"), "utf8");
   const note = html.indexOf("This is an AI");
@@ -731,3 +764,35 @@ test("chat.html holds 'This is an AI' in static markup, outside every region the
   }
   expect(html).toMatch(/\.ai-note\s*\{[^}]*position:\s*sticky/);
 });
+
+test(
+  "api: a feed that hangs does not hold up other routes, and /api/update ends as no update",
+  withTemp(async (_dir, opts) => {
+    const feed = Bun.serve({
+      hostname: "127.0.0.1",
+      port: 0,
+      fetch: () => new Promise<Response>(() => {}),
+    });
+    let settled = false;
+    const update = checkForUpdate(
+      "0.1.0",
+      `http://127.0.0.1:${feed.port}/`,
+      fetch,
+      300,
+    ).finally(() => {
+      settled = true;
+    });
+    const server = startServer([0], { ...opts, update });
+    try {
+      const state = await fetch(`http://127.0.0.1:${server.port}/api/state`);
+      expect(state.status).toBe(200);
+      expect(settled).toBe(false);
+      const res = await fetch(`http://127.0.0.1:${server.port}/api/update`);
+      expect(await res.json()).toEqual({ version: "0.1.0", update: null });
+      expect(settled).toBe(true);
+    } finally {
+      server.stop(true);
+      feed.stop(true);
+    }
+  }),
+);

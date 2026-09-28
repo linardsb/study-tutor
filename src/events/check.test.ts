@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { appendEvent } from "./append";
-import { replayCheck } from "./check";
+import { refusalLines, replayCheck } from "./check";
 import { replay } from "./replay";
 
 const FIXTURE = path.join(import.meta.dir, "__fixtures__", "six-weeks.jsonl");
@@ -195,4 +195,92 @@ test("no log and no saved progress: nothing is written", () => {
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test(
+  "an unchanged state is not rewritten, so the pre-update backup survives later starts",
+  withLog((data) => {
+    replayCheck(data);
+    const file = path.join(data, "state.json");
+    // A previous build's shape: same lines and hash, one extra key.
+    fs.writeFileSync(
+      file,
+      `${JSON.stringify({ ...readState(data), old: true }, null, 2)}\n`,
+    );
+    replayCheck(data);
+    const prev = path.join(data, "state.prev.json");
+    expect(JSON.parse(fs.readFileSync(prev, "utf8")).old).toBe(true);
+    const mtime = fs.statSync(file).mtimeMs;
+    const second = replayCheck(data);
+    expect(second.ok).toBe(true);
+    expect(JSON.parse(fs.readFileSync(prev, "utf8")).old).toBe(true);
+    expect(fs.statSync(file).mtimeMs).toBe(mtime);
+  }),
+);
+
+test(
+  "a line appended without a state write keeps the pre-update backup",
+  withLog((data) => {
+    replayCheck(data);
+    const file = path.join(data, "state.json");
+    fs.writeFileSync(
+      file,
+      `${JSON.stringify({ ...readState(data), old: true }, null, 2)}\n`,
+    );
+    replayCheck(data);
+    // A POST or an MCP write_event appends and leaves state.json behind the log.
+    appendEvent(data, {
+      v: 1,
+      type: "retest",
+      topic: "1MA1/N12",
+      score: 0,
+      of: 3,
+      passed: false,
+    });
+    expect(replayCheck(data).ok).toBe(true);
+    const prev = path.join(data, "state.prev.json");
+    expect(JSON.parse(fs.readFileSync(prev, "utf8")).old).toBe(true);
+    expect(readState(data).lines).toBe(34);
+  }),
+);
+
+test(
+  "a new build's first start after appended lines still takes the backup",
+  withLog((data) => {
+    replayCheck(data);
+    const file = path.join(data, "state.json");
+    fs.writeFileSync(
+      file,
+      `${JSON.stringify({ ...readState(data), old: true }, null, 2)}\n`,
+    );
+    appendEvent(data, {
+      v: 1,
+      type: "retest",
+      topic: "1MA1/N12",
+      score: 0,
+      of: 3,
+      passed: false,
+    });
+    expect(replayCheck(data).ok).toBe(true);
+    const prev = path.join(data, "state.prev.json");
+    expect(JSON.parse(fs.readFileSync(prev, "utf8")).old).toBe(true);
+    expect(readState(data).old).toBeUndefined();
+  }),
+);
+
+test("refusalLines names each topic and the way back", () => {
+  expect(
+    refusalLines([
+      { topic: "1MA1/N12", stored: 4, replayed: 3 },
+      { topic: "1MA1/R9", stored: 2, replayed: 1 },
+    ]),
+  ).toEqual([
+    "Stopped: this version of the tutor would lower progress on 2 topics.",
+    "  1MA1/N12: saved 4, now 3",
+    "  1MA1/R9: saved 2, now 1",
+    "Nothing was changed. Put the previous version back, or delete data/state.json to accept the new version.",
+  ]);
+  expect(refusalLines([{ topic: "1MA1/N12", stored: 4, replayed: 3 }])[0]).toBe(
+    "Stopped: this version of the tutor would lower progress on 1 topic.",
+  );
 });

@@ -7,11 +7,19 @@ import { postEvent } from "./api/event";
 import { lessonUrls } from "./api/lessons";
 import { nextForDay } from "./api/next";
 import { currentState } from "./api/state";
+import { restrictConfigOnStart } from "./config";
 import { loadTopics } from "./content/pack";
 import type { CasePack, Topic } from "./content/types";
+import { refusalLines, replayCheck } from "./events/check";
 import { isDay } from "./events/types";
 import { localDay, utcNow } from "./mcp/clock";
 import { runStdio } from "./mcp/server";
+import {
+  checkForUpdate,
+  RELEASES_FEED,
+  type UpdateInfo,
+  VERSION,
+} from "./updates";
 
 export const PORTS = [4731, 4732, 4733, 4734, 4735] as const;
 
@@ -20,6 +28,7 @@ export type ServerOptions = {
   dataDir: string;
   topics: readonly Topic[];
   pack?: CasePack; // loaded on the first /api/case when absent (the tests' options predate it)
+  update?: Promise<UpdateInfo>; // the start-up feed check; absent → no update
 };
 
 /** The folder holding app/, content/ and data/: beside the binary when compiled, the cwd under `bun run dev`. */
@@ -156,6 +165,16 @@ async function postEventRoute(
   return json(r.status, r.body);
 }
 
+/** The start-up feed check's answer; it never rejects and times out on its own. */
+async function getUpdate(
+  req: Request,
+  update: Promise<UpdateInfo> | undefined,
+): Promise<Response> {
+  const refused = refuseForeign(req);
+  if (refused) return refused;
+  return json(200, await (update ?? { version: VERSION, update: null }));
+}
+
 /** A read route: refuseForeign, then the handler, with a thrown read as a plain 500. */
 function readRoute(
   req: Request,
@@ -241,7 +260,7 @@ async function postChatRoute(
 
 /** Every /api route. Exported so the key-leak test walks the same table the server serves. */
 export function apiRoutes(opts: ServerOptions) {
-  const { root, dataDir, topics, pack } = opts;
+  const { root, dataDir, topics, pack, update } = opts;
   return {
     "/api/state": { GET: (req: Request) => getState(req, dataDir) },
     "/api/case": {
@@ -284,6 +303,7 @@ export function apiRoutes(opts: ServerOptions) {
       POST: (req: Request, server: IdleControl) =>
         postChatRoute(req, server, root, dataDir, pack),
     },
+    "/api/update": { GET: (req: Request) => getUpdate(req, update) },
   };
 }
 
@@ -326,7 +346,30 @@ export function openBrowser(
   }
 }
 
+/**
+ * Runs the replay check before anything is served: once serving, /api/state rewrites state.json and the
+ * comparison is gone. False when this build would lower a saved rung. Logs to stderr: in --mcp mode
+ * stdout carries JSON-RPC only.
+ */
+export function checkOnStart(
+  dataDir: string,
+  log: (line: string) => void = console.error,
+): boolean {
+  const result = replayCheck(dataDir);
+  if (result.ok) {
+    for (const line of result.changes) log(line);
+    return true;
+  }
+  for (const line of refusalLines(result.fallen)) log(line);
+  return false;
+}
+
 if (import.meta.main) {
+  if (Bun.argv.includes("--version")) {
+    console.log(VERSION);
+    process.exit(0);
+  }
+  const mcp = Bun.argv.includes("--mcp");
   try {
     const root = appRoot();
     if (!fs.existsSync(path.join(root, "app", "index.html"))) {
@@ -337,9 +380,20 @@ if (import.meta.main) {
     const topics = await loadTopics("maths", root);
     const dataDir = path.join(root, "data");
     const pack = await loadCasePack("maths", root);
-    const server = startServer([...PORTS, 0], { root, dataDir, topics, pack });
+    // Before the check: a refused start still leaves the key owner-only.
+    restrictConfigOnStart(dataDir);
+    if (!checkOnStart(dataDir)) process.exit(1);
+    // Not in --mcp mode: a pending fetch would hold the process open after stdin closes.
+    const update = mcp ? undefined : checkForUpdate(VERSION, RELEASES_FEED);
+    const server = startServer([...PORTS, 0], {
+      root,
+      dataDir,
+      topics,
+      pack,
+      update,
+    });
     const url = `http://127.0.0.1:${server.port}/`;
-    if (Bun.argv.includes("--mcp")) {
+    if (mcp) {
       // stdout carries JSON-RPC only; the harness closing stdin ends the session.
       console.error(`Study tutor MCP server; lessons at ${url}`);
       const out = Bun.stdout.writer();
