@@ -34,3 +34,11 @@ export function afterRetest(rung: Rung, passed: boolean): OnLadder {
 export function afterRed(rung: Rung): Rung {
   return RED[rung];
 }
+
+/** Questions in a topic's cold re-test (v1: three fresh questions). */
+export const RETEST_SLOTS = 3;
+
+/** A cold re-test passes at 2 of 3 or better, the v1 rule; integer arithmetic, no float. */
+export function passes(score: number, of: number): boolean {
+  return of > 0 && score * 3 >= of * 2;
+}

@@ -42,7 +42,13 @@ test(
       t: AT(),
       item: attempt.item,
     });
-    expect(readLines(data)).toHaveLength(1);
+    const lines = readLines(data);
+    expect(lines).toHaveLength(2);
+    expect(JSON.parse(lines[1] as string)).toMatchObject({
+      type: "xp",
+      amount: 10,
+      reason: "attempt",
+    });
   }),
 );
 
@@ -126,5 +132,139 @@ test(
     expect(line).not.toHaveProperty("answers");
     expect(line).not.toHaveProperty("working");
     expect(line.t).toBe(AT());
+  }),
+);
+
+const types = (data: string) =>
+  readLines(data).map((l) => (JSON.parse(l) as { type: string }).type);
+
+test(
+  "an attempt appends its xp line after it and returns the attempt",
+  withTemp((_dir, data) => {
+    const r = postEvent(attempt, data, topics, AT);
+    expect(r.status).toBe(201);
+    expect(r.body).toMatchObject({ type: "attempt" });
+    expect(readLines(data).map((l) => JSON.parse(l))).toEqual([
+      expect.objectContaining({ type: "attempt" }),
+      { v: 1, t: AT(), type: "xp", amount: 10, reason: "attempt" },
+    ]);
+  }),
+);
+
+test(
+  "a teachback earns 15 and a passed retest 20",
+  withTemp((_dir, data) => {
+    postEvent(
+      { v: 1, type: "teachback", topic: "U349", marks: 1, of: 2 },
+      data,
+      topics,
+      AT,
+    );
+    postEvent(
+      { v: 1, type: "retest", topic: "U349", score: 3, of: 3, passed: true },
+      data,
+      topics,
+      AT,
+    );
+    const xp = readLines(data)
+      .map((l) => JSON.parse(l) as { type: string; amount?: number })
+      .filter((e) => e.type === "xp")
+      .map((e) => e.amount);
+    expect(xp).toEqual([15, 20]);
+    expect(types(data)).toEqual(["teachback", "xp", "retest", "xp"]);
+  }),
+);
+
+test(
+  "a session or an intake appends one line",
+  withTemp((_dir, data) => {
+    postEvent(
+      { v: 1, type: "session", phase: "start", mode: "lesson" },
+      data,
+      topics,
+      AT,
+    );
+    postEvent(
+      {
+        v: 1,
+        type: "intake",
+        door: "sheet",
+        topics: [{ topic: "U349", rag: "R" }],
+      },
+      data,
+      topics,
+      AT,
+    );
+    expect(types(data)).toEqual(["session", "intake"]);
+  }),
+);
+
+test(
+  "a posted xp body is refused and writes nothing, not even data/",
+  withTemp((_dir, data) => {
+    const r = postEvent(
+      { v: 1, type: "xp", amount: 500, reason: "attempt" },
+      data,
+      topics,
+      AT,
+    );
+    expect(r).toEqual({
+      status: 400,
+      body: { error: "Refused: XP is written by the tutor, not posted" },
+    });
+    expect(readLines(data)).toEqual([]);
+    expect(fs.existsSync(data)).toBe(false);
+  }),
+);
+
+test(
+  "a retest whose passed flag disagrees with its score is refused",
+  withTemp((_dir, data) => {
+    for (const [score, passed] of [
+      [0, true],
+      [2, false],
+    ] as const) {
+      const r = postEvent(
+        { v: 1, type: "retest", topic: "U349", score, of: 3, passed },
+        data,
+        topics,
+        AT,
+      );
+      expect(r).toEqual({
+        status: 400,
+        body: { error: "Refused: passed does not match the score" },
+      });
+    }
+    expect(readLines(data)).toEqual([]);
+    expect(fs.existsSync(data)).toBe(false);
+  }),
+);
+
+test(
+  "a retest out of 0 is refused, so it cannot drop a rung",
+  withTemp((_dir, data) => {
+    const r = postEvent(
+      { v: 1, type: "retest", topic: "U349", score: 0, of: 0, passed: false },
+      data,
+      topics,
+      AT,
+    );
+    expect(r).toEqual({
+      status: 400,
+      body: { error: "Refused: a re-test needs at least one question" },
+    });
+    expect(fs.existsSync(data)).toBe(false);
+  }),
+);
+
+test(
+  "a failed xp append still returns 201 with the saved attempt",
+  withTemp((_dir, data) => {
+    let calls = 0;
+    const now = () => (calls++ === 0 ? AT() : "bad");
+    const r = postEvent(attempt, data, topics, now);
+    expect(r.status).toBe(201);
+    expect(r.body).toMatchObject({ type: "attempt", t: AT() });
+    expect(types(data)).toEqual(["attempt"]);
   }),
 );

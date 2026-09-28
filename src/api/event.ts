@@ -1,6 +1,8 @@
 import type { Topic } from "../content/types";
 import { appendEvent } from "../events/append";
 import type { Event, NewEvent } from "../events/types";
+import { passes } from "../flow/ladder";
+import { xpFor } from "../flow/xp";
 import { utcNow } from "../mcp/clock";
 
 export type PostResult =
@@ -20,7 +22,36 @@ export function resolveTopic(topics: readonly Topic[], code: string): string {
 const isObj = (x: unknown): x is Record<string, unknown> =>
   typeof x === "object" && x !== null && !Array.isArray(x);
 
-/** One posted body → one appended event, or a refusal with nothing written. */
+/** XP is the tutor's to write, a re-test has at least one question, and its pass must be the one its score gives. Null when no rule refuses. */
+function refusal(event: Record<string, unknown>): string | null {
+  if (event.type === "xp")
+    return "Refused: XP is written by the tutor, not posted";
+  // Before the pass check: 0 of 0 agrees with passed:false and would drop the topic to rung 1.
+  if (event.type === "retest" && typeof event.of === "number" && event.of < 1)
+    return "Refused: a re-test needs at least one question";
+  // Only when both are numbers: a malformed retest still gets appendEvent's own refusal.
+  if (
+    event.type === "retest" &&
+    typeof event.score === "number" &&
+    typeof event.of === "number" &&
+    event.passed !== passes(event.score, event.of)
+  )
+    return "Refused: passed does not match the score";
+  return null;
+}
+
+/** The xp line after a scoring event. A failure is logged, never returned: the scoring event was saved. */
+function appendXp(dataDir: string, saved: Event, now: () => string): void {
+  const xp = xpFor(saved);
+  if (xp === null) return;
+  try {
+    appendEvent(dataDir, xp, now);
+  } catch (err) {
+    console.error(`Could not save the XP line: ${(err as Error).message}`);
+  }
+}
+
+/** One posted body → one appended event (and its xp line after a scoring event), or a refusal with nothing written. */
 export function postEvent(
   body: unknown,
   dataDir: string,
@@ -38,10 +69,14 @@ export function postEvent(
         ? { ...row, topic: resolveTopic(topics, row.topic) }
         : row,
     );
+  const refused = refusal(event);
+  if (refused !== null) return { status: 400, body: { error: refused } };
   try {
     // appendEvent runs parseEvent on the line it builds and throws Refused otherwise, so the cast
     // never lets a malformed body reach the log.
-    return { status: 201, body: appendEvent(dataDir, event as NewEvent, now) };
+    const saved = appendEvent(dataDir, event as NewEvent, now);
+    appendXp(dataDir, saved, now);
+    return { status: 201, body: saved };
   } catch (err) {
     const message = (err as Error).message;
     if (message.startsWith("Refused"))

@@ -3,6 +3,7 @@ import path from "node:path";
 import { caseForDay, loadCasePack } from "./api/case";
 import { getConfig, getUsage, postConfig } from "./api/config";
 import { postEvent } from "./api/event";
+import { nextForDay } from "./api/next";
 import { currentState } from "./api/state";
 import { loadTopics } from "./content/pack";
 import type { CasePack, Topic } from "./content/types";
@@ -112,14 +113,15 @@ function getState(req: Request, dataDir: string): Response {
 }
 
 /**
- * Today's case, or the case for `?day=YYYY-MM-DD` (read-only; a manual check can reach a rule day).
- * The clock is read once here and the day passed down, so caseForDay and everything under it stay pure.
+ * A read route for one London day: today, or `?day=YYYY-MM-DD` (read-only; a manual check can reach
+ * any day). The clock is read once here and the day passed down, so everything under `build` stays pure.
  */
-async function getCase(
+async function dayRoute(
   req: Request,
-  dataDir: string,
   root: string,
   pack: CasePack | undefined,
+  failed: string,
+  build: (pack: CasePack, day: string) => unknown,
 ): Promise<Response> {
   const refused = refuseForeign(req);
   if (refused) return refused;
@@ -128,10 +130,10 @@ async function getCase(
     return json(400, { error: "day must be YYYY-MM-DD" });
   try {
     const loaded = pack ?? (await loadCasePack("maths", root));
-    return json(200, caseForDay(dataDir, loaded, asked ?? localDay(utcNow())));
+    return json(200, build(loaded, asked ?? localDay(utcNow())));
   } catch (err) {
-    console.error(`Could not build today's case: ${(err as Error).message}`);
-    return json(500, { error: "Could not build today's case" });
+    console.error(`${failed}: ${(err as Error).message}`);
+    return json(500, { error: failed });
   }
 }
 
@@ -191,7 +193,20 @@ export function apiRoutes(opts: ServerOptions) {
   return {
     "/api/state": { GET: (req: Request) => getState(req, dataDir) },
     "/api/case": {
-      GET: (req: Request) => getCase(req, dataDir, root, pack),
+      GET: (req: Request) =>
+        dayRoute(req, root, pack, "Could not build today's case", (p, day) =>
+          caseForDay(dataDir, p, day),
+        ),
+    },
+    "/api/next": {
+      GET: (req: Request) =>
+        dayRoute(
+          req,
+          root,
+          pack,
+          "Could not work out the next step",
+          (p, day) => nextForDay(dataDir, p, day),
+        ),
     },
     "/api/event": {
       POST: (req: Request) => postEventRoute(req, dataDir, topics),
