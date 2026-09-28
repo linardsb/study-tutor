@@ -4,7 +4,7 @@
 
 ## Summary
 
-`src/flow` now answers "what should the pupil do next?" from the log, the pack and the day, with no model, clock or file inside it. `GET /api/next` returns one step (continue, boss, lesson, practice or none), the exact session event body to post, and the week's flame. `postEvent` is now the only XP writer. It refuses a posted `xp` and a `retest` whose `passed` disagrees with 2 of 3, and it appends the `xp` line after each scoring event. Replay moves to `shape: 3` with `session` and `retests`, and keeps at most one re-ask pair per case day (PR #31 F9).
+`src/flow` now answers "what should the pupil do next?" from the log, the pack and the day, with no model, clock or file inside it. `GET /api/next` returns one step (continue, boss, lesson, practice or none), the exact session event body to post, and the week's flame. `postEvent` is now the only XP writer. It refuses a posted `xp`, a `retest` with `of` below 1, and a `retest` whose `passed` disagrees with 2 of 3, and it appends the `xp` line after each scoring event. Replay moves to `shape: 3` with `session` and `retests`, and keeps at most one re-ask pair per case day (PR #31 F9).
 
 **Guard restatement:** no file in `src/jobs`, `src/mcp` or any prompt changed, so no path puts an item answer into a model prompt. The boss output carries topic ids, item ids and seeds only. The test `boss.test.ts` "unlabelled and answer-free" asserts no `answers`, `working`, `mark_scheme`, `misconceptions` or `stem` key and no topic title.
 
@@ -28,15 +28,15 @@
 - `session.test.ts` (5): start opens, start replaces, end closes or stays idle, bodies parse and carry no `topic` key when null, `openToday` across the BST boundary (`2026-10-11T23:30:00Z` is 12 Oct).
 - `xp.test.ts` (7): each scoring amount, null for session/case/intake/xp, flame per ISO week, guardrail not falling (4/6, 70 → 5/6, 50), falling (5/6, 50 → 2/3, 60), fewer than two weeks.
 - `replay.test.ts`: `shape` 3, the plan's `retests` map for six-weeks, `session` null, rungs and XP constants unchanged; new "a second re-ask the same day is ignored" (with and without a first answer).
-- `event.test.ts` (6 new): attempt + xp line, teachback 15 and retest 20, session/intake one line, posted xp refused with no `data/`, retest 0/3 passed and 2/3 failed refused, a failed xp append still 201 with one line.
-- `boss.test.ts` (11): none due, two due in nextDue order, tie on pack order with a non-pack topic ignored, confident-wrong item slotted and `#gen` skipped, oldest-first cap at three, non-due topic's item excluded, deterministic and a day-varying seed, cap at 3 topics, mixed order over 30 days, the no-generator fallback, answer-free.
+- `event.test.ts` (7 new): attempt + xp line, teachback 15 and retest 20, session/intake one line, posted xp refused with no `data/`, retest 0/3 passed and 2/3 failed refused, retest 0/0 refused (PR #33 F1), a failed xp append still 201 with one line.
+- `boss.test.ts` (12): none due, two due in nextDue order, tie on pack order with a non-pack topic ignored, confident-wrong item slotted and `#gen` skipped, oldest-first cap at three, non-due topic's item excluded, deterministic and a day-varying seed, cap at 3 topics, mixed order over 30 days, the no-generator fallback, a due topic with no question takes no place (PR #33 F2), answer-free.
 - `next.test.ts` (8): empty → first topic, red intake → that topic, due → boss over a red unstarted topic, continue today and not yesterday, practice by lowest rung then nextDue, unstarted prerequisite skipped, empty pack → none with flame target, deterministic.
 - `server.test.ts`: `/api/next` 200 lesson on empty data, `?day=` echoed, bad days 400, foreign Origin 403, red intake names the topic.
-- `properties.test.ts` (6): 200 seeded histories in four batches of 50 (properties 1–5), bare-xp line breaks property 3, no provider import or `fetch(` in `src/flow`.
+- `properties.test.ts` (6): 200 seeded histories in four batches of 50 (properties 1–5), bare-xp line breaks property 3, no provider import or `fetch` reference in `src/flow`.
 
 ## Validation results
 
-- `bun run check`: 299 pass, 0 fail, 63,476 expect() calls, 11.06 s (observed, final run on this branch). tsc and biome are clean, since `check` runs them first.
+- `bun run check`: 301 pass, 0 fail, 63,483 expect() calls, 9.50 s (observed, 2026-09-28 run on the PR #33 round-1 fix tree; before the fixes: 299 pass, 63,476 calls). tsc and biome are clean, since `check` runs them first.
 - Level 1b complexity lint on the 9 named files: 0 diagnostics (observed).
 - `bun scripts/test-generators.ts`: all 6300 runs pass (observed).
 - `bun test src/flow/properties.test.ts`: 6 pass in 5.54 s, and 7.45 s and 7.56 s on later runs under load (observed). The histories average 85.6 lines (60 events plus their xp lines), which gives 742,190 prefix parses over 200 seeds (observed). That is 2.0× the spike's 370,819 (derived: 742,190 / 370,819), which accounts for the gap from the spike's 2.78 s.

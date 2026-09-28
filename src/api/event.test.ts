@@ -241,6 +241,23 @@ test(
 );
 
 test(
+  "a retest out of 0 is refused, so it cannot drop a rung",
+  withTemp((_dir, data) => {
+    const r = postEvent(
+      { v: 1, type: "retest", topic: "U349", score: 0, of: 0, passed: false },
+      data,
+      topics,
+      AT,
+    );
+    expect(r).toEqual({
+      status: 400,
+      body: { error: "Refused: a re-test needs at least one question" },
+    });
+    expect(fs.existsSync(data)).toBe(false);
+  }),
+);
+
+test(
   "a failed xp append still returns 201 with the saved attempt",
   withTemp((_dir, data) => {
     let calls = 0;

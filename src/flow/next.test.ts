@@ -105,6 +105,7 @@ test("a new topic whose prerequisite is not started is skipped for a lesson", ()
   const s = replay([]);
   s.topics[dependent.id] = { rung: 0, nextDue: null, rag: "R" };
   const n = nextStep(s, DAY, pack, 3);
+  expect(n.step.kind).toBe("lesson");
   expect(n.step.kind === "lesson" && n.step.topic).not.toBe(dependent.id);
   // Once the prerequisite is started (and not due), the red dependent comes first.
   for (const p of dependent.prerequisites) set(s, p, 1, "2026-10-20");

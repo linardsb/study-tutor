@@ -22,10 +22,13 @@ export function resolveTopic(topics: readonly Topic[], code: string): string {
 const isObj = (x: unknown): x is Record<string, unknown> =>
   typeof x === "object" && x !== null && !Array.isArray(x);
 
-/** XP is the tutor's to write, and a re-test's pass must be the one its score gives. Null when neither rule refuses. */
+/** XP is the tutor's to write, a re-test has at least one question, and its pass must be the one its score gives. Null when no rule refuses. */
 function refusal(event: Record<string, unknown>): string | null {
   if (event.type === "xp")
     return "Refused: XP is written by the tutor, not posted";
+  // Before the pass check: 0 of 0 agrees with passed:false and would drop the topic to rung 1.
+  if (event.type === "retest" && typeof event.of === "number" && event.of < 1)
+    return "Refused: a re-test needs at least one question";
   // Only when both are numbers: a malformed retest still gets appendEvent's own refusal.
   if (
     event.type === "retest" &&

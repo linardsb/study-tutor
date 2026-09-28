@@ -77,14 +77,19 @@ function slotsFor(
   return [...slots, ...rest].slice(0, RETEST_SLOTS);
 }
 
-/** The mixed cold re-test for the due topics, or null when none is due. Pure: same state, day and pack → same boss. */
+/** The mixed cold re-test for the due topics, or null when no due topic has a question. Pure: same state, day and pack → same boss. */
 export function boss(state: State, day: string, pack: CasePack): Boss | null {
-  const topics = dueTopics(state, day, pack).slice(0, MAX_BOSS_TOPICS);
-  if (topics.length === 0) return null;
-  const all = topics.flatMap((id) => {
-    const topic = pack.topics.find((t) => t.id === id) as Topic;
-    return slotsFor(topic, state, day, pack);
-  });
+  // A topic with no generator and no items has no question, so it takes no place.
+  const picked = dueTopics(state, day, pack)
+    .map((id) => {
+      const topic = pack.topics.find((t) => t.id === id) as Topic;
+      return { id, slots: slotsFor(topic, state, day, pack) };
+    })
+    .filter((p) => p.slots.length > 0)
+    .slice(0, MAX_BOSS_TOPICS);
+  if (picked.length === 0) return null;
+  const topics = picked.map((p) => p.id);
+  const all = picked.flatMap((p) => p.slots);
   const seed = hash(`${day}:boss`);
   return { day, seed, topics, slots: shuffle(all, lcg(seed)) };
 }

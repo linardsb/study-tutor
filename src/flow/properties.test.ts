@@ -224,10 +224,10 @@ test("no model call anywhere in src/flow", () => {
   expect(files.length).toBeGreaterThan(0);
   for (const f of files) {
     const src = fs.readFileSync(path.join(dir, f), "utf8");
-    expect({ f, providers: /from\s+["']\.\.\/providers/.test(src) }).toEqual({
+    expect({
       f,
-      providers: false,
-    });
-    expect({ f, fetch: src.includes("fetch(") }).toEqual({ f, fetch: false });
+      model: /from\s+["']\.\.\/providers/.test(src),
+    }).toEqual({ f, model: false });
+    expect({ f, fetch: /\bfetch\b/.test(src) }).toEqual({ f, fetch: false });
   }
 });

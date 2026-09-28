@@ -141,6 +141,23 @@ test("a topic with no generator is filled from its other items", () => {
   expect(new Set(slots.map((x) => x.item)).size).toBe(3);
 });
 
+test("a due topic with no generator and no items takes no place in the boss", () => {
+  const empty = { ...pack, gens: {}, items: new Map() };
+  expect(boss(due([[A, DAY]]), DAY, empty)).toBeNull();
+  // It does not use up one of the MAX_BOSS_TOPICS places either.
+  const onlyB = { ...pack, items: new Map([[B, pack.items.get(B) ?? []]]) };
+  const b = boss(
+    due([
+      [A, "2026-10-01"],
+      [B, "2026-10-02"],
+    ]),
+    DAY,
+    { ...onlyB, gens: {} },
+  );
+  expect(b?.topics).toEqual([B]);
+  expect(b?.slots.length).toBeGreaterThan(0);
+});
+
 test("unlabelled and answer-free: no topic title and no answer-bearing key", () => {
   const s = due([
     [A, DAY],
@@ -148,7 +165,9 @@ test("unlabelled and answer-free: no topic title and no answer-bearing key", () 
     [C, DAY],
   ]);
   wrong(s, `${A}#1`, A, "2026-10-05T16:00:00Z");
-  const json = JSON.stringify(boss(s, DAY, pack));
+  const b = boss(s, DAY, pack);
+  expect(b).not.toBeNull();
+  const json = JSON.stringify(b);
   for (const t of pack.topics) expect(json).not.toContain(t.title);
   for (const key of [
     "answers",
