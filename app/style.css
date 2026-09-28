@@ -765,3 +765,23 @@ ul.prompts li.link {
 .quiz[data-label] {
   scroll-margin-top: 4.5rem;
 }
+
+/* map: the today box (v1 map.html inline styles) */
+.progress .today {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 6px solid var(--accent);
+  padding: 0.8rem 1rem;
+  margin: 0 0 1.5rem;
+}
+.progress .today button {
+  margin-right: 0.5rem;
+}
+/* boss result: one row per topic */
+.result ol li {
+  margin: 0 0 0.6rem;
+}
+.result .row {
+  font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-weight: 600;
+}

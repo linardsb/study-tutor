@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { loadTopics } from "./content/pack";
 import { appendEvent } from "./events/append";
-import { isoWeek, localDay } from "./mcp/clock";
+import { addDays, isoWeek, localDay } from "./mcp/clock";
 import {
   apiRoutes,
   openBrowser,
@@ -79,6 +79,7 @@ test(
       expect(html).toContain("Study tutor");
       expect(html).toContain("/practice.html");
       expect(html).toContain("/case.html");
+      expect(html).toContain("/map.html");
 
       const missing = await fetch(`http://127.0.0.1:${second.port}/nope`);
       expect(missing.status).toBe(404);
@@ -124,6 +125,8 @@ test(
     expect((await get("/practice.html")).status).toBe(200);
     expect((await get("/case.html")).status).toBe(200);
     expect((await get("/case.js")).status).toBe(200);
+    for (const p of ["/map.html", "/map.js", "/retest.html", "/retest.js"])
+      expect((await get(p)).status).toBe(200);
   }),
 );
 
@@ -472,6 +475,138 @@ test(
       await get("/api/next?day=2026-10-10")
     ).json()) as NextBody;
     expect(red.step).toMatchObject({ kind: "lesson", topic: "1MA1/P8" });
+  }),
+);
+
+test(
+  "api: /api/lessons gives a lesson URL per topic that the server serves, and refuses a foreign Origin",
+  withServer(async (get, _dir, opts) => {
+    const res = await get("/api/lessons");
+    expect(res.status).toBe(200);
+    const urls = (await res.json()) as Record<string, string>;
+    expect(Object.keys(urls)).toHaveLength(opts.topics.length);
+    const first = urls[opts.topics[0]?.id as string] as string;
+    const lesson = await get(first);
+    expect(lesson.status).toBe(200);
+    expect(await lesson.text()).toContain("data-items=");
+    const foreign = await get("/api/lessons", {
+      headers: { origin: "https://evil.example" },
+    });
+    expect(foreign.status).toBe(403);
+  }),
+);
+
+type LoopNext = {
+  step: {
+    kind: string;
+    mode?: string;
+    topic?: string;
+    start?: unknown;
+    end?: unknown;
+    boss?: { seed: number; topics: string[]; slots: unknown[] };
+  };
+};
+type LoopState = {
+  topics: Record<string, { rung: number; nextDue: string | null }>;
+  xp: { total: number };
+  session: unknown;
+};
+
+test(
+  "loop: lesson start and end from /api/next, a boss three days on, retest and end; the rung and next-due move, and a wrong passed is refused",
+  withServer(async (get, _dir, opts) => {
+    const post = async (body: unknown) =>
+      get("/api/event", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+    const next = async (q = "") =>
+      (await (await get(`/api/next${q}`)).json()) as LoopNext;
+    const state = async () =>
+      (await (await get("/api/state")).json()) as LoopState;
+    const first = opts.topics[0]?.id as string;
+    const title = opts.topics[0]?.title as string;
+
+    // 1: the map starts the lesson with the served body
+    const n1 = await next();
+    expect(n1.step).toMatchObject({ kind: "lesson", topic: first });
+    expect((await post(n1.step.start)).status).toBe(201);
+
+    // 2: Done with it posts the served end; the topic is learning and due in 3 days
+    const n2 = await next();
+    expect(n2.step).toMatchObject({ kind: "continue", mode: "lesson" });
+    const ended = await post(n2.step.end);
+    expect(ended.status).toBe(201);
+    const d0 = localDay(((await ended.json()) as { t: string }).t);
+    expect((await state()).topics[first]).toEqual({
+      rung: 1,
+      nextDue: addDays(d0, 3),
+      rag: null,
+    } as never);
+
+    // 3: three days on, the boss, with no answer and no title in it
+    const d3 = addDays(d0, 3);
+    const n3 = await next(`?day=${d3}`);
+    expect(n3.step.kind).toBe("boss");
+    expect(n3.step.boss?.topics).toEqual([first]);
+    expect(n3.step.boss?.slots).toHaveLength(3);
+    expect(JSON.stringify(n3)).not.toContain('"answers"');
+    expect(JSON.stringify(n3)).not.toContain(title);
+
+    // 4: a reload mid-boss. A session is open for the day it was started on (openToday), so under
+    // ?day= the same boss simply re-forms; on the real day the open boss carries no boss, and its
+    // end re-forms the same boss.
+    expect((await post(n3.step.start)).status).toBe(201);
+    const again = await next(`?day=${d3}`);
+    expect(again.step.kind).toBe("boss");
+    expect(again.step.boss?.slots).toEqual(n3.step.boss?.slots as never);
+    const open = await next();
+    expect(open.step).toMatchObject({ kind: "continue", mode: "boss" });
+    expect(open.step).not.toHaveProperty("boss");
+    expect((await post(open.step.end)).status).toBe(201);
+    expect((await next(`?day=${d3}`)).step.boss?.slots).toEqual(
+      n3.step.boss?.slots as never,
+    );
+
+    // 5: the boss page posts start, one retest with the boss seed, then the served end
+    expect((await post(n3.step.start)).status).toBe(201);
+    const retest = {
+      v: 1,
+      type: "retest",
+      topic: first,
+      score: 3,
+      of: 3,
+      passed: true,
+      seed: n3.step.boss?.seed,
+    };
+    const r = await post(retest);
+    expect(r.status).toBe(201);
+    const d1 = localDay(((await r.json()) as { t: string }).t);
+    const afterRetest = await next();
+    expect(afterRetest.step).toMatchObject({ kind: "continue", mode: "boss" });
+    expect((await post(afterRetest.step.end)).status).toBe(201);
+
+    // 6: the map shows the new rung; the topic is no longer due, so the next step is a new lesson
+    const s = await state();
+    expect(s.topics[first]).toEqual({
+      rung: 2,
+      nextDue: addDays(d1, 10),
+      rag: null,
+    } as never);
+    expect(s.xp.total).toBe(20);
+    expect(s.session).toBeNull();
+    expect((await next(`?day=${d3}`)).step).toMatchObject({
+      kind: "lesson",
+      topic: opts.topics[1]?.id,
+    });
+
+    // 7: a passed that disagrees with the score is refused
+    const wrong = await post({ ...retest, score: 1, passed: true });
+    expect(wrong.status).toBe(400);
+    expect(((await wrong.json()) as { error: string }).error).toStartWith(
+      "Refused: passed",
+    );
   }),
 );
 

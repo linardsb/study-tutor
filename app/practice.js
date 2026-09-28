@@ -28,6 +28,9 @@
   fetch("/content/maths/topics.json")
     .then((res) => res.json())
     .then((topics) => {
+      /* ?topic= from the map ticks that one topic alone; anything else keeps every topic ticked */
+      const only = new URLSearchParams(location.search).get("topic");
+      const named = only !== null && topics.some((x) => x.id === only);
       for (const t of topics) {
         const code = t.aliases[0];
         const label = document.createElement("label");
@@ -35,7 +38,7 @@
         box.type = "checkbox";
         box.value = t.id;
         box.dataset.code = code;
-        box.checked = true;
+        box.checked = !named || t.id === only;
         const span = document.createElement("span");
         span.className = "code";
         span.textContent = code;
