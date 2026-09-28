@@ -369,3 +369,31 @@ test(
     expect(fs.readFileSync(outside, "utf8")).toBe("keep\n");
   }),
 );
+
+test.skipIf(process.platform === "win32")(
+  "a .tmp symlink to a file in data is replaced, not written through (PR #32 L3)",
+  withTemp((_dir, data) => {
+    appendEvent(data, ATTEMPT, AT);
+    const log = fs.readFileSync(path.join(data, "events.jsonl"), "utf8");
+    for (const rel of ["config.json", "state.json"]) {
+      fs.symlinkSync("events.jsonl", path.join(data, `${rel}.tmp`));
+      writeDataFile(data, rel, '{"written":true}\n');
+      expect(fs.readFileSync(path.join(data, "events.jsonl"), "utf8")).toBe(
+        log,
+      );
+      expect(fs.lstatSync(path.join(data, rel)).isFile()).toBe(true);
+      expect(fs.readFileSync(path.join(data, rel), "utf8")).toBe(
+        '{"written":true}\n',
+      );
+      expect(fs.existsSync(path.join(data, `${rel}.tmp`))).toBe(false);
+    }
+    // A plain leftover .tmp with loose permissions is replaced by an owner-only file.
+    fs.writeFileSync(path.join(data, "profile.json.tmp"), "old", {
+      mode: 0o644,
+    });
+    writeDataFile(data, "profile.json", "{}\n");
+    expect(fs.statSync(path.join(data, "profile.json")).mode & 0o777).toBe(
+      0o600,
+    );
+  }),
+);

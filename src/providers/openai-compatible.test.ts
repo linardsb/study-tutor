@@ -489,6 +489,16 @@ test(
             });
           },
           "/hang/v1/chat/completions": () => new Promise<Response>(() => {}),
+          // Headers and a first chunk arrive, then the body stalls (PR #32 L4).
+          "/stall/v1/chat/completions": () =>
+            new Response(
+              new ReadableStream({
+                start(c) {
+                  c.enqueue(new TextEncoder().encode('{"choices":'));
+                },
+              }),
+              { headers: { "content-type": "application/json" } },
+            ),
         },
       });
       try {
@@ -525,6 +535,14 @@ test(
           timeoutMs: 200,
         });
         expect(b).toEqual({ ok: false, reason: "timeout" });
+
+        setup(`http://127.0.0.1:${server.port}/stall/v1`);
+        const c = await chatJson(data, ASK, {
+          job: "hint",
+          now: NOW,
+          timeoutMs: 200,
+        });
+        expect(c).toEqual({ ok: false, reason: "timeout" });
       } finally {
         server.stop(true);
       }

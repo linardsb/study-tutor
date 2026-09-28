@@ -179,7 +179,10 @@ export function readProfile(dataDir: string): Profile {
   };
 }
 
-/** A trimmed base URL with no trailing slash, or null if the key could cross a network in clear. */
+/**
+ * A trimmed base URL with no trailing slash, or null if the key could cross a network in clear or
+ * ride in the address itself (user info, a query or a fragment), where publicConfig would show it.
+ */
 function checkBaseUrl(x: unknown): string | null {
   if (!str(x)) return null;
   const trimmed = x.trim().replace(/\/+$/, "");
@@ -189,6 +192,8 @@ function checkBaseUrl(x: unknown): string | null {
   } catch {
     return null;
   }
+  if (url.username !== "" || url.password !== "" || /[?#]/.test(trimmed))
+    return null;
   if (url.protocol === "https:") return trimmed;
   const loopback = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
   return url.protocol === "http:" && loopback ? trimmed : null;
@@ -216,8 +221,11 @@ export function saveSetup(dataDir: string, body: unknown): SetupResult {
 
   let config: Config;
   if (body.preset === "none") {
-    // The form hides the limit for "No model"; readConfig still needs a whole number of at least 1.
-    const cap = body.cap === undefined ? DEFAULT_CAP : body.cap;
+    // The form hides the limit for "No model"; the saved one is kept so switching back does not raise it.
+    const cap =
+      body.cap === undefined
+        ? (readConfig(dataDir)?.cap ?? DEFAULT_CAP)
+        : body.cap;
     if (!intFrom(cap, 1)) return { ok: false, error: CAP_ERROR };
     config = {
       v: 1,
@@ -233,7 +241,7 @@ export function saveSetup(dataDir: string, body: unknown): SetupResult {
       return {
         ok: false,
         error:
-          "The address must start with https://, or http:// for a model on this computer.",
+          "The address must start with https://, or http:// for a model on this computer, and have no user name, ? or # in it.",
       };
     const model = str(body.model) ? body.model.trim() : "";
     if (model === "") return { ok: false, error: "Name the model to use." };
@@ -242,6 +250,13 @@ export function saveSetup(dataDir: string, body: unknown): SetupResult {
     // The key follows the host: an empty box keeps the saved key only for the same host, so an
     // OpenAI key is never sent to another provider after a preset switch.
     let key = str(body.key) ? body.key.trim() : "";
+    // A header takes printable ASCII only; a zero-width space from a copy would fail every call.
+    if (key !== "" && !/^[\x21-\x7e]+$/.test(key))
+      return {
+        ok: false,
+        error:
+          "The key has a character that cannot be sent. Copy it again from the provider's page.",
+      };
     if (key === "") {
       const saved = readConfig(dataDir);
       if (

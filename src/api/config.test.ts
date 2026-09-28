@@ -2,6 +2,7 @@ import { expect, spyOn, test } from "bun:test";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { DEFAULT_CAP } from "../config";
 import { appendEvent } from "../events/append";
 import { getConfig, getUsage, postConfig } from "./config";
 
@@ -37,6 +38,8 @@ test(
     expect(r.body.configured).toBe(false);
     expect(r.body.config).toBeNull();
     expect(r.body.weeklyTarget).toBe(3);
+    // The page shows the server's default, not a copy of it (PR #32 M1).
+    expect(r.body.defaultCap).toBe(DEFAULT_CAP);
     expect(r.body.presets.map((p) => p.id)).toContain("none");
     expect(r.body.presets[0]).not.toHaveProperty("limitField");
     expect(fs.existsSync(data)).toBe(false);

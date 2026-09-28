@@ -1,4 +1,5 @@
 import {
+  DEFAULT_CAP,
   PRESET_IDS,
   PRESETS,
   type PresetId,
@@ -16,6 +17,7 @@ export type ConfigView = {
   configured: boolean;
   config: PublicConfig | null;
   weeklyTarget: number;
+  defaultCap: number;
   presets: {
     id: PresetId;
     label: string;
@@ -43,6 +45,7 @@ export function getConfig(dataDir: string): { status: 200; body: ConfigView } {
       configured: c !== null,
       config: c === null ? null : publicConfig(c),
       weeklyTarget: readProfile(dataDir).weeklyTarget,
+      defaultCap: DEFAULT_CAP,
       presets: PRESET_VIEW,
     },
   };

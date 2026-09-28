@@ -165,6 +165,25 @@ test(
 );
 
 test(
+  "No model with nothing saved takes the default cap",
+  withTemp((_dir, data) => {
+    expect(saveSetup(data, { preset: "none", weeklyTarget: 3 }).ok).toBe(true);
+    expect(onDisk(data).cap).toBe(DEFAULT_CAP);
+  }),
+);
+
+test(
+  "No model and back keeps a custom cap (PR #32 M1)",
+  withTemp((_dir, data) => {
+    saveSetup(data, { ...OPENAI, cap: 100_000 });
+    saveSetup(data, { preset: "none", weeklyTarget: 3 });
+    expect(onDisk(data).cap).toBe(100_000);
+    const r = saveSetup(data, { preset: "none", weeklyTarget: 3 });
+    expect(r.ok && r.config.cap).toBe(100_000);
+  }),
+);
+
+test(
   "No model clears the saved key and needs no cap",
   withTemp((_dir, data) => {
     saveSetup(data, OPENAI);
@@ -176,7 +195,7 @@ test(
       base_url: "",
       key: "",
       model: "",
-      cap: DEFAULT_CAP,
+      cap: OPENAI.cap,
     });
     // A saved "none" has no host to compare against, so the next save must not throw.
     expect(saveSetup(data, { ...OPENAI, key: "" }).ok).toBe(false);
@@ -261,3 +280,74 @@ test("limitField per preset, as observed or documented", () => {
   for (const id of ["openai", "anthropic", "openrouter", "groq"] as const)
     expect(PRESETS[id].limitField).toBe("max_completion_tokens");
 });
+
+test.each([
+  "https://sk-abc@proxy.example/v1",
+  "https://user:sk-abc@proxy.example/v1",
+  "https://proxy.example/v1?api-key=sk-abc",
+  "https://proxy.example/v1?",
+  "https://proxy.example/v1#sk-abc",
+  "https://proxy.example/v1#",
+])("base_url %p is refused: a key could ride in it (PR #32 L1)", (base_url) =>
+  withTemp((_dir, data) => {
+    expect(saveSetup(data, { ...OPENAI, preset: "custom", base_url }).ok).toBe(
+      false,
+    );
+    expect(fs.existsSync(data)).toBe(false);
+  })(),
+);
+
+test.each([
+  "http://localhost.evil.example/v1",
+  "http://127.0.0.1.nip.io/v1",
+  "http://0.0.0.0:11434/v1",
+])("http to %p is refused: not loopback (PR #32 L6)", (base_url) =>
+  withTemp((_dir, data) => {
+    expect(saveSetup(data, { ...OPENAI, preset: "custom", base_url }).ok).toBe(
+      false,
+    );
+  })(),
+);
+
+test(
+  "the saved key follows the host: a port change or another host drops it, case does not (PR #32 L6)",
+  withTemp((_dir, data) => {
+    const custom = { ...OPENAI, preset: "custom", key: "" };
+    for (const base_url of [
+      "https://api.openai.com:8443/v1",
+      "https://api.openai.com.evil.example/v1",
+    ]) {
+      saveSetup(data, OPENAI);
+      expect(saveSetup(data, { ...custom, base_url }).ok).toBe(true);
+      expect(onDisk(data).key).toBe("");
+    }
+    saveSetup(data, OPENAI);
+    expect(
+      saveSetup(data, { ...custom, base_url: "https://API.OPENAI.COM/v1" }).ok,
+    ).toBe(true);
+    expect(onDisk(data).key).toBe(KEY);
+    // userinfo cannot smuggle a host past the rule: the address is refused outright (L1).
+    saveSetup(data, OPENAI);
+    expect(
+      saveSetup(data, {
+        ...custom,
+        base_url: "https://api.openai.com@evil.example/v1",
+      }).ok,
+    ).toBe(false);
+    expect(onDisk(data).key).toBe(KEY);
+    expect(onDisk(data).base_url).toBe(OPENAI.base_url);
+  }),
+);
+
+test.each(["sk-abc\u200bdef", "sk-abc def", "sk-ab\u00e9"])(
+  "key %p is refused: not sendable in a header (PR #32 L5)",
+  (key) =>
+    withTemp((_dir, data) => {
+      expect(saveSetup(data, { ...OPENAI, key })).toEqual({
+        ok: false,
+        error:
+          "The key has a character that cannot be sent. Copy it again from the provider's page.",
+      });
+      expect(fs.existsSync(data)).toBe(false);
+    })(),
+);

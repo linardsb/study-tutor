@@ -58,8 +58,9 @@
 
   function loadUsage() {
     fetch("/api/usage")
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((u) => {
+        if (typeof u.tokens !== "number") throw new Error();
         usage.textContent =
           u.cap === null
             ? `This month: ${u.tokens} tokens`
@@ -85,14 +86,14 @@
     const p = presets.find((x) => x.id === chosen);
     baseUrl.value = current ? current.base_url : (p?.base_url ?? "");
     model.value = current ? current.model : (p?.model ?? "");
-    cap.value = current ? current.cap : 1000000;
+    cap.value = current ? current.cap : view.defaultCap;
     weekly.value = view.weeklyTarget;
     key.value = "";
     showFields();
   }
 
   fetch("/api/config")
-    .then((r) => r.json())
+    .then((r) => (r.ok ? r.json() : Promise.reject()))
     .then(fill)
     .catch(() => {
       error.textContent =

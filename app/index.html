@@ -51,7 +51,8 @@
 </main>
 <script>
 // First run: no settings saved yet, so the parent sets up (or picks "No model") before anything else.
-fetch("/api/config").then((r) => r.json()).then((c) => { if (!c.configured) location.replace("/setup.html"); }).catch(() => {});
+// Only a readable "not configured" redirects; a 500 keeps the pupil on this page.
+fetch("/api/config").then((r) => (r.ok ? r.json() : null)).then((c) => { if (c?.configured === false) location.replace("/setup.html"); }).catch(() => {});
 </script>
 </body>
 </html>

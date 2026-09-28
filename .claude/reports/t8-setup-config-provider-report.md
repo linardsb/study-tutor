@@ -4,7 +4,7 @@
 
 ## Summary
 
-The parent's side of the tutor now exists. `src/config.ts` holds the preset table (no Gemini), `readConfig`, `saveSetup` (key follows host, http only to loopback) and `publicConfig`. Everything under `data/` is written by `writeDataFile` in `src/events/append.ts` (atomic, `fchmod 0600`, confined). `src/providers/openai-compatible.ts` is the one model call: `chatJson` with a closed failure union, one call at a time, a local monthly token cap checked before the fetch, and a `usage@1` event (reported or `estimated: true`) for every 200. `/api/config` and `/api/usage` are served from an exported `apiRoutes` table. `app/setup.html` shows the settings form and a first-run redirect from `/`. `scripts/s2-run.ts` runs the spike, and its Ollama and Anthropic-compat results are in the architecture doc.
+The parent's side of the tutor now exists. `src/config.ts` holds the preset table (no Gemini), `readConfig`, `saveSetup` (key follows host, http only to loopback) and `publicConfig`. Everything under `data/` is written by `writeDataFile` in `src/events/append.ts` (atomic, owner-only `0600`, confined; since PR #32 round 1 a fresh `O_EXCL` temp file, so a planted `.tmp` is never written through). `src/providers/openai-compatible.ts` is the one model call: `chatJson` with a closed failure union, one call at a time, a local monthly token cap checked before the fetch, and a `usage@1` event (reported or `estimated: true`) for every 200 whose body is a JSON object. `/api/config` and `/api/usage` are served from an exported `apiRoutes` table. `app/setup.html` shows the settings form and a first-run redirect from `/`. `scripts/s2-run.ts` runs the spike, and its Ollama and Anthropic-compat results are in the architecture doc.
 
 ## The answer guard (restated)
 
@@ -44,14 +44,14 @@ Mutation checks (observed, red then green on restore):
 
 | Mutation | Red | Restored |
 |---|---|---|
-| `fchmodSync` removed | leftover-0644 test fails: expected 384 (0o600), received 420 (0o644) | 1 pass |
+| `fchmodSync` removed (the call itself was removed in PR #32 round 1; the test now checks a fresh `O_EXCL` file) | leftover-0644 test fails: expected 384 (0o600), received 420 (0o644) | 1 pass |
 | timeout check `=== "AbortError"` | 2 fail: mocked timeout and real-socket case B (both go red, so both test Bun's behaviour) | 22 pass |
 | `chatJson` calls `call` directly, no queue | 1 fail: "one at a time" | 22 pass |
 | `getConfig` returns raw `readConfig` | key-leak test fails | 1 pass |
 
 ## Validation results
 
-- `bun run check` (tsc `--noEmit`, `biome check .`, `bun test`): green, **180 pass, 0 fail, 3083 expect() calls, 18 files** (observed, final run after all changes). Biome reports 4 warnings, all in `app/style.css` selector specificity and present on the base commit too (observed with the T8 changes stashed).
+- `bun run check` (tsc `--noEmit`, `biome check .`, `bun test`): green, **180 pass, 0 fail, 3083 expect() calls, 18 files** (observed before the rebase onto `5669da4`). At `658ff96`: 209 pass, 3,247 `expect()`, 20 files (observed, PR #32 review round 1). After the round-1 fixes: 225 pass, 0 fail, 3,292 `expect()`, 20 files (observed; see `.claude/reports/pr-32-review-fixes.md`). Biome reports 4 warnings, all in `app/style.css` selector specificity and present on the base commit too (observed with the T8 changes stashed).
 - Level 4, dev server in the worktree on port 4731, opener kept off PATH:
   1. The browser (agent-browser) opened `/` and landed on `/setup.html`. Pass.
   2. Saving "No model" in the browser showed "Saved." and hid the model and limit fields; `/` then stays on the lesson list. `ls -l data/`: `config.json` and `profile.json` both `-rw-------`; `config.json` has `"preset": "none"` and `"key": ""`. Pass.
@@ -70,7 +70,7 @@ Mutation checks (observed, red then green on restore):
 5. **`readConfig` also validates `base_url`**: `""` for `none`, otherwise it must be what `saveSetup` would store (https, or http to loopback, no trailing slash). The plan validated only the type. Without this, a hand-edited `base_url: "x"` read as configured, and the next save with an empty key box threw in the host comparison and returned a 500. It also stops a hand edit sending the key over http to a LAN host. Covered in `config.test.ts`.
 6. **Extra test**: `usage@1` with `estimated: false` is refused (`types.test.ts`).
 7. **`s2-run.ts` output** has one `note` column for both the hint-leak flag and "caught the slip", and a retry column showing the second try's outcome. Usage, tokens and ms list every try.
-8. **The "No model" form sends no `cap`**, and the setup page pre-fills 1000000 for a new config. That value repeats `DEFAULT_CAP` in `setup.js` because the view does not expose it.
+8. **The "No model" form sends no `cap`**, and the setup page pre-fills 1000000 for a new config. That value repeated `DEFAULT_CAP` in `setup.js` because the view did not expose it. **Fixed in PR #32 round 1 (M1):** `ConfigView.defaultCap` carries it, and a "No model" save keeps the saved cap.
 9. **Prose gate order.** The setup copy went through `no-ai-slop` in detect mode (no named patterns) after the files were written, not before. Humanizer was a mental pass, not a skill run. The S2 hint system prompt had a mental pass only. The marking prompt is the plan's verbatim text and was not edited.
 10. **S2 spend.** Anthropic used 3,132 tokens in the script run (`observed`: 103 + 426 + 1,303 + 1,300). Six more diagnostic vision calls, about 1,300 each (`expected`, not logged), bring the total to about 10,900 against the plan's "under 6,400". The overrun is the diagnosis described below. No further Anthropic calls were made: Level 4 step 4 used a dummy key, and step 5 used the Ollama leg in place of the Anthropic one, since the check (does `data/` change) does not depend on the preset.
 11. **Level 4 step 4 "devtools Network"** was checked with curl on every `/api/*` route and a DOM search in the browser, not in the devtools panel.

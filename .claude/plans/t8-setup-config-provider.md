@@ -263,7 +263,7 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
   Keep the rename fallback's comment. Export `CONFIG_FILE = "config.json"` and `PROFILE_FILE = "profile.json"` next to `EVENTS_FILE`/`STATE_FILE` (`append.ts:7-8`). Add `readDataJson(dataDir, rel): unknown` generalising `readStoredState` the same way, and make `readStoredState` call it.
 - **PATTERN**: `append.ts:122-159`.
 - **GOTCHA**: `fchmodSync` on Windows is accepted and does nothing useful; that is #29's leg, not an error. Do not branch on platform here.
-- **GOTCHA**: `WRITE` already has `O_NOFOLLOW` (`append.ts:16-20`), so a `config.json.tmp` symlink planted in `data/` fails with `ELOOP`. Keep it.
+- **GOTCHA**: `WRITE` already has `O_NOFOLLOW` (`append.ts:16-20`), so a `config.json.tmp` symlink planted in `data/` fails with `ELOOP`. Keep it. **Amended (PR #32 round 1) (L3):** true only for a link leading out of `data/`; `resolveInData` returned the real path, so a link to `events.jsonl` was written through and the log lost. `writeDataFile` now removes the unresolved `${file}.tmp` and opens it `O_CREAT | O_EXCL | O_NOFOLLOW`; `fchmodSync` went with it, since the temp file is always new.
 - **VALIDATE**: `bun test src/events` — every existing `writeState`/`readStoredState` test stays green (refactor, no behaviour change), plus the new tests in Task 2.
 - **SATISFIES**: AC 1 (owner-only), ground rule "only `src/events` writes `data/`".
 
@@ -330,8 +330,8 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
 
   `saveSetup` rules, in order:
   1. `preset` must be in `PRESET_IDS`.
-  2. `preset === "none"`: write `{v:1, preset:"none", base_url:"", key:"", model:"", cap}`. The saved key is **cleared**. `cap` absent → `DEFAULT_CAP` (the form hides it for "No model"; `readConfig` still needs an integer ≥ 1).
-  3. Otherwise `base_url` is trimmed, a trailing `/` removed, must parse as a URL with `https:`, or `http:` only when the hostname is `localhost`, `127.0.0.1` or `[::1]` (the key must not cross a network in clear, ground rule "Network"). `model` is a non-empty trimmed string. `cap` is an integer ≥ 1.
+  2. `preset === "none"`: write `{v:1, preset:"none", base_url:"", key:"", model:"", cap}`. The saved key is **cleared**. `cap` absent → the saved cap, else `DEFAULT_CAP` (the form hides it for "No model"; `readConfig` still needs an integer ≥ 1). **Amended (PR #32 round 1) (M1):** was `DEFAULT_CAP` always, which raised a custom limit on the way back.
+  3. Otherwise `base_url` is trimmed, a trailing `/` removed, must parse as a URL with `https:`, or `http:` only when the hostname is `localhost`, `127.0.0.1` or `[::1]` (the key must not cross a network in clear, ground rule "Network"). **Amended (PR #32 round 1) (L1):** no user name, password, `?` or `#`, so a key cannot ride in the address that `publicConfig` shows. The key must match `/^[\x21-\x7e]+$/` (L5). `model` is a non-empty trimmed string. `cap` is an integer ≥ 1.
   4. **The key follows the host.** `key` trimmed. Non-empty → use it. Empty → keep the saved key **only if** a saved config exists and `new URL(saved.base_url).host === new URL(base_url).host`; otherwise the key is `""`. Then, if `PRESETS[preset].needsKey` and the key is `""`, refuse: "Paste the key for this provider." This stops an OpenAI key being sent to Anthropic when the parent switches preset and leaves the key box empty.
   5. `weeklyTarget` integer 1–7. Profile is read with `readDataJson`, `weeklyTarget` set, other keys kept (T5 and later add `pupil`, `board`, …), written with `writeDataFile`.
   6. Write `config.json` then `profile.json`, both with `writeDataFile`. Return `publicConfig`.
@@ -506,7 +506,7 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
 ### 11. CREATE `app/setup.html` and `app/setup.js`
 
 - **IMPLEMENT**: `setup.html` in the `index.html` shape (`<main class="lesson">`, `/style.css`). Sections:
-  - **Model**: a `<select id="preset">` filled from `/api/config`'s `presets`; `base_url`, `model` text inputs (preset fills them, editable); `key` as `<input type="password" autocomplete="off">` with placeholder "Saved. Leave empty to keep it." when `keySet` and the host is unchanged. Hidden when `No model` is chosen. The key box shows for every other preset, `custom` included (a hosted provider behind "Other" almost always needs a key); `needsKey` only decides whether an empty key is refused.
+  - **Model**: a `<select id="preset">` filled from `/api/config`'s `presets`; `base_url`, `model` text inputs (preset fills them, editable); `key` as `<input type="password" autocomplete="new-password">` (amended (PR #32 round 1) L2: Chromium ignores `off` on password fields) with placeholder "Saved. Leave empty to keep it." when `keySet` and the host is unchanged. Hidden when `No model` is chosen. The key box shows for every other preset, `custom` included (a hosted provider behind "Other" almost always needs a key); `needsKey` only decides whether an empty key is refused.
   - **Monthly limit**: `cap` number input (tokens per month), and one line: "This counts tokens on this computer. Set a money limit in your provider's account as well." Plus "This month: <tokens> of <cap> tokens" from `/api/usage`.
   - With the Anthropic preset selected, one line under the key box: "Use a key made for one workspace." (a multi-workspace key needs a header this setup does not send, Q7).
   - A line at the top: "These settings are for a parent." Anyone at the computer can open this page (decided 2026-09-27: accepted for v1, see Q2); the saved key is never shown back.
@@ -531,7 +531,7 @@ IMPORTANT: Execute every task in order, top to bottom. Each task is atomic and i
   ```
 
   and in the footer `<p><a href="/setup.html">Settings</a> (for a parent)</p>`. Nothing else in `index.html` changes (T6 may rewrite this page; keep the diff to these lines).
-- **GOTCHA**: two different cases. A failing `/api/config` (server error, network) stays on the index page (`catch` does nothing). A corrupt `config.json` is not a failure: `readConfig` returns null, `configured` is false, and `/` redirects to setup on every load until a save. That is acceptable because setup can always be completed with "No model", and lessons stay reachable by their direct URLs.
+- **GOTCHA**: two different cases. A failing `/api/config` (server error, network) stays on the index page (`catch` does nothing). **Amended (PR #32 round 1) (M2):** `readRoute` made a 500 parseable, so the shipped line checks `r.ok` and redirects only on `configured === false`. A corrupt `config.json` is not a failure: `readConfig` returns null, `configured` is false, and `/` redirects to setup on every load until a save. That is acceptable because setup can always be completed with "No model", and lessons stay reachable by their direct URLs.
 - **VALIDATE**: `bun test src/server.test.ts` still passes its `/` assertions (`server.test.ts:74-76`); Level 4 step 1.
 - **SATISFIES**: AC 1 ("on first run").
 
@@ -677,7 +677,7 @@ All performable with a fresh clone, `bun run dev`, and no data: the first two st
 - [ ] AC 4: presets are labels over the same three fields; no Gemini (test).
 - [ ] AC 5: provider mocked tests for success, non-JSON, HTTP error, timeout (plus network, no model, cap, missing usage, one-at-a-time, bad response) and a real-socket test.
 - [ ] AC 6: `image_url` parts for vision (test on the sent body); JSON asked for in the prompt and parsed in code (`parseJsonReply`, no `response_format`).
-- [ ] AC 7: every 200 response becomes a `usage@1` event (reported counts, or an estimate marked `estimated: true`), including for a non-JSON reply.
+- [ ] AC 7: every 200 response with a JSON object body (amended (PR #32 round 1) L4) becomes a `usage@1` event (reported counts, or an estimate marked `estimated: true`), including for a non-JSON reply.
 - [ ] AC 8: the monthly total and the cap are shown on the setup page (`/api/usage`); a reached cap refuses the call before the fetch.
 - [ ] AC 9: one real S2 run logged, all five legs: Anthropic compat and Ollama `observed` by the implementer; OpenAI, OpenRouter, Groq run by Linards (decided 2026-09-27: the legs stay in this ticket). The S2 decision needs all five, so AC 9 stays unticked until they are in, and the PR says "Refs #10", not "Closes #10", until then.
 - [ ] AC 10: Q12 answered in the architecture doc from the Anthropic leg (JSON, vision, usage, auth, workspace header).
@@ -761,7 +761,8 @@ Still `expected`, and why none of them can fail a task: `limitField` for mistral
   - Task 3: `readConfig` also checks `base_url` (`""` for `none`, otherwise what `saveSetup` would store), so a hand-edited address reads as not set up instead of a 500 on the next save or the key going over http to a LAN host.
   - Task 9: `GET /api/config` and `GET /api/usage` go through a `readRoute` wrapper that returns a JSON 500 when a read throws, as `getState` does.
   - Task 4a: an extra test refuses `estimated: false`.
-  - Task 11: the "No model" form sends no `cap`; `setup.js` pre-fills 1000000 for a new config. Prose gate ran after saving (no-ai-slop detect; humanizer as a mental pass).
+  - Task 11: the "No model" form sends no `cap`; `setup.js` pre-fills 1000000 for a new config (amended (PR #32 round 1) M1: from `ConfigView.defaultCap`, no copy in the browser). Prose gate ran after saving (no-ai-slop detect; humanizer as a mental pass).
   - Task 15: `s2-run.ts` merges the leak flag and "caught the slip" into one `note` column.
   - Task 16: Anthropic spend about 10,900 tokens (3,132 observed plus six unlogged diagnostic calls), over the 6,400 estimate. Anthropic compat vision not clean: two fenced blocks per reply after self-correction; `parseJsonReply` left as specified, the question passed to T9. Level 4 step 5 used the Ollama leg; step 4 used a dummy key and curl in place of devtools.
   - Task 17: `system-execution-report` deferred to its own run.
+- 2026-09-28 — PR #32 review round 1 (`.claude/reports/pr-32-review-fixes.md`). Superseded, amended inline where each appears: Task 2 `writeDataFile` (the unresolved `.tmp` is removed, then opened `O_EXCL`; no `fchmodSync`; GOTCHA 266); Task 3 `saveSetup` ("none" keeps the saved cap; no user name, password, `?` or `#` in `base_url`; key must be printable ASCII); Task 6 (a `TimeoutError` while reading the body is `timeout`; AC 7 scoped to a JSON object body); Task 10 `ConfigView.defaultCap`; Task 11 (`autocomplete="new-password"`, `r.ok` checks in `index.html` and `setup.js`; GOTCHA 534).

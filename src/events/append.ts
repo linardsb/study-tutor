@@ -15,11 +15,9 @@ const NOFOLLOW = fs.constants.O_NOFOLLOW ?? 0;
 // Read-write, not write-only: appendEvent reads the last byte to check for a trailing newline.
 const APPEND =
   fs.constants.O_RDWR | fs.constants.O_APPEND | fs.constants.O_CREAT | NOFOLLOW;
+// O_EXCL: the temp file is always new, so a planted .tmp (a symlink to events.jsonl) is never written through.
 const WRITE =
-  fs.constants.O_WRONLY |
-  fs.constants.O_CREAT |
-  fs.constants.O_TRUNC |
-  NOFOLLOW;
+  fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL | NOFOLLOW;
 const OWNER_ONLY = 0o600;
 
 const isMissing = (err: unknown) =>
@@ -172,11 +170,11 @@ export function writeDataFile(
 ): void {
   fs.mkdirSync(dataDir, { recursive: true });
   const file = resolveInData(dataDir, rel);
-  const tmp = resolveInData(dataDir, `${rel}.tmp`);
+  // Not resolved: a leftover .tmp, symlink or not, is removed itself, never the file it points to.
+  const tmp = `${file}.tmp`;
+  fs.rmSync(tmp, { force: true });
   const fd = fs.openSync(tmp, WRITE, OWNER_ONLY);
   try {
-    // openSync's mode applies only when it creates the file; a leftover .tmp keeps its old mode.
-    fs.fchmodSync(fd, OWNER_ONLY);
     fs.writeSync(fd, text);
     fs.fsyncSync(fd);
   } finally {

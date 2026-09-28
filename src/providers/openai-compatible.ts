@@ -166,8 +166,14 @@ async function call(
     let reply: unknown;
     try {
       reply = await res.json();
-    } catch {
-      return fail(job, "bad-response");
+    } catch (err) {
+      // The same signal covers the body: a stall after the headers is a timeout, not a bad reply.
+      return fail(
+        job,
+        (err as { name?: string }).name === "TimeoutError"
+          ? "timeout"
+          : "bad-response",
+      );
     }
     if (typeof reply !== "object" || reply === null || Array.isArray(reply))
       return fail(job, "bad-response");
