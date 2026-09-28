@@ -56,5 +56,6 @@
 // Only a readable "not configured" redirects; a 500 keeps the pupil on this page.
 fetch("/api/config").then((r) => (r.ok ? r.json() : null)).then((c) => { if (c?.configured === false) location.replace("/setup.html"); }).catch(() => {});
 </script>
+<script src="/update.js" defer></script>
 </body>
 </html>

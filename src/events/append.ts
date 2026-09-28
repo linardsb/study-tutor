@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { utcNow } from "../mcp/clock";
 import type { State } from "./replay";
@@ -190,6 +191,35 @@ export function writeDataFile(
     fs.copyFileSync(tmp, file);
     fs.rmSync(tmp);
   }
+}
+
+type Spawn = (cmd: string[]) => { exitCode: number | null };
+
+/**
+ * Windows ignores 0600, so the file takes the folder's ACL: drop inheritance and grant only this
+ * account (#29). Called after the write, so it covers the rename and the copy fallback alike. Warns
+ * rather than throws: the file has already saved.
+ */
+export function restrictToOwner(
+  file: string,
+  platform: NodeJS.Platform = process.platform,
+  spawn: Spawn = (cmd) =>
+    Bun.spawnSync(cmd, { stdio: ["ignore", "ignore", "pipe"] }),
+  user = os.userInfo().username,
+): void {
+  if (platform !== "win32") return;
+  let ok = false;
+  try {
+    ok =
+      spawn(["icacls", file, "/inheritance:r", "/grant:r", `${user}:F`])
+        .exitCode === 0;
+  } catch {
+    ok = false;
+  }
+  if (!ok)
+    console.error(
+      "Could not limit data/config.json to this account; other accounts on this PC may be able to read the key.",
+    );
 }
 
 /** Writes data/state.json atomically: temp file, fsync, rename. */

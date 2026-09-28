@@ -1,7 +1,11 @@
+import fs from "node:fs";
+import path from "node:path";
 import {
   CONFIG_FILE,
   PROFILE_FILE,
   readDataJson,
+  resolveInData,
+  restrictToOwner,
   writeDataFile,
 } from "./events/append";
 
@@ -208,6 +212,18 @@ export type SetupResult =
   | { ok: false; error: string };
 
 /** Validates the setup form, then writes config.json and profile.json. Nothing is written on a refusal. */
+/**
+ * Re-applies the owner-only permissions on data/config.json at start: on Windows, a data folder copied
+ * into a new version's folder takes that folder's inherited permissions, so an update loses them.
+ */
+export function restrictConfigOnStart(
+  dataDir: string,
+  restrict: (file: string) => void = restrictToOwner,
+): void {
+  if (!fs.existsSync(path.join(dataDir, CONFIG_FILE))) return;
+  restrict(resolveInData(dataDir, CONFIG_FILE));
+}
+
 export function saveSetup(dataDir: string, body: unknown): SetupResult {
   if (!isObj(body)) return { ok: false, error: "The settings did not arrive." };
   if (!isPreset(body.preset))
@@ -280,6 +296,7 @@ export function saveSetup(dataDir: string, body: unknown): SetupResult {
 
   const profile = { ...readProfile(dataDir), weeklyTarget };
   writeDataFile(dataDir, CONFIG_FILE, `${JSON.stringify(config, null, 2)}\n`);
+  restrictToOwner(resolveInData(dataDir, CONFIG_FILE));
   writeDataFile(dataDir, PROFILE_FILE, `${JSON.stringify(profile, null, 2)}\n`);
   return { ok: true, config: publicConfig(config), weeklyTarget };
 }
