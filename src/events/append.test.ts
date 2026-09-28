@@ -7,6 +7,7 @@ import {
   readLines,
   readStoredState,
   resolveInData,
+  restrictToOwner,
   writeDataFile,
   writeState,
 } from "./append";
@@ -397,3 +398,45 @@ test.skipIf(process.platform === "win32")(
     );
   }),
 );
+
+test("restrictToOwner runs icacls on Windows only, and a failure warns without throwing (#29)", () => {
+  const calls: string[][] = [];
+  const spawn = (cmd: string[]) => {
+    calls.push(cmd);
+    return { exitCode: 0 };
+  };
+  restrictToOwner("/d/data/config.json", "darwin", spawn, "pupil");
+  restrictToOwner("/d/data/config.json", "linux", spawn, "pupil");
+  expect(calls).toEqual([]);
+
+  restrictToOwner("C:\\t\\data\\config.json", "win32", spawn, "pupil");
+  expect(calls).toEqual([
+    [
+      "icacls",
+      "C:\\t\\data\\config.json",
+      "/inheritance:r",
+      "/grant:r",
+      "pupil:F",
+    ],
+  ]);
+
+  const err = spyOn(console, "error").mockImplementation(() => {});
+  try {
+    expect(() =>
+      restrictToOwner("x", "win32", () => ({ exitCode: 5 }), "pupil"),
+    ).not.toThrow();
+    expect(() =>
+      restrictToOwner(
+        "x",
+        "win32",
+        () => {
+          throw new Error("no icacls");
+        },
+        "pupil",
+      ),
+    ).not.toThrow();
+    expect(err).toHaveBeenCalledTimes(2);
+  } finally {
+    err.mockRestore();
+  }
+});

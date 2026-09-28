@@ -765,3 +765,9 @@ ul.prompts li.link {
 .quiz[data-label] {
   scroll-margin-top: 4.5rem;
 }
+.update {
+  background: var(--amber-bg);
+  border-left: 4px solid var(--amber);
+  margin: 0 0 1rem;
+  padding: 0.5rem 0.75rem;
+}

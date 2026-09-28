@@ -2,6 +2,8 @@ import {
   CONFIG_FILE,
   PROFILE_FILE,
   readDataJson,
+  resolveInData,
+  restrictToOwner,
   writeDataFile,
 } from "./events/append";
 
@@ -280,6 +282,7 @@ export function saveSetup(dataDir: string, body: unknown): SetupResult {
 
   const profile = { ...readProfile(dataDir), weeklyTarget };
   writeDataFile(dataDir, CONFIG_FILE, `${JSON.stringify(config, null, 2)}\n`);
+  restrictToOwner(resolveInData(dataDir, CONFIG_FILE));
   writeDataFile(dataDir, PROFILE_FILE, `${JSON.stringify(profile, null, 2)}\n`);
   return { ok: true, config: publicConfig(config), weeklyTarget };
 }
