@@ -8,7 +8,7 @@ Branch rebased onto `origin/main` 723fd13 (T6 #36) before any fix. The rebase ap
 
 | Finding | Fix | Test, and the unfixed run |
 |---|---|---|
-| F1 High, SonarCloud DOM XSS at `app/chat.js:37` | The figure is parsed with `new DOMParser().parseFromString(figure, "text/html")` and its body nodes are moved in with `replaceChildren`. No `innerHTML`. | See "F1 mechanism" below. SonarCloud itself: **not run**, it only runs on the pushed commit. |
+| F1 High, SonarCloud DOM XSS at `app/chat.js:37` | The figure is parsed with `new DOMParser().parseFromString(figure, "text/html")` and its body nodes are moved in with `replaceChildren`. No `innerHTML`. | See "F1 mechanism" below. SonarCloud Code Analysis on the pushed commit `0c15879`: pass (observed, `gh pr checks 38`, 2026-09-28). |
 | F2 High, T6's POST allowlist refuses `/api/chat` on the merged tree | `src/marking/retest.test.ts`: the regex is `(event\|config\|chat)`, the title names `/api/chat`, and one comment line says the route saves only through `postEvent`. | With only this file reverted on the rebased tree, the test fails with `"p": "chat.js:/api/chat"` (observed). With the fix it passes. |
 | F3 Medium, `numbersIn` does not see `¾`, `²` or full-width digits | `text.normalize("NFKC")` before the regex in `src/jobs/guard.ts`. | New test "vulgar fractions, superscripts and full-width digits count as numbers". It uses the review's own input, `guardReply(["It comes to ¾"], ["Share 6 in the ratio 1:2"])`, plus `x³` and `８`. On the unfixed code it failed with `Expected: "invented-number"`, `Received: null` (observed). |
 | F4 Low, `1,000,000` read as 1000 and 0 | The comma is now dropped with a lookahead: `replace(/(\d),(?=\d{3}\b)/g, "$1")`. | One assertion added to the thousands test: `numbersIn("1,000,000")` → `{"1000000"}`. It failed on the unfixed code (observed). |
@@ -34,7 +34,7 @@ None.
 
 ## Needs a manual look
 
-- SonarCloud on the pushed commit (F1). It is private, and `gh` has no token for it.
+- None left. SonarCloud passed on `0c15879` (observed), so the "mark Safe" fallback was not needed.
 
 ## Gate
 
