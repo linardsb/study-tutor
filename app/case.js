@@ -1,7 +1,8 @@
 /* Today's detective case. The server picked it (GET /api/case); this page shows it, takes a pick and
    a 1 to 3 bet, marks in the browser and posts one case event through POST /api/event.
-   Invariant: the correct option and the working enter the DOM only inside the check handler, the
-   same way quiz.js hides an item's answer until the check.
+   Invariant: the correct option and the working enter the DOM only after the pupil has answered:
+   inside the check handler, or in renderDone for a day whose answer is already on record. The same
+   way quiz.js hides an item's answer until the check.
    Runs in the browser. Loaded under Bun by src/marking/case.test.ts, so nothing here touches
    document at load time. */
 (() => {
@@ -77,6 +78,13 @@
     })
       .then((res) => res.ok)
       .catch(() => false);
+  }
+
+  /* what follows the save: the re-ask, "Back tomorrow.", or neither when nothing is on record */
+  function afterSave(saved, isReask, bet, correct, hasReask) {
+    if (!saved) return "unsaved";
+    if (!isReask && bet === 3 && !correct && hasReask) return "reask";
+    return "done";
   }
 
   function el(tag, className, text) {
@@ -226,16 +234,27 @@
       cal.textContent = calibrationLine(state.cal);
       /* a confident miss: the same idea again now, once the first answer is on record, so the log
          never holds a re-ask before its first answer (PR #31 F5); the server seeds tomorrow from the event */
-      postEvent(
-        eventFor(r.day, c, c.options[pick], bet, correct, isReask),
-      ).then((saved) => {
-        if (!saved) fb.textContent += NOT_SAVED;
-        if (saved && !isReask && bet === 3 && !correct && r.reask) {
-          render(holder, r.reask, r, state, true);
-        } else {
-          holder.appendChild(el("p", "note", "Back tomorrow."));
-        }
-      });
+      postEvent(eventFor(r.day, c, c.options[pick], bet, correct, isReask))
+        .then((saved) => {
+          const next = afterSave(
+            saved,
+            isReask,
+            bet,
+            correct,
+            Boolean(r.reask),
+          );
+          /* a failed save leaves nothing on record, so no "Back tomorrow.": a reload shows the case again */
+          if (next === "unsaved") fb.textContent += NOT_SAVED;
+          else if (next === "reask") render(holder, r.reask, r, state, true);
+          else holder.appendChild(el("p", "note", "Back tomorrow."));
+        })
+        .catch(() => {
+          /* postEvent never rejects; this is the re-ask render throwing after the save. A reload
+             shows the record and the re-ask it still owes (reaskOwed). */
+          holder.appendChild(
+            el("p", "note", "Something went wrong. Reload the page."),
+          );
+        });
     });
   }
 
@@ -283,5 +302,5 @@
   }
 
   const root = typeof window === "undefined" ? globalThis : window;
-  root.detective = { calibrationLine, eventFor, bump, reaskOwed };
+  root.detective = { calibrationLine, eventFor, bump, reaskOwed, afterSave };
 })();

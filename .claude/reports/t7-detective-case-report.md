@@ -58,6 +58,9 @@ never to a prompt.
 - Review round 1 (PR #31, 2026-09-27): `bun run check` after the fixes is 149 pass, 0 fail, 62522 expect() calls,
   4 Biome warnings (observed, 16:06:45Z). `Case.hint` was dropped (never rendered, F7); the rest is in
   `.claude/reports/pr-31-review-fixes.md`.
+- Review round 2 (PR #31, 2026-09-28): `bun run check` after the fixes is 178 pass, 0 fail, 62687 expect() calls,
+  4 Biome warnings (observed, 09:15:03Z; the count includes T10's tests after the merge of #30). Detail in
+  `.claude/reports/pr-31-review-fixes-2.md`.
 - `bun scripts/test-generators.ts`: all 6300 runs pass (observed).
 - `bun run check` as one command fails only on `scripts/__fixtures__/s2-working.svg` (`noSvgWithoutTitle`),
   an untracked file another session created today at 16:26. It is not on this branch. With that file

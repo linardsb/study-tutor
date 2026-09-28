@@ -15,6 +15,13 @@ type Detective = {
     reask: boolean,
   ) => Record<string, unknown>;
   reaskOwed: (record: { bets: [number, boolean][] }) => boolean;
+  afterSave: (
+    saved: boolean,
+    isReask: boolean,
+    bet: number,
+    correct: boolean,
+    hasReask: boolean,
+  ) => "unsaved" | "reask" | "done";
 };
 
 // The browser file sets a global, the way quiz.js does; nothing in it touches document at load.
@@ -82,4 +89,14 @@ test("eventFor: a mistake case carries its item, a rule case omits it, and both 
     expect(e).not.toBeNull();
     expect(e?.type).toBe("case");
   }
+});
+
+test('afterSave: a failed save gets no "Back tomorrow." and no re-ask, since nothing is on record (PR #31 round 2 F1)', () => {
+  expect(detective.afterSave(false, false, 3, false, true)).toBe("unsaved");
+  expect(detective.afterSave(false, false, 1, true, true)).toBe("unsaved");
+  expect(detective.afterSave(true, false, 3, false, true)).toBe("reask");
+  expect(detective.afterSave(true, false, 3, false, false)).toBe("done");
+  expect(detective.afterSave(true, true, 3, false, true)).toBe("done");
+  expect(detective.afterSave(true, false, 2, false, true)).toBe("done");
+  expect(detective.afterSave(true, false, 3, true, true)).toBe("done");
 });

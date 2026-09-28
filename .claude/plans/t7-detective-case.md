@@ -1047,3 +1047,7 @@ the ticket's 600 to 900.
   re-ask only after the first answer's POST resolves (F5) and again after a reload while it is owed (F9).
   Task 15's `?day=` wording: read-only on the server; the page posts against the returned day (F6).
   Detail in `.claude/reports/pr-31-review-fixes.md`.
+- 2026-09-28, PR #31 review round 2: Task 17's after-save step is `afterSave` (pure, on the `detective`
+  global); a failed save appends "Not saved." and nothing else, no "Back tomorrow." (F1). The invariant
+  in Notes N3 and Task 17 reads "only after the pupil has answered": the check handler, or `renderDone`
+  for a day already on record (F3). Detail in `.claude/reports/pr-31-review-fixes-2.md`.
