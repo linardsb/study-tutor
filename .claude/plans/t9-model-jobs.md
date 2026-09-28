@@ -713,3 +713,8 @@ the AC requires.
   - Task 11: the no-generator `findItem` case uses a pack copy with an empty generator table, because all 21 maths topics have one.
   - Known gap, not fixed: `taught-today` on a `#gen` item blocks every generated item of that topic for the day (`TeachbackV1` has no seed; the fix is `teachback@2`).
   - Pre-PR review: `findItem` refuses a seed above 4294967295; `teachback_mark.test.ts` covers the `mark_scheme ?? working` path. Recorded, not fixed: `/api/event` accepts a posted `teachback` (R1, T4 route), the invented-number rule refuses "divide by 100" hints (R2), and pupil numbers count as sources (R3).
+- 2026-09-28, PR #38 review round 1 (detail in `.claude/reports/pr-38-review-fixes.md`; supersedes the task text where they differ):
+  - Rebased onto `main` 723fd13 (T6). T6's page-POST allowlist test in `src/marking/retest.test.ts` now admits `/api/chat` (F2).
+  - Task 14 GOTCHA (line 498): the figure no longer goes in with `innerHTML`. `chat.js` parses it with `DOMParser` as `text/html` and moves the nodes in. Not `image/svg+xml`: the 60 content figures carry no `xmlns`, so an SVG parse leaves them in no namespace and they would not render (F1).
+  - Task 3: `numbersIn` applies NFKC before matching, so `¾`, `²` and full-width digits count as numbers (F3), and reads `1,000,000` as one number (F4). Cost: a hint naming `r²` on a question with no 2 now falls back.
+  - Task 12: the second `taughtOn` check reads the London day again, since a teach-back can run past midnight (F5).

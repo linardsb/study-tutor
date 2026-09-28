@@ -34,7 +34,9 @@
     $("title").textContent = state.title;
     $("stem").textContent = state.stem;
     if (state.figure) {
-      $("figure").innerHTML = state.figure;
+      // Parsed as HTML, as innerHTML would be: the figures carry no xmlns, so an SVG parse would not render them.
+      const doc = new DOMParser().parseFromString(state.figure, "text/html");
+      $("figure").replaceChildren(...doc.body.childNodes);
       $("figure").hidden = false;
     }
     if (state.scaffold) {

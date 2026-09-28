@@ -112,8 +112,9 @@ export async function postChat(
   if (reply.kind !== "marks") return { status: 200, body: reply };
 
   // Checked again on a fresh read: a second request for this item (a reload, another tab) can have
-  // saved while this job ran. Nothing is awaited between this read and the append.
-  const saved = taughtOn(readLines(dataDir), r.item.id, day)
+  // saved while this job ran. Nothing is awaited between this read and the append. The day is read
+  // again: a job can run past London midnight, and the record is stamped with the day it is saved on.
+  const saved = taughtOn(readLines(dataDir), r.item.id, localDay(now()))
     ? null
     : // The same path a page's event takes: the refusals, the append and the xp line.
       postEvent(reply.record, dataDir, pack.topics, now);

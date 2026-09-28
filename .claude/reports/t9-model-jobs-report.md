@@ -41,7 +41,7 @@ For any item with `answers`, the answer enters a model prompt only after an `att
 - `quiz.test.ts` (+2): `chatHref` round-trips an id with `#` and a seed; browser vs server generated-item parity, 21 topics × 3 seeds = 63 comparisons (derived), 0 differences.
 
 ## Validation results
-- `bun run check` (tsc + biome + bun test): exit 0, 363 pass, 0 fail (observed, final run). An earlier run had 3 `properties.test.ts` 5 s timeouts while the machine's load average was 230 (other sessions). A plain `bun test` straight after passed 361/361 in 10.7 s, and the next `bun run check` passed. The same 5 s timeout fired once more at load average 113, and the gate run straight after was green.
+- `bun run check` (tsc + biome + bun test): exit 0, 363 pass, 0 fail (observed, final run before the PR #38 review). After the rebase onto 723fd13 and the round-1 fixes: exit 0, 395 pass, 0 fail (observed; `.claude/reports/pr-38-review-fixes.md`). An earlier run had 3 `properties.test.ts` 5 s timeouts while the machine's load average was 230 (other sessions). A plain `bun test` straight after passed 361/361 in 10.7 s, and the next `bun run check` passed. The same 5 s timeout fired once more at load average 113, and the gate run straight after was green.
 - `bun scripts/test-generators.ts`: all 6,300 runs pass (observed).
 - `grep -rn "as PreAttempt\|as PostAttempt" src | grep -v test` → only `src/jobs/view.ts:38-39` (observed).
 - `grep -rn "JSON.stringify(.*item\|\.\.\.view\|\.\.\.item" src/jobs` (non-test) → no hit (observed).

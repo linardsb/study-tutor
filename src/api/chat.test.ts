@@ -231,3 +231,31 @@ test(
     ).toHaveLength(1);
   }),
 );
+
+test(
+  "postChat: a teach-back that runs past London midnight checks the day it saves on",
+  withData(OPENAI, async (data) => {
+    appendEvent(data, attemptLine({ id: ID, topic: TOPIC }), NOW);
+    // 23:00Z is London midnight in October (BST). Another tab saves on the new day while this job runs.
+    let t = "2026-10-05T22:59:50Z";
+    const clock = () => t;
+    const reply = chatReply(JSON.stringify({ lines: [{ mark: 1, note: "" }] }));
+    const { f } = mockFetch(() => {
+      t = "2026-10-05T23:00:10Z";
+      appendEvent(
+        data,
+        { v: 1, type: "teachback", topic: TOPIC, item: ID, marks: 1, of: 1 },
+        () => "2026-10-05T23:00:05Z",
+      );
+      return reply();
+    });
+    const r = await postChat(
+      { job: "teachback_mark", item: ID, text: "Find 10% of 45" },
+      data,
+      pack,
+      { dataDir: data, fetch: f, now: clock },
+    );
+    expect((r.body as { saved: boolean }).saved).toBe(false);
+    expect(events(data).filter((e) => e.type === "teachback")).toHaveLength(1);
+  }),
+);

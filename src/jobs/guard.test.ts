@@ -45,5 +45,14 @@ test("clean maths text passes when its numbers come from the sources", () => {
 
 test("numbersIn normalises thousands separators and trailing zeros", () => {
   expect(numbersIn("1,200 and 2.50")).toEqual(new Set(["1200", "2.5"]));
+  expect(numbersIn("1,000,000")).toEqual(new Set(["1000000"]));
   expect(guardReply([], [])).toBeNull();
+});
+
+test("vulgar fractions, superscripts and full-width digits count as numbers", () => {
+  const ratio = ["Share 6 in the ratio 1:2"];
+  expect(guardReply(["It comes to ¾"], ratio)).toBe("invented-number");
+  expect(guardReply(["Square it: x³"], ratio)).toBe("invented-number");
+  expect(guardReply(["It comes to ８"], ratio)).toBe("invented-number");
+  expect(numbersIn("¾ and x²")).toEqual(new Set(["3", "4", "2"]));
 });

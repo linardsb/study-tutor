@@ -10,9 +10,10 @@ const CHECKS: readonly [reason: string, re: RegExp][] = [
   ["grade", /\b(?:pass|fail)(?:ing)?\s+(?:the|your)\s+(?:exam|gcse|test)\b/i],
 ];
 
-/** Every number in a text, normalised: "1,200" → "1200", "2.50" → "2.5". */
+/** Every number in a text, normalised: "1,200" → "1200", "2.50" → "2.5", "¾" → 3 and 4. */
 export function numbersIn(text: string): Set<string> {
-  const plain = text.replace(/(\d),(\d{3})/g, "$1$2");
+  // NFKC first: \d is [0-9] only, so "¾", "²" and full-width digits would otherwise not be numbers.
+  const plain = text.normalize("NFKC").replace(/(\d),(?=\d{3}\b)/g, "$1");
   return new Set(
     (plain.match(/\d+(?:\.\d+)?/g) ?? []).map((n) => String(Number(n))),
   );
