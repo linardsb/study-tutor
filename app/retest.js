@@ -239,10 +239,12 @@
     return saved;
   }
 
-  /* the end body the server hands back for the open boss; nothing is composed here */
+  /* the end body the server hands back for the open boss; nothing is composed here. Another mode
+     open by now (a lesson started in a second tab) is left for the map to finish. */
   async function closeSession(query) {
     const next = await getJson(`/api/next${query}`).catch(() => null);
-    if (next?.step.kind === "continue") await postEvent(next.step.end);
+    if (next?.step.kind === "continue" && next.step.mode === "boss")
+      await postEvent(next.step.end);
   }
 
   function renderResult(holder, rows, titles, after, query) {

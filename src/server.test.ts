@@ -557,6 +557,9 @@ test(
     // 4: a reload mid-boss. A session is open for the day it was started on (openToday), so under
     // ?day= the same boss simply re-forms; on the real day the open boss carries no boss, and its
     // end re-forms the same boss.
+    // Steps 4 and 5 read the `continue` from the real day because a session opens on the day of its
+    // own `t`, which the server stamps: `?day=` cannot pin it. The one test here that fails if
+    // London midnight passes between a `start` post and the `next()` after it.
     expect((await post(n3.step.start)).status).toBe(201);
     const again = await next(`?day=${d3}`);
     expect(again.step.kind).toBe("boss");

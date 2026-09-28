@@ -183,7 +183,9 @@
           else load(ids);
           return;
         }
-        holder.appendChild(el("p", "note", TEXT.notSaved));
+        const note = holder.querySelector(".note") ?? el("p", "note");
+        note.textContent = TEXT.notSaved;
+        holder.appendChild(note);
         btn.disabled = false;
       });
     });
@@ -251,10 +253,8 @@
     ids.today.hidden = true;
     for (const holder of [ids.stats, ids.today, ids.cards])
       holder.replaceChildren();
-    const lessons = getJson("/api/lessons").catch(() => {
-      ids.status.textContent = TEXT.lessonsNotLoaded;
-      return {};
-    });
+    /* null when the lessons did not load; said only once the map itself has loaded */
+    const lessons = getJson("/api/lessons").catch(() => null);
     let state;
     let next;
     let topics;
@@ -268,7 +268,9 @@
       ids.status.textContent = TEXT.notLoaded;
       return;
     }
-    const urls = await lessons;
+    const loaded = await lessons;
+    if (loaded === null) ids.status.textContent = TEXT.lessonsNotLoaded;
+    const urls = loaded ?? {};
     const titles = {};
     for (const t of topics) titles[t.id] = t.title;
     renderStats(ids.stats, state, next, topics);

@@ -152,6 +152,7 @@ function answerAll() {
     if (right) expect(fb).toBe("Correct.");
     else expect(fb.length).toBeGreaterThan(0);
     expect((q.querySelector(".working:not(.faded)") as El).hidden).toBe(false);
+    expect(q.textContent).toContain(item.working as string);
   }
 }
 
@@ -174,7 +175,13 @@ test("begin: posts the served start body, renders three unlabelled questions wit
   expect(html).not.toContain("Percentage of an amount");
   expect(html).not.toContain(codeA);
   expect(html).not.toContain("#1");
-  for (const w of $$("#boss .working:not(.faded)")) expect(w.hidden).toBe(true);
+  // D5: the working is absent from the page, not merely hidden, until the pupil checks
+  const text = $("#boss").textContent ?? "";
+  for (const slot of b.slots) {
+    const working = itemOf(slot).working as string;
+    expect(working.length).toBeGreaterThan(0);
+    expect(text).not.toContain(working);
+  }
   const fixedAt = b.slots.findIndex((s) => s.item !== null);
   expect($$("#boss .q .stem")[fixedAt]?.textContent).toBe(
     `${fixedAt + 1}. ${packItems[0]?.stem}`,
@@ -269,4 +276,33 @@ test("a failed retest post: the row says not scored and not saved, and no end is
     "Percentage of an amount: 2 of 3. Not scored yet. Not saved. Check the tutor window is still open.",
   );
   served.failRetest = false;
+});
+
+test("finish while a lesson is open elsewhere: the retest posts, and the lesson's end body is not posted", async () => {
+  calls.length = 0;
+  served.state = wire(state);
+  setStep(bossStep);
+  await api.reload();
+  await until(() => Boolean($("#intro button")));
+  $("#intro button").click();
+  await until(() => $$("#boss .q").length === 3);
+  // a lesson start in another tab replaced the open boss before the pupil finished
+  const lessonEnd = endBody({
+    mode: "lesson",
+    topic: A,
+    t: `${DAY}T16:30:00Z`,
+  });
+  const bossFetch = globalThis.fetch;
+  globalThis.fetch = (async (url: string, init?: RequestInit) => {
+    const res = await bossFetch(url, init);
+    if (url === "/api/event")
+      setStep({ kind: "continue", mode: "lesson", topic: A, end: lessonEnd });
+    return res;
+  }) as typeof fetch;
+  answerAll();
+  await until(() => Boolean($("#result h2")));
+  globalThis.fetch = bossFetch;
+  expect(posts().map((p) => p.type)).toEqual(["session", "retest"]);
+  expect(posts()[0]).toEqual(startBody("boss", null));
+  expect($("#result h2").textContent).toBe("Boss over.");
 });

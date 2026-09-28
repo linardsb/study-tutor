@@ -34,12 +34,12 @@ Two new browser pages consume T5's flow. `app/map.html` + `app/map.js` render on
 
 - `src/api/lessons.test.ts` (2): one URL per pack topic, each file exists; a topic with no lesson is left out; the second call is the cached object.
 - `src/marking/map.test.ts` (6): `RUNGS` and `MODE_NAMES` parity; `dueText` including the BST switch; `stepText`/`stepActions` for every `Step` kind, with `post` bodies asserted by identity; the boss href carries `?day=`; register scan.
-- `src/marking/map-dom.test.ts` (4): render (cards, stats, today box, no POST); continue (Open it link, Done posts the served `end` and re-renders); start a lesson (posts `step.start` then `api.go`, a 500 re-enables the button with Not saved); a 500 from `/api/state` names the tutor window and leaves the map empty.
+- `src/marking/map-dom.test.ts` (6): render (cards, stats, today box, no POST); continue (Open it link, Done posts the served `end` and re-renders); start a lesson (posts `step.start` then `api.go`, a 500 re-enables the button with one Not saved note across retries); a 500 from `/api/state` names the tutor window and leaves the map empty; server down with the lessons rejection landing last still names the map; only `/api/lessons` down renders the cards without links and names the lessons (the last three from PR #36 review F6, F7).
 - `src/marking/retest.test.ts` (8): `passes`, `itemsFile`, `NEXT_DAYS`, `RUNGS` parity; `buildItems` on a real boss, an unknown id, no generator; `scoreOf`; `retestBody` parses as `retest@1` with `passed` agreeing; the four `RUNG_LINES`; register scan of both pages and every exported string; no page writes a file and every POST targets `/api/event` or `/api/config`.
-- `src/marking/retest-dom.test.ts` (5): intro; begin posts the served start and renders unlabelled questions; answer, one retest then the served end, the result row; open boss on load ended and re-formed, other mode sends to the map, no boss; a failed retest post shows Not scored yet and posts no end.
+- `src/marking/retest-dom.test.ts` (6): intro; begin posts the served start and renders unlabelled questions with no working text in the page (PR #36 review F3); answer, one retest then the served end, the result row, the working text present after each check; open boss on load ended and re-formed, other mode sends to the map, no boss; a failed retest post shows Not scored yet and posts no end; a lesson open elsewhere at finish gets no end posted (PR #36 review F1).
 - `src/server.test.ts` (+2, +5 asserts): `/api/lessons`; the full loop lesson start → end → boss three days on → reload → start → retest → end → rung 2 and next due at +10 → a wrong `passed` is 400.
 
-Results: 328 pass, 0 fail, 63,963 expect() calls, 33 files (`observed`, `bun run check`, 2026-09-28).
+Results: 328 pass, 0 fail, 63,963 expect() calls, 33 files (`observed`, `bun run check`, 2026-09-28, at `de6fffc`). After the PR #36 round 1 fixes: 331 pass, 0 fail, 64,005 expect() calls, 33 files (`observed`, `bun run check`, 2026-09-28).
 
 ## Validation results
 
@@ -48,7 +48,7 @@ Results: 328 pass, 0 fail, 63,963 expect() calls, 33 files (`observed`, `bun run
 | `bunx tsc --noEmit` | clean (`observed`) |
 | `bunx biome check .` | 0 errors, 4 warnings, all pre-existing on `app/style.css` (`observed`; `main` also has 4) |
 | `bunx biome lint --only=complexity/noExcessiveCognitiveComplexity app/map.js app/retest.js src/api/lessons.ts src/content/pack.ts` | 0 diagnostics (`observed`) |
-| `bun run check` | 328 pass, 0 fail (`observed`; baseline 301 before this ticket, so +27) |
+| `bun run check` | 328 pass, 0 fail at `de6fffc` (`observed`; baseline 301 before this ticket, so +27); 331 pass, 0 fail after the PR #36 round 1 fixes (`observed`, so +30) |
 | `bun scripts/test-generators.ts` | all 6300 runs pass (`observed`) |
 | Level 4 manual, `agent-browser` against `bun src/server.ts` on a fresh `data/` | steps 1 to 11 all `observed`; step 5 and step 7 performed on the real day (see deviations D1); step 8 partial save taken as `retest-dom.test.ts` test 5 (the plan allowed either) |
 
@@ -60,7 +60,7 @@ Level 4 observed values: 21 cards `not started · lesson`; stats `0 of your 3 th
 |---|---|---|---|
 | map | empty record | yes | map-dom 1 (rung-0 card), Level 4 step 1 |
 | map | server gone / `/api/state` 500 (`notLoaded`) | yes | map-dom 4, Level 4 step 10 |
-| map | `/api/lessons` failed alone (`lessonsNotLoaded`, cards show `no lesson yet`) | yes | not tested |
+| map | `/api/lessons` failed alone (`lessonsNotLoaded`, cards show `no lesson yet`) | yes | map-dom 6 (PR #36 review F6) |
 | map | post failed (`notSaved`, button re-enabled) | yes | map-dom 3, Level 4 step 10 |
 | map | loading | none declared in the plan; holders stay empty until the fetches resolve | n/a |
 | boss | no boss / other mode open / open boss re-formed | yes | retest-dom 4, Level 4 steps 1, 5, 7 |

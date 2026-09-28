@@ -173,7 +173,7 @@ test("rungLine names what the pupil can do and when the re-test comes round; res
 const clean = (s: string) => ({
   s,
   bang: s.includes("!"),
-  emoji: /[\u{2C00}-\u{10FFFF}]/u.test(s),
+  emoji: /[\u{2600}-\u{27BF}\u{2C00}-\u{10FFFF}]/u.test(s),
 });
 const sample = (v: string | ((...args: never[]) => string)) =>
   typeof v === "function" ? (v as (...a: unknown[]) => string)("T", 2, 3) : v;

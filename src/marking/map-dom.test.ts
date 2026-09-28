@@ -87,7 +87,7 @@ test("render: a card per pack topic with rung, due and lesson link; stats; the b
   expect($$("#stats .stat b").map((b) => b.textContent)).toEqual([
     "0 of your 3 this week",
     "30",
-    "1 of 21",
+    `1 of ${pack.topics.length}`,
   ]);
   expect($("#today").hidden).toBe(false);
   expect($("#today p").textContent).toStartWith(
@@ -142,6 +142,15 @@ test("start a lesson: posts step.start then goes to the lesson; a failed post re
   await until(() => ($("#today").textContent ?? "").includes("Not saved"));
   expect((button("Start the lesson") as El).disabled).toBe(false);
   expect(went).toHaveLength(1);
+  // two more tries with the tutor still closed: one note, not three
+  button("Start the lesson").click();
+  await until(() => posts().length === 3);
+  await until(() => !(button("Start the lesson") as El).disabled);
+  button("Start the lesson").click();
+  await until(() => posts().length === 4);
+  await until(() => !(button("Start the lesson") as El).disabled);
+  expect($$("#today .note")).toHaveLength(1);
+  expect(went).toHaveLength(1);
   served.post = { status: 201 };
 });
 
@@ -156,4 +165,39 @@ test("failure: a 500 from /api/state names the tutor window and leaves the map e
   expect($("#today").hidden).toBe(true);
   // AC 7: every POST the page made went to /api/event
   expect(posts().every((p) => p.url === "/api/event")).toBe(true);
+});
+
+test("failure: with the server down and the lessons rejection landing last, the status still names the map", async () => {
+  const upFetch = globalThis.fetch;
+  let lessonsRejected = false;
+  globalThis.fetch = (async (url: string): Promise<Response> => {
+    if (url === "/api/lessons") {
+      await Bun.sleep(20);
+      lessonsRejected = true;
+    }
+    throw new TypeError("fetch failed");
+  }) as typeof fetch;
+  await api.reload();
+  await until(() => lessonsRejected);
+  globalThis.fetch = upFetch;
+  expect($("#status").textContent).toBe(
+    "The map did not load. Check the tutor window is still open.",
+  );
+  expect($$("#cards .card")).toHaveLength(0);
+});
+
+test("failure: only /api/lessons down renders the map with no lesson links and says the lessons did not load", async () => {
+  served.state = { status: 200, body: wire(state) };
+  const upFetch = globalThis.fetch;
+  globalThis.fetch = (async (url: string, init?: RequestInit) => {
+    if (url === "/api/lessons") return new Response("x", { status: 500 });
+    return upFetch(url, init);
+  }) as typeof fetch;
+  await api.reload();
+  await until(() => $$("#cards .card").length === pack.topics.length);
+  globalThis.fetch = upFetch;
+  expect($("#status").textContent).toBe(
+    "The lessons did not load. Check the tutor window is still open.",
+  );
+  expect($("#cards .card").querySelector("a")).toBeNull();
 });

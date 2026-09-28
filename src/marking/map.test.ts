@@ -148,7 +148,10 @@ test("register: no exclamation mark and no emoji in any map string", () => {
   expect(strings.length).toBeGreaterThan(20);
   for (const s of strings) {
     expect({ s, bang: s.includes("!") }).toEqual({ s, bang: false });
-    expect({ s, emoji: /[\u{2C00}-\u{10FFFF}]/u.test(s) }).toEqual({
+    expect({
+      s,
+      emoji: /[\u{2600}-\u{27BF}\u{2C00}-\u{10FFFF}]/u.test(s),
+    }).toEqual({
       s,
       emoji: false,
     });
