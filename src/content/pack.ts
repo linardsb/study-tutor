@@ -1,9 +1,26 @@
+import fs from "node:fs";
 import path from "node:path";
 import type { Item, ItemView, Topic } from "./types";
 
 /** `1MA1/G17/cone` → `1MA1-G17-cone.json`: the file under content/<subject>/items/ that holds a topic's items. */
 export function itemsFileName(topicId: string): string {
   return `${topicId.replaceAll("/", "-")}.json`;
+}
+
+/** The lesson file whose `data-items` names this topic's items file, or null. */
+export function lessonFile(
+  root: string,
+  subject: string,
+  id: string,
+): string | null {
+  const dir = path.join(subjectDir(subject, root), "lessons");
+  const marker = `data-items="/content/${subject}/items/${itemsFileName(id)}"`;
+  for (const file of fs.readdirSync(dir).sort()) {
+    if (!file.endsWith(".html")) continue;
+    if (fs.readFileSync(path.join(dir, file), "utf8").includes(marker))
+      return file;
+  }
+  return null;
 }
 
 /**
