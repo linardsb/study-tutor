@@ -82,3 +82,72 @@ The guard covers the MCP surface: no tool returns `answers`, `working`, `mark_sc
 
 - F1: an MCP config must name the binary that matches the CPU (run 0). A README line for parents who wire a harness is owed when that doc is written; not in T10's scope.
 - F2: the `write_event` description as planned (field names from `KEYS`) was enough. Claude Code filled `phase` and `mode` with valid values unaided, so no description change or rebuild was needed.
+
+## Codex leg (#28)
+
+**Date**: 2026-09-28   **Ticket**: #28   **Branch**: `chore/issue-28-codex-leg`
+**Harness**: Codex CLI `codex-cli 0.158.0` (observed, `codex --version`); `codex login status` printed "Logged in using ChatGPT" before and after the run (observed)
+**Server**: `StudyTutor-x64` from `bun run build` (`dist/StudyTutor-mac.zip`, 47,021,968 bytes, observed), unzipped to a scratch folder with no `data/`. The machine is `x86_64` (observed), so the x64 binary was used, per F1 above.
+
+### Result
+
+**Handshake works; the session did not run.** Codex started the server, completed `initialize` and `tools/list`, and got all four tools. The model turn then failed on Codex's own ChatGPT login (HTTP 401), so Codex sent no `tools/call`. The script (clock, read_state, open_lesson, write_event session start and end, write_event attempt refused) is still owed on Codex.
+
+### Setup
+
+- A shell shim between Codex and the binary logged both directions: `tee stdin.log | StudyTutor-x64 --mcp | tee stdout.log`.
+- Block appended to `~/.codex/config.toml` for the run: `[mcp_servers.tutor]`, `command = "<scratch>/tutor-shim.sh"`, `args = []`. `codex mcp list` showed `tutor … enabled` (observed). The block was removed afterwards; the config is byte-identical to its state before the run (`cmp`, observed).
+- Command: `codex exec --json --skip-git-repo-check --ephemeral -s read-only -c approval_policy='"never"' -c mcp_servers.pencil.enabled=false -c mcp_servers.inspector-gateway.enabled=false "<T10 run 1 prompt, prefixed with: Use only the tutor MCP tools; do not run shell commands or read files.>" < /dev/null`
+
+### What Codex sent (observed, shim log)
+
+```
+→ {"jsonrpc":"2.0","id":0,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{"experimental":{"codex/auth-change":{}},"elicitation":{"form":{},"url":{}}},"clientInfo":{"name":"codex-mcp-client","title":"Codex","version":"0.158.0"}}}
+← {"jsonrpc":"2.0","id":0,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"study-tutor",...},...}}
+→ {"jsonrpc":"2.0","method":"notifications/initialized"}
+→ {"jsonrpc":"2.0","id":1,"method":"tools/list","params":{"_meta":{"progressToken":0}}}
+← tools: read_state, write_event, open_lesson, clock
+```
+
+- First request: `initialize` (not `server/discover`), `protocolVersion` `2025-06-18` (observed). Claude Code sent `2025-11-25`, so the server's version echo works for both clients (observed across the two legs).
+- Codex adds `experimental` and `elicitation` capabilities and a `_meta.progressToken` on `tools/list`. The server ignored them and answered normally (observed).
+- Stdin lines: 3; `tools/call` lines: 0 (observed, `wc -l`, `grep -c`).
+
+### Per-tool outcome
+
+| Step | Outcome |
+|---|---|
+| clock | not called |
+| read_state (no topic, then topic) | not called |
+| write_event session start | not called |
+| open_lesson | not called |
+| write_event attempt | not called, so neither refused nor accepted on Codex. The server-side refusal stands as shown in the Claude Code leg |
+| write_event session end | not called |
+
+No `data/` folder was created in the scratch copy (observed), so nothing was written.
+
+### The failure (observed, exact text)
+
+`codex exec` exited 1. Its JSON stream ended with:
+
+```
+{"type":"turn.failed","error":{"message":"workspace routing discovery unauthorized (401)"}}
+```
+
+after `Reconnecting... 5/5` on WebSocket, a fall-back to HTTPS and `Reconnecting... 5/5` again, all with the same message. Codex's stderr repeated `ERROR codex_login::auth::manager: Failed to refresh token: Your access token could not be refreshed. Please log out and sign in again.` and, earlier, `ERROR codex_models_manager::manager: failed to refresh available models: unexpected status 401 Unauthorized: Could not parse your authentication token. Please try signing in again., url: https://chatgpt.com/backend-api/codex/models?client_version=0.158.0`. The server's own stderr held one line, `Study tutor MCP server; lessons at http://127.0.0.1:4731/`.
+
+The cause is on the Codex side: the stored ChatGPT token cannot be refreshed, even though `codex login status` still reports a login. It is not an MCP incompatibility, because the MCP exchange had finished before the model call failed. The fix is `codex logout && codex login` in an interactive terminal. It was not retried here.
+
+Process hygiene: `pgrep -fl StudyTutor` after the run printed nothing (observed). That the server exited when Codex closed stdin is derived from that.
+
+### Decision
+
+Architecture S3 rule: works → keep MCP in v1 / fails → in-app loop only, MCP deferred. **Not decided on Codex.** The protocol layer works with Codex 0.158.0 (handshake and tool list, observed). The session layer is untested because of the auth failure. The Claude Code leg's "keep MCP in v1" stands. The in-app loop (T9) does not use either harness, so it is unaffected. Remaining for #28: sign Codex in again, rerun the command above against the same shim and fill in the per-tool table. Whether `approval_policy="never"` lets MCP tool calls through or cancels them is expected to work but untested. Unlike T10's `--tools ""`, Codex kept its shell tool under `-s read-only` and was only asked not to use it, so this run is not equivalent to D6's tool scope; the rerun should note whether Codex read any file.
+
+### Config a user adds
+
+```toml
+[mcp_servers.tutor]
+command = "/path/to/StudyTutor/StudyTutor-arm64"   # StudyTutor-x64 on an Intel Mac
+args = ["--mcp"]
+```
