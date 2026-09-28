@@ -6,6 +6,8 @@ import { type Event, KEYS, type NewEvent, parseEvent } from "./types";
 
 export const EVENTS_FILE = "events.jsonl";
 export const STATE_FILE = "state.json";
+export const CONFIG_FILE = "config.json";
+export const PROFILE_FILE = "profile.json";
 
 // O_NOFOLLOW makes the open fail with ELOOP if the final path part became a symlink after
 // resolveInData checked it. Windows has no such flag.
@@ -13,11 +15,9 @@ const NOFOLLOW = fs.constants.O_NOFOLLOW ?? 0;
 // Read-write, not write-only: appendEvent reads the last byte to check for a trailing newline.
 const APPEND =
   fs.constants.O_RDWR | fs.constants.O_APPEND | fs.constants.O_CREAT | NOFOLLOW;
+// O_EXCL: the temp file is always new, so a planted .tmp (a symlink to events.jsonl) is never written through.
 const WRITE =
-  fs.constants.O_WRONLY |
-  fs.constants.O_CREAT |
-  fs.constants.O_TRUNC |
-  NOFOLLOW;
+  fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL | NOFOLLOW;
 const OWNER_ONLY = 0o600;
 
 const isMissing = (err: unknown) =>
@@ -141,11 +141,11 @@ export function readLines(dataDir: string): string[] {
     .filter((l) => l.trim() !== "");
 }
 
-/** Parsed data/state.json, or null if missing or not JSON. Shape is not trusted. */
-export function readStoredState(dataDir: string): unknown {
+/** Parsed JSON of one file under data/, or null if missing or not JSON. Shape is not trusted. */
+export function readDataJson(dataDir: string, rel: string): unknown {
   let file: string;
   try {
-    file = resolveInData(dataDir, STATE_FILE);
+    file = resolveInData(dataDir, rel);
   } catch (err) {
     if (isMissing(err)) return null;
     throw err;
@@ -157,14 +157,25 @@ export function readStoredState(dataDir: string): unknown {
   }
 }
 
-/** Writes data/state.json atomically: temp file, fsync, rename. */
-export function writeState(dataDir: string, state: State): void {
+/** Parsed data/state.json, or null if missing or not JSON. Shape is not trusted. */
+export function readStoredState(dataDir: string): unknown {
+  return readDataJson(dataDir, STATE_FILE);
+}
+
+/** Writes one file under data/ atomically (temp, fsync, rename), owner-only, refusing paths that leave data/. */
+export function writeDataFile(
+  dataDir: string,
+  rel: string,
+  text: string,
+): void {
   fs.mkdirSync(dataDir, { recursive: true });
-  const file = resolveInData(dataDir, STATE_FILE);
-  const tmp = resolveInData(dataDir, `${STATE_FILE}.tmp`);
+  const file = resolveInData(dataDir, rel);
+  // Not resolved: a leftover .tmp, symlink or not, is removed itself, never the file it points to.
+  const tmp = `${file}.tmp`;
+  fs.rmSync(tmp, { force: true });
   const fd = fs.openSync(tmp, WRITE, OWNER_ONLY);
   try {
-    fs.writeSync(fd, `${JSON.stringify(state, null, 2)}\n`);
+    fs.writeSync(fd, text);
     fs.fsyncSync(fd);
   } finally {
     fs.closeSync(fd);
@@ -179,6 +190,11 @@ export function writeState(dataDir: string, state: State): void {
     fs.copyFileSync(tmp, file);
     fs.rmSync(tmp);
   }
+}
+
+/** Writes data/state.json atomically: temp file, fsync, rename. */
+export function writeState(dataDir: string, state: State): void {
+  writeDataFile(dataDir, STATE_FILE, `${JSON.stringify(state, null, 2)}\n`);
 }
 
 /** Copies one data file to another, both confined to `dataDir`; no-op if `from` does not exist. */

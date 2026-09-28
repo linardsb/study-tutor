@@ -245,6 +245,52 @@ directory, against the real writer (`appendEvent`) and the real check (`scripts/
   (`src/events/check.ts`), because a code change that lowers a rung is only caught by running it; T11
   wires it into start.
 
+**S2 result (2026-09-27, partial).** Run by the T8 implementing session on the dev Mac (Intel, Bun 1.3.4)
+with `bun scripts/s2-run.ts`, which sends every call through the real provider module (`chatJson`) against a
+temp data folder. "Clean", defined before any run (T8 plan, Task 16): HTTP 200 on all three probes, the image
+accepted on the vision probe, `usage` reported on every response, and each reply parsing as JSON under
+`parseJsonReply` within one retry. Shape, the hint-leak flag and "caught the slip" measure the model, not the
+seam, and are recorded apart.
+
+| Provider · model | Probe | HTTP | First try | Retry | Usage | Tokens | ms | Note |
+|---|---|---|---|---|---|---|---|---|
+| Ollama 0.30.10 · `qwen2.5vl:3b` | hint | 200 | not-json | JSON, shape ok | reported ×2 | 94, 90 | 10,956, 1,633 | no leak |
+| Ollama 0.30.10 · `qwen2.5vl:3b` | teach-back mark | 200 | JSON, wrong shape | not-json | reported ×2 | 332, 324 | 9,261, 5,573 | |
+| Ollama 0.30.10 · `qwen2.5vl:3b` | vision mark | 200 | JSON, wrong shape | JSON, shape ok | reported ×2 | 1,359, 1,348 | 52,290, 10,443 | missed the slip |
+| Anthropic compat · `claude-haiku-4-5` | hint | 200 | JSON, shape ok | - | reported | 103 | 980 | no leak |
+| Anthropic compat · `claude-haiku-4-5` | teach-back mark | 200 | JSON, shape ok | - | reported | 426 | 1,907 | |
+| Anthropic compat · `claude-haiku-4-5` | vision mark | 200 | not-json | not-json | reported ×2 | 1,303, 1,300 | 2,733, 2,846 | |
+| OpenAI | all three | `pending`, owner Linards | | | | | | |
+| OpenRouter | all three | `pending`, owner Linards | | | | | | |
+| Groq | all three | `pending`, owner Linards | | | | | | |
+
+(`observed`, one script run per leg. The retry fires on not-json or a wrong shape, the rule T9's jobs will
+have; the teach-back retry on Ollama fired on shape after a reply that had parsed.)
+
+- Ollama: clean. Every call 200 with `usage`, the image accepted, and every probe had a reply that parsed
+  within one retry. The shape misses are the 3B model, which is S4's question. A second run during Level 4
+  (`observed`) parsed all three on the first try with the right shape (96, 442, 1,357 tokens; 1.8 s,
+  15.6 s, 9.2 s) and caught the slip, so the model's output varies run to run.
+- Anthropic compat: not clean, on the vision probe's JSON. Transport was clean: 200, image accepted as a
+  base64 `image_url` part, `usage` reported, Bearer auth, no `anthropic-workspace-id` header. Diagnosis,
+  six more vision calls through the same module with the reply text captured (`observed`): 2 of 6 parsed.
+  All 4 failures were the same form: a fenced JSON block, then "Wait, let me recalculate", then a second
+  fenced block. In all 4 the second block gave line 3 a 0 (caught the slip); the one parsed reply printed
+  gave it 1. Across this session the vision probe parsed in 2 of 8 calls, against 6 of 6 in planning's
+  scripted batch with the same prompt. `parseJsonReply` was not widened to take the last block: that would
+  change "clean" after seeing the result, and it would let the model's second reading of a number pick the
+  mark. Whether a job may take the last of several blocks is T9's call.
+- Spend: Anthropic 3,132 tokens in the script run (`observed`: 103 + 426 + 1,303 + 1,300) plus six
+  diagnostic calls at about 1,300 each (`expected`, not logged), about 10,900 in total, over the plan's
+  6,400 estimate because of the diagnosis.
+- Decision by the rule: `pending`. 1 of 2 legs run is clean, so 4 of 5 needs OpenAI, OpenRouter and Groq all
+  clean. Commands for Linards, from the repo root:
+  `S2_KEY=… bun scripts/s2-run.ts --preset openai` (default `gpt-4.1-mini`, which takes images),
+  `S2_KEY=… bun scripts/s2-run.ts --preset openrouter --model <vision model>`,
+  `S2_KEY=… bun scripts/s2-run.ts --preset groq --model <vision model>`. Every leg runs the vision probe, so
+  a text-only model fails it for a reason outside the provider module. A 400 that names the limit field:
+  rerun with the other `--max-field`.
+
 PRD experiments E1–E5 stand. E1 (adherence on the existing folder) runs before any of this is built.
 
 ## Open questions
@@ -254,7 +300,14 @@ PRD experiments E1–E5 stand. E1 (adherence on the existing folder) runs before
 - Q11. Settled by S1: the first free of 4731 to 4735, then any free port; the URL is printed in the console
   either way.
 - Q12. Does Anthropic's compatibility endpoint carry vision and JSON well enough, or does Anthropic need
-  the one adapter S2 allows for? Settled by S2.
+  the one adapter S2 allows for? Answered by S2 (2026-09-27, `observed`): vision yes (base64 `image_url`
+  part accepted), usage yes, Bearer auth yes, and a workspace-scoped key needs no `anthropic-workspace-id`
+  header; a parent with a multi-workspace personal key makes a workspace-scoped key instead (the setup page
+  says so). JSON: `response_format` is ignored, so JSON is asked for in the prompt; replies always come
+  fenced, and one fenced block parses. On the vision marking probe Haiku often corrects itself in a second
+  fenced block (6 of 8 vision calls this session did not parse; all 4 whose text was captured had two
+  blocks), which the single-block rule reads as not JSON. That is a
+  prompt and job question for T9, not a transport one; no adapter is needed for the transport.
 - Q13. Where does the parent digest go with no outbound channel: a page, a file in `data/digest/`, or
   both? Depends on Q7.
 - Q14. Does the maths pack keep Sparx U-codes as the primary key until Edexcel is confirmed (Q2), or

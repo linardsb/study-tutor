@@ -5,6 +5,7 @@ import path from "node:path";
 import { loadTopics } from "./content/pack";
 import { isoWeek, localDay } from "./mcp/clock";
 import {
+  apiRoutes,
   openBrowser,
   refuseForeign,
   type ServerOptions,
@@ -319,6 +320,77 @@ test(
     const notJson = await post("not json");
     expect(notJson.status).toBe(400);
     expect(await notJson.json()).toEqual({ error: "Body is not JSON" });
+  }),
+);
+
+test(
+  "key leak: no /api route, invalid post or static path returns the saved key",
+  withServer(async (get, _dir, opts) => {
+    const KEY = "sk-test-SECRET-9f3a";
+    const post = (p: string, body: unknown) =>
+      get(p, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+    const saved = await post("/api/config", {
+      preset: "openai",
+      base_url: "https://api.openai.com/v1",
+      model: "gpt-4.1-mini",
+      key: KEY,
+      cap: 50_000,
+      weeklyTarget: 3,
+    });
+    expect(saved.status).toBe(200);
+    expect(await saved.text()).not.toContain(KEY);
+    // The save really happened, so the checks below cannot pass by there being no key to leak.
+    expect(
+      fs.readFileSync(path.join(opts.dataDir, "config.json"), "utf8"),
+    ).toContain(KEY);
+
+    const valid: Record<string, unknown> = {
+      "/api/event": {
+        v: 1,
+        type: "usage",
+        job: "manual",
+        model: "x",
+        input: 1,
+        output: 1,
+      },
+      "/api/config": { preset: "none", weeklyTarget: 3 },
+    };
+    const walked: string[] = [];
+    for (const [p, methods] of Object.entries(apiRoutes(opts))) {
+      walked.push(p);
+      const bodies: Response[] = [];
+      if ("GET" in methods) bodies.push(await get(p));
+      if ("POST" in methods) {
+        bodies.push(await post(p, { preset: "nope", key: KEY }));
+        if (p in valid) bodies.push(await post(p, valid[p]));
+      }
+      expect(bodies.length).toBeGreaterThan(0);
+      for (const res of bodies) expect(await res.text()).not.toContain(KEY);
+      // The valid "none" save cleared the key; put it back for the next route.
+      if (p === "/api/config")
+        await post("/api/config", {
+          preset: "openai",
+          base_url: "https://api.openai.com/v1",
+          model: "gpt-4.1-mini",
+          key: KEY,
+          cap: 50_000,
+          weeklyTarget: 3,
+        });
+    }
+    expect(walked).toEqual(Object.keys(apiRoutes(opts)));
+
+    for (const p of ["/setup.html", "/setup.js", "/data/config.json"]) {
+      const res = await get(p);
+      expect(await res.text()).not.toContain(KEY);
+      if (p === "/data/config.json") expect(res.status).toBe(404);
+    }
+    expect(
+      fs.readFileSync(path.join(opts.dataDir, "config.json"), "utf8"),
+    ).toContain(KEY);
   }),
 );
 

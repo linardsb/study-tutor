@@ -9,16 +9,22 @@ Source of truth: architecture D3. `data/events.jsonl` is the record; `data/state
 ```
 
 - `v` is the event-version for that `type`. A shape change bumps `v` and adds a reducer case; old lines are never rewritten.
-- `type` is one of: `session` · `attempt` · `retest` · `teachback` · `intake` · `xp` · `squad` · `photo` · `usage` · `case`. `usage` carries a model job's token counts, because the monthly token count needs an event and no other type holds tokens. `case` is one detective-case answer with its 1 to 3 bet. Add to the union in `src/events/types.ts` first; `tsc` fails until the parser table and the reducer table both have the new `type@v` key.
+- `type` is one of: `session` · `attempt` · `retest` · `teachback` · `intake` · `xp` · `squad` · `photo` · `usage` · `case`. `usage` carries a model job's token counts, because the monthly token count needs an event and no other type holds tokens. It carries `estimated: true` when the provider reported no usable token counts and the provider estimated them. `case` is one detective-case answer with its 1 to 3 bet. Add to the union in `src/events/types.ts` first; `tsc` fails until the parser table and the reducer table both have the new `type@v` key.
 - A `(type, v)` shape may be edited in place until the first GitHub release whose build can append it; after that, a change is a new `v`.
 - `t` is UTC from `src/mcp/clock`, never the browser clock. `appendEvent` stamps it; a caller's `t` is overwritten. A `t` that is not a real date (`2026-02-30`) is refused.
 - `appendEvent` writes only the fields `KEYS` lists for that `(type, v)`; a stray caller field (a correct answer) never reaches the log. `tsc` fails if `KEYS` misses a field of the type.
 - Only `src/events/append.ts` writes under `data/`. It fsyncs per line, opens with `O_NOFOLLOW`, writes owner-only files, and refuses any path whose realpath is outside `data/` (`../`, absolute paths, symlinks, dangling symlinks). Only writers create `data/`; readers treat a missing folder as empty. The scripts take no path: they use `data/` in the folder they run from.
+  `writeDataFile` (atomic: a fresh `O_EXCL` temp file created `0600`, fsync, rename; a leftover `.tmp`, symlink or not, is removed first, never written through) is the writer for every other file there: `state.json`, `config.json`, `profile.json`.
 - `photo.file` is relative to `data/` and must resolve inside it; `appendEvent` refuses the event otherwise, before anything is created.
 
 ## Routes
 
-`POST /api/event` takes a body without `t`, resolves a U-code in `topic` and `topics[].topic` to the topic id, and appends through `appendEvent`; a refusal is 400 and writes nothing, not even `data/`. `GET /api/state` is `replay` of the log and refreshes `state.json` when it is missing or behind; an empty log creates nothing. Both live in `src/api/`.
+`POST /api/event` takes a body without `t`, resolves a U-code in `topic` and `topics[].topic` to the topic id, and appends through `appendEvent`; a refusal is 400 and writes nothing, not even `data/`. `GET /api/state` is `replay` of the log and refreshes `state.json` when it is missing or behind; an empty log creates nothing. `GET /api/config` returns `{configured, config: publicConfig | null, weeklyTarget, presets}`; `POST /api/config` validates and saves through `saveSetup` (400 carries only its sentence, never a submitted field). `GET /api/usage` is `{month, tokens, cap}` for the London month, the same key replay uses. All live in `src/api/`, and `apiRoutes` in `src/server.ts` is the one route table.
+
+## Config and profile
+
+- `config.json` = `{v:1, preset, base_url, key, model, cap}` (`src/config.ts`). Owner-only; never sent to the browser. `publicConfig` is the only browser shape: no `key`, a `keySet` boolean instead. A missing or malformed file reads as not set up.
+- `profile.json` = `{weeklyTarget, …}`: days a week with some practice (1 to 7). A save sets `weeklyTarget` and keeps every other key (T5 and later add `pupil`, `board`).
 
 ## Replay
 
