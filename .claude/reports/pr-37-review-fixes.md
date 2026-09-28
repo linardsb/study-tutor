@@ -45,3 +45,11 @@ Per retired value or noun, `grep -nE "329|28 new|1,804|23 files|state\.prev|AC 5
 - Plan `.claude/plans/t11-distribution-and-updates.md`: `:310` `startsWith` → parsed URL; `:402` unzip listing → `listZip`; `:458` call site → plus `restrictConfigOnStart`; `:540` AC 5 row → notes appended lines. `:348`, `:400`, `:414`, `:602`, `:604` still hold as written (they describe tests and ACs that remain true).
 - Report `.claude/reports/t11-distribution-and-updates-report.md`: `:7` backup sentence and #29 sentence; `:11` "once parsed"; `:25` call sites; `:32` 15 → 18 tests; `:33` check +2 → +4; `:36` build 5 → 6 tests; new `config.test.ts` +1 line; `:45` 329 → 336.
 - PR body: `:11` backup sentence, `:12` #29 sentence, `:15`/`:26` diff figures and bucket table, `:30` "once parsed", `:34` 329 / 28 new → re-derived after the fixes commit and edited with `gh pr edit`.
+
+## Merge of `main` (T6, #36)
+
+After the fixes, `main` moved to `723fd13` and the PR conflicted in `app/style.css`. Both sides only added rules at the end of the file. The resolution keeps T11's `.update` rule, closed, and then T6's map and boss rules. `origin/main` was merged into the branch (`31cbd23`), not rebased, so `187f5d9` and `dc70ca9` stay valid. Checked after the merge: `src/server.ts` registers both `/api/lessons` and `/api/update`, and the start order is still `restrictConfigOnStart` → `checkOnStart` → `startServer`. `app/index.html` still loads `/update.js`.
+
+- `bun run check` at `31cbd23`: exit 0, **366 pass, 0 fail**, 36 files (observed, after `bun install` picked up T6's `@happy-dom/global-registrator`; before that, `tsc` failed with TS2307 on T6's two DOM tests, which is an environment gap, not code). biome: the same 4 warnings, `app/style.css:642-672`.
+- `main` at `723fd13`: 331 pass, 0 fail, 33 files (observed, `bun test` in a temporary worktree). 366 − 331 = 35 new, the same 35 as before the merge (derived).
+- `bun scripts/test-generators.ts`: all 6300 runs pass (observed).
