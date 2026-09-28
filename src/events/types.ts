@@ -126,7 +126,7 @@ export const isDay = (x: unknown): x is string => {
 const outOf = (n: unknown, of: unknown) =>
   int(n) && int(of) && (n as number) <= (of as number);
 
-const MODES = [
+export const MODES = [
   "lesson",
   "practice",
   "retest",

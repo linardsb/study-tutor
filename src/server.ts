@@ -3,6 +3,7 @@ import path from "node:path";
 import { caseForDay, loadCasePack } from "./api/case";
 import { getConfig, getUsage, postConfig } from "./api/config";
 import { postEvent } from "./api/event";
+import { lessonUrls } from "./api/lessons";
 import { nextForDay } from "./api/next";
 import { currentState } from "./api/state";
 import { restrictConfigOnStart } from "./config";
@@ -226,6 +227,13 @@ export function apiRoutes(opts: ServerOptions) {
           "Could not work out the next step",
           (p, day) => nextForDay(dataDir, p, day),
         ),
+    },
+    "/api/lessons": {
+      GET: (req: Request) =>
+        readRoute(req, "the lesson list", () => ({
+          status: 200,
+          body: lessonUrls(root, "maths", topics),
+        })),
     },
     "/api/event": {
       POST: (req: Request) => postEventRoute(req, dataDir, topics),

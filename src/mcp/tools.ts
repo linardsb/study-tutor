@@ -1,12 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
 import { postEvent, resolveTopic } from "../api/event";
-import {
-  itemsFileName,
-  loadItems,
-  subjectDir,
-  toItemView,
-} from "../content/pack";
+import { lessonFile, loadItems, toItemView } from "../content/pack";
 import type { Topic } from "../content/types";
 import { readLines } from "../events/append";
 import { replay } from "../events/replay";
@@ -69,22 +62,6 @@ export function attemptedItems(lines: readonly string[]): Set<string> {
 function topicId(ctx: ToolContext, code: string): string | null {
   const id = resolveTopic(ctx.topics, code);
   return ctx.topics.some((t) => t.id === id) ? id : null;
-}
-
-/** The lesson file whose `data-items` names this topic's items file, or null. */
-export function lessonFile(
-  root: string,
-  subject: string,
-  id: string,
-): string | null {
-  const dir = path.join(subjectDir(subject, root), "lessons");
-  const marker = `data-items="/content/${subject}/items/${itemsFileName(id)}"`;
-  for (const file of fs.readdirSync(dir).sort()) {
-    if (!file.endsWith(".html")) continue;
-    if (fs.readFileSync(path.join(dir, file), "utf8").includes(marker))
-      return file;
-  }
-  return null;
 }
 
 const readState: Tool = {
