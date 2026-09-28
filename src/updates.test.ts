@@ -85,9 +85,14 @@ test.each([
   });
 });
 
-test("a page outside the releases prefix is no update", async () => {
+test.each([
+  "https://evil.example/x",
+  "https://github.com/linardsb/study-tutor-evil/releases/tag/v0.2.0",
+  "https://github.com/linardsb/study-tutor/releases-evil/tag/v0.2.0",
+  "https://github.com/linardsb/study-tutor/releases/../../other/repo",
+])("a page outside the releases prefix (%s) is no update", async (page) => {
   await withFeed(
-    () => release("v0.2.0", "https://evil.example/x"),
+    () => release("v0.2.0", page),
     async (url) => {
       expect((await checkForUpdate("0.1.0", url)).update).toBeNull();
     },

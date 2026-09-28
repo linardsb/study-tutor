@@ -5,6 +5,7 @@ import { getConfig, getUsage, postConfig } from "./api/config";
 import { postEvent } from "./api/event";
 import { nextForDay } from "./api/next";
 import { currentState } from "./api/state";
+import { restrictConfigOnStart } from "./config";
 import { loadTopics } from "./content/pack";
 import type { CasePack, Topic } from "./content/types";
 import { refusalLines, replayCheck } from "./events/check";
@@ -315,6 +316,8 @@ if (import.meta.main) {
     const topics = await loadTopics("maths", root);
     const dataDir = path.join(root, "data");
     const pack = await loadCasePack("maths", root);
+    // Before the check: a refused start still leaves the key owner-only.
+    restrictConfigOnStart(dataDir);
     if (!checkOnStart(dataDir)) process.exit(1);
     // Not in --mcp mode: a pending fetch would hold the process open after stdin closes.
     const update = mcp ? undefined : checkForUpdate(VERSION, RELEASES_FEED);

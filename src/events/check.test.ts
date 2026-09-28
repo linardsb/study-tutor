@@ -218,6 +218,56 @@ test(
   }),
 );
 
+test(
+  "a line appended without a state write keeps the pre-update backup",
+  withLog((data) => {
+    replayCheck(data);
+    const file = path.join(data, "state.json");
+    fs.writeFileSync(
+      file,
+      `${JSON.stringify({ ...readState(data), old: true }, null, 2)}\n`,
+    );
+    replayCheck(data);
+    // A POST or an MCP write_event appends and leaves state.json behind the log.
+    appendEvent(data, {
+      v: 1,
+      type: "retest",
+      topic: "1MA1/N12",
+      score: 0,
+      of: 3,
+      passed: false,
+    });
+    expect(replayCheck(data).ok).toBe(true);
+    const prev = path.join(data, "state.prev.json");
+    expect(JSON.parse(fs.readFileSync(prev, "utf8")).old).toBe(true);
+    expect(readState(data).lines).toBe(34);
+  }),
+);
+
+test(
+  "a new build's first start after appended lines still takes the backup",
+  withLog((data) => {
+    replayCheck(data);
+    const file = path.join(data, "state.json");
+    fs.writeFileSync(
+      file,
+      `${JSON.stringify({ ...readState(data), old: true }, null, 2)}\n`,
+    );
+    appendEvent(data, {
+      v: 1,
+      type: "retest",
+      topic: "1MA1/N12",
+      score: 0,
+      of: 3,
+      passed: false,
+    });
+    expect(replayCheck(data).ok).toBe(true);
+    const prev = path.join(data, "state.prev.json");
+    expect(JSON.parse(fs.readFileSync(prev, "utf8")).old).toBe(true);
+    expect(readState(data).old).toBeUndefined();
+  }),
+);
+
 test("refusalLines names each topic and the way back", () => {
   expect(
     refusalLines([

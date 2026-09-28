@@ -58,13 +58,23 @@ function falls(stored: Stored, now: State, why: string): string[] {
   return out;
 }
 
-function write(dataDir: string, state: State, raw: unknown): void {
-  // Nothing changed: keep state.prev.json as it is, so the state from before an update survives every
-  // later start. Holds because writeState writes JSON.stringify output, so key order matches.
-  if (JSON.stringify(raw) === JSON.stringify(state)) return;
-  // The state this build replaces is always one file away.
-  copyState(dataDir, STATE_FILE, "state.prev.json");
-  writeState(dataDir, state);
+/**
+ * Writes `state`, backing up the stored one only when `base` (this build's replay of the lines the
+ * stored state was written from) differs from it: a new build, a hand edit or no valid state. Lines
+ * appended since by this build (a POST, MCP write_event) keep the backup from before the update.
+ * Holds because writeState writes JSON.stringify output, so key order matches.
+ */
+function write(
+  dataDir: string,
+  state: State,
+  raw: unknown,
+  base = state,
+): void {
+  const stored = JSON.stringify(raw);
+  if (stored !== JSON.stringify(base)) {
+    copyState(dataDir, STATE_FILE, "state.prev.json");
+  }
+  if (stored !== JSON.stringify(state)) writeState(dataDir, state);
 }
 
 /** The message for a refused start, shared by scripts/replay-check.ts and the server. */
@@ -136,6 +146,6 @@ export function replayCheck(dataDir: string): CheckResult {
   if (before.xp.total !== stored.xp) {
     changes.push(`XP: saved ${stored.xp}, now ${before.xp.total}`);
   }
-  write(dataDir, now, raw);
+  write(dataDir, now, raw, before);
   return { ok: true, wrote: now, truncated: false, changes };
 }

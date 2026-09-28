@@ -58,10 +58,12 @@ export async function checkForUpdate(
     if (typeof body !== "object" || body === null) return none;
     const { tag_name: tag, html_url: url } = body as Record<string, unknown>;
     if (typeof tag !== "string" || typeof url !== "string") return none;
-    if (!isNewer(tag, current) || !url.startsWith(RELEASES_PAGE)) return none;
+    // Parsed first: the browser resolves `..` in the raw URL off the releases path.
+    const page = new URL(url).href;
+    if (!isNewer(tag, current) || !page.startsWith(RELEASES_PAGE)) return none;
     return {
       version: current,
-      update: { version: tag.replace(/^v/, ""), url },
+      update: { version: tag.replace(/^v/, ""), url: page },
     };
   } catch {
     return none;

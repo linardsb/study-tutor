@@ -307,7 +307,7 @@ Worktree `~/Desktop/study-tutor-t11` on `feature/t11-distribution` from `main` (
   - `isNewer(tag, current): boolean`: false if either does not parse; lexicographic compare of the triples.
   - `checkForUpdate(current, feedUrl, fetchImpl = fetch, timeoutMs = 5000): Promise<UpdateInfo>`:
     `none = { version: current, update: null }`; if `current === "dev"` return `none` without calling
-    `fetchImpl`; else `try { const r = await fetchImpl(feedUrl, { headers: {...D7}, signal: AbortSignal.timeout(timeoutMs) }); if (!r.ok) return none; const body = await r.json() as unknown; ... }` reading `tag_name` and `html_url` as strings; return `none` unless `isNewer(tag, current)` and `html_url.startsWith(RELEASES_PAGE)`; `update.version` is the tag without a leading `v`. `catch { return none; }`.
+    `fetchImpl`; else `try { const r = await fetchImpl(feedUrl, { headers: {...D7}, signal: AbortSignal.timeout(timeoutMs) }); if (!r.ok) return none; const body = await r.json() as unknown; ... }` reading `tag_name` and `html_url` as strings; return `none` unless `isNewer(tag, current)` and `new URL(html_url).href.startsWith(RELEASES_PAGE)` (parsed: PR #37 review F5); `update.version` is the tag without a leading `v`. `catch { return none; }`.
   - `fetchImpl` type: `(url: string, init: RequestInit) => Promise<Response>` (avoids Bun's `typeof fetch` extra members).
 - **PATTERN**: `src/server.ts:248` default-parameter injection.
 - **GOTCHA**: never reject: a rejected promise stored in `ServerOptions` and awaited in a route would 500 the page. The whole body sits in one `try`. Do not log on failure (a family offline every day would see noise); one `console.error` line is acceptable only for a non-404 status if you want it, not required.
@@ -399,7 +399,7 @@ Worktree `~/Desktop/study-tutor-t11` on `feature/t11-distribution` from `main` (
   - D3a: `folder` is `StudyTutor-${version}` everywhere `build.ts` says `"StudyTutor"` as a folder (the three `outfile`s, `copyLauncher`, the `app`/`content` copies, both `zip -qr` arguments). Binary and launcher file names do not change.
   - Export `assertNoData(entries: string[]): void` — throws naming the first entry matching `/^[^/]+\/data(\/|$)/` (a top-level folder's `data`, whatever the version).
   - Wrap the rest (tool check, `rmSync`, compile loop, zips, sizes) in `if (import.meta.main) { ... }`. Compile gains `--define`, `` `BUILD_VERSION=${JSON.stringify(version)}` `` (one argv element: `--define`, then `BUILD_VERSION="0.1.0"`).
-  - After each zip: `const list = Bun.spawnSync(["unzip", "-Z1", zip]).stdout.toString().split("\n").filter(Boolean); assertNoData(list);` and add `unzip` to the tool check.
+  - After each zip: `assertNoData(listZip(zip));`, where `listZip` throws on a non-zero `unzip -Z1` exit (PR #37 review F6), and add `unzip` to the tool check.
   - End by printing `Release tag: v${version}` and `gh release create v${version} dist/StudyTutor-windows.zip dist/StudyTutor-mac.zip --title "v${version}"` (printed only).
 - **UPDATE** `package.json`: `"version": "0.1.0"`.
 - **GOTCHA**: `import.meta.main` is false when `scripts/build.test.ts` imports the file; nothing may run at import time (today the tool check and `rmSync(DIST)` do).
@@ -455,7 +455,7 @@ Worktree `~/Desktop/study-tutor-t11` on `feature/t11-distribution` from `main` (
     user = os.userInfo().username): void
   ```
   No-op unless `platform === "win32"`. Runs `["icacls", file, "/inheritance:r", "/grant:r", `${user}:F`]`; on a non-zero exit or a throw, `console.error("Could not limit data/config.json to this account; other accounts on this PC may be able to read the key.")` (D9).
-  `src/config.ts:282`: after `writeDataFile(dataDir, CONFIG_FILE, …)`, `restrictToOwner(resolveInData(dataDir, CONFIG_FILE));`.
+  `src/config.ts:282`: after `writeDataFile(dataDir, CONFIG_FILE, …)`, `restrictToOwner(resolveInData(dataDir, CONFIG_FILE));`. Also on each start, through `restrictConfigOnStart` before `checkOnStart`: a copied `data` loses the ACL (PR #37 review F2).
 - **TESTS** (`src/events/append.test.ts` or `src/config.test.ts`, whichever holds the config-write tests): darwin → spawn never called; win32 → called once with exactly the argv above for a given `user`; win32 with a spawn returning exit 5 → no throw.
 - **GOTCHA**: `user` default comes from `os.userInfo()`, not an environment variable (memory: the hook blocks that substring in heredocs; also `USERNAME` can be absent in a service context).
 - **GOTCHA**: applied after `writeDataFile` returns, so it covers both the rename and the Notepad copy fallback (`append.ts:183-192`).
@@ -537,7 +537,7 @@ No socket or realtime path in this ticket.
 | `dev` build makes no request | `src/updates.test.ts` case 2 |
 | New build lowers a rung | `src/start.test.ts` case 2 |
 | `--mcp` stdout stays JSON-only with the check's output | `src/start.test.ts` case 3 |
-| Second start of v2 keeps the pre-update `state.prev.json` | `src/events/check.test.ts` (Task 4) |
+| Second start of v2 keeps the pre-update `state.prev.json`, also after lines appended without a state write | `src/events/check.test.ts` (Task 4; PR #37 review F1) |
 | `data/` at the repo root at build time | `scripts/build.test.ts` case 5 |
 | Folder named `data-…` inside content is not refused | `scripts/build.test.ts` case 2 |
 | Parent forgets to copy `data` | README step text; old folder untouched by construction (D3); Level 4 step 3b |

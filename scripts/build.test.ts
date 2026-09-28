@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { appendEvent, writeDataFile } from "../src/events/append";
 import { replayCheck } from "../src/events/check";
-import { assertNoData, readVersion, stageFolder } from "./build";
+import { assertNoData, listZip, readVersion, stageFolder } from "./build";
 
 const REPO = path.join(import.meta.dir, "..");
 
@@ -56,6 +56,7 @@ test("assertNoData refuses only a top-level folder's data", () => {
       "StudyTutor-0.1.0/app/index.html",
       "StudyTutor-0.1.0/content/maths/data-handling.json",
       "StudyTutor-0.1.0/app/data/x",
+      "StudyTutor-0.1.0/database.txt",
     ]),
   ).not.toThrow();
   for (const entry of [
@@ -145,3 +146,7 @@ test.skipIf(Bun.which("zip") === null)(
     expect(() => assertNoData(list)).not.toThrow();
   }),
 );
+
+test("listZip throws when unzip cannot list the file", () => {
+  expect(() => listZip("/no/such/StudyTutor.zip")).toThrow("exited");
+});

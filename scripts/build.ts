@@ -30,6 +30,16 @@ export function assertNoData(entries: string[]): void {
   if (hit !== undefined) throw new Error(`Zip holds pupil data: ${hit}`);
 }
 
+/** The zip's entry names; throws when unzip fails, since an empty listing would pass assertNoData. */
+export function listZip(file: string): string[] {
+  const r = Bun.spawnSync(["unzip", "-Z1", file], {
+    stdio: ["ignore", "pipe", "ignore"],
+  });
+  if (r.exitCode !== 0)
+    throw new Error(`unzip -Z1 ${file} exited ${r.exitCode}`);
+  return r.stdout.toString().split("\n").filter(Boolean);
+}
+
 function copyLauncher(
   name: string,
   into: string,
@@ -146,12 +156,8 @@ if (import.meta.main) {
     const zip = `StudyTutor-${os}.zip`;
     run(["zip", "-qr", `../../${zip}`, folder], STAGE[os]);
     const file = path.join(DIST, zip);
-    const list = Bun.spawnSync(["unzip", "-Z1", file])
-      .stdout.toString()
-      .split("\n")
-      .filter(Boolean);
     try {
-      assertNoData(list);
+      assertNoData(listZip(file));
     } catch (err) {
       console.error(`Build failed: ${(err as Error).message}`);
       process.exit(1);

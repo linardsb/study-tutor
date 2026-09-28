@@ -4,11 +4,11 @@
 
 ## Summary
 
-The build now stamps `package.json`'s version into the three binaries (`--version`). The folder inside each zip carries the version (`StudyTutor-0.1.0/`). The build refuses a zip that holds a top-level `data` entry and prints the release tag and the `gh release create` line. Each page-mode start asks the GitHub releases feed once, in the background, with a 5 s timeout, and never rejects. `/api/update` returns the result, and `app/update.js` shows one line on the landing page. `replayCheck` runs before `startServer` on every start, including `--mcp`, and a refusal exits 1. `replayCheck` no longer rewrites an unchanged `state.json`, so the pre-update `state.prev.json` survives later starts. It also replays once instead of twice when no lines were added. `README.md` and `launchers/README.txt` give the parent the download, first start, settings and a copy-then-delete update procedure. On win32, `data/config.json` gets an owner-only ACL through `icacls` (#29).
+The build now stamps `package.json`'s version into the three binaries (`--version`). The folder inside each zip carries the version (`StudyTutor-0.1.0/`). The build refuses a zip that holds a top-level `data` entry and prints the release tag and the `gh release create` line. Each page-mode start asks the GitHub releases feed once, in the background, with a 5 s timeout, and never rejects. `/api/update` returns the result, and `app/update.js` shows one line on the landing page. `replayCheck` runs before `startServer` on every start, including `--mcp`, and a refusal exits 1. `replayCheck` no longer rewrites an unchanged `state.json`, and backs it up only when this build's replay of its lines differs from it, so the pre-update `state.prev.json` survives later starts, including after lines appended without a state write (PR #37 review F1). It also replays once instead of twice when no lines were added. `README.md` and `launchers/README.txt` give the parent the download, first start, settings and a copy-then-delete update procedure. On win32, `data/config.json` gets an owner-only ACL through `icacls` (#29), after each save and on each start, since an update's copied `data` takes the new folder's inherited ACL (PR #37 review F2).
 
 ## Guard restatement
 
-T11 touches no file under `src/jobs` or `src/mcp` and no prompt, and adds no model call. `/api/update` returns only a version string and a release page URL that must start with `RELEASES_PAGE`. `checkOnStart` writes only `state.json` / `state.prev.json`, through the existing `writeState` / `copyState`. The answer-withheld guard is unaffected.
+T11 touches no file under `src/jobs` or `src/mcp` and no prompt, and adds no model call. `/api/update` returns only a version string and a release page URL that, once parsed, must start with `RELEASES_PAGE`. `checkOnStart` writes only `state.json` / `state.prev.json`, through the existing `writeState` / `copyState`. The answer-withheld guard is unaffected.
 
 ## Tasks completed
 
@@ -22,18 +22,19 @@ T11 touches no file under `src/jobs` or `src/mcp` and no prompt, and adds no mod
 - Task 7 → `scripts/build.ts` (UPDATE): `readVersion`, `stageFolder`, `assertNoData`, `--define BUILD_VERSION`, `import.meta.main` guard, versioned folder; `package.json` `"version": "0.1.0"`
 - Task 8 → `scripts/build.test.ts` (CREATE)
 - Task 9 → `app/update.js` (CREATE), `app/index.html` (tag last before `</body>`), `app/style.css` (`.update` last rule)
-- Task 10 → `src/events/append.ts` (`restrictToOwner`), `src/config.ts` (call after the config write), `src/events/append.test.ts`
+- Task 10 → `src/events/append.ts` (`restrictToOwner`), `src/config.ts` (call after the config write, and `restrictConfigOnStart` from `src/server.ts` on each start), `src/events/append.test.ts`
 - Task 11 → timing re-run, recorded in the execution record
 - Task 12 → `README.md` (CREATE), `launchers/README.txt` (UPDATE), `docs/setup-mac.png` (CREATE)
 - Task 13 → `.claude/execution-reports/t11-distribution-and-updates.md`
 
 ## Tests added
 
-- `src/updates.test.ts`, 15 tests: `isNewer` (numeric compare, junk); a dev build never fetches; newer → update; same/older → null; 404/403/500 with a newer body → null; junk bodies (not JSON, `{}`, number tag, `null`) → null; `html_url` off-prefix → null; a hung feed resolves null under 2 s with a 100 ms timeout; refused connection → null.
-- `src/events/check.test.ts`, +2: an unchanged state is not rewritten and the backup survives (mtime unchanged); `refusalLines` exact text for 1 and 2 topics.
+- `src/updates.test.ts`, 18 tests: `isNewer` (numeric compare, junk); a dev build never fetches; newer → update; same/older → null; 404/403/500 with a newer body → null; junk bodies (not JSON, `{}`, number tag, `null`) → null; `html_url` off-prefix (another host, `study-tutor-evil`, `releases-evil`, `releases/../..`) → null; a hung feed resolves null under 2 s with a 100 ms timeout; refused connection → null.
+- `src/events/check.test.ts`, +4: an unchanged state is not rewritten and the backup survives (mtime unchanged); a line appended without a state write keeps the backup; a new build's first start after appended lines still takes it; `refusalLines` exact text for 1 and 2 topics.
 - `src/server.test.ts`, +2: `/api/update` with no check → `{version: "dev", update: null}`, with a check → its body, foreign Origin → 403; a hanging feed does not hold up `/api/state` and `/api/update` ends as no update.
 - `src/start.test.ts`, 3 tests (spawns `src/server.ts` in a temp root): `--version` → `dev`, no `data/`; a refusal exits 1 with the "Stopped:" line, `state.json` byte-identical, no "is running at"; `--mcp` with closed stdin exits 0, writes `state.json` (`lines: 33`), stdout JSON-only.
-- `scripts/build.test.ts`, 5 tests: `readVersion`; `assertNoData` (top-level `data` only); `stageFolder` contents and `0o755`; the README update steps keep every `data/` file's sha256 and a second `replayCheck` rewrites nothing; a zip of a staged tree has no `data` even beside a source `data/`.
+- `scripts/build.test.ts`, 6 tests: `readVersion`; `assertNoData` (top-level `data` only, `database.txt` passes); `listZip` throws on a failed listing; `stageFolder` contents and `0o755`; the README update steps keep every `data/` file's sha256 and a second `replayCheck` rewrites nothing; a zip of a staged tree has no `data` even beside a source `data/`.
+- `src/config.test.ts`, +1: `restrictConfigOnStart` calls `restrict` only when `config.json` exists.
 - `src/events/append.test.ts`, +1: `restrictToOwner` no-op on darwin/linux, exact `icacls` argv on win32, exit 5 and a throw warn without throwing.
 
 Mutation checks for Tasks 2, 4, 6 and 8 were run both ways. Results are in the execution record.
@@ -42,7 +43,7 @@ Mutation checks for Tasks 2, 4, 6 and 8 were run both ways. Results are in the e
 
 - `bunx tsc --noEmit`: clean.
 - `bunx biome check .`: clean apart from 4 existing `noDescendingSpecificity` warnings in `app/style.css` (lines 642–672, not touched).
-- `bun run check`: **329 pass, 0 fail**, 31 files (`observed`, after the last commit). Baseline was 301.
+- `bun run check`: **336 pass, 0 fail**, 31 files (`observed`, after the PR #37 review round 1 fixes; 329 before them). Baseline was 301.
 - `bun scripts/test-generators.ts`: all 6,300 runs pass.
 - Level 4 steps 1–4: pass. Step 5 was not run (see Deviations). Details are in `.claude/execution-reports/t11-distribution-and-updates.md`.
 

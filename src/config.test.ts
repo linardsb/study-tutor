@@ -9,6 +9,7 @@ import {
   publicConfig,
   readConfig,
   readProfile,
+  restrictConfigOnStart,
   saveSetup,
 } from "./config";
 
@@ -350,4 +351,19 @@ test.each(["sk-abc\u200bdef", "sk-abc def", "sk-ab\u00e9"])(
       });
       expect(fs.existsSync(data)).toBe(false);
     })(),
+);
+
+test(
+  "restrictConfigOnStart re-applies owner-only permissions to an existing config.json",
+  withTemp((_dir, data) => {
+    const calls: string[] = [];
+    const restrict = (file: string) => calls.push(file);
+    restrictConfigOnStart(data, restrict);
+    fs.mkdirSync(data);
+    restrictConfigOnStart(data, restrict);
+    expect(calls).toEqual([]);
+    fs.writeFileSync(path.join(data, "config.json"), "{}");
+    restrictConfigOnStart(data, restrict);
+    expect(calls).toEqual([path.join(data, "config.json")]);
+  }),
 );
