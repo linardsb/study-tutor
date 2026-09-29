@@ -117,3 +117,28 @@ test(
     });
   }),
 );
+
+test.skipIf(process.platform === "win32")(
+  "squadFolder (#42): saved as its realpath, quotes dropped, kept when absent, cleared when empty; a bad one names no path",
+  withTemp((dir, data) => {
+    const synced = path.join(dir, "synced");
+    fs.mkdirSync(synced);
+    fs.symlinkSync(synced, path.join(dir, "link"));
+    const r = postConfig(
+      { ...OPENAI, squadFolder: `"${path.join(dir, "link")}"` },
+      data,
+    );
+    expect(r.status).toBe(200);
+    expect(getConfig(data).body.config?.squadFolder).toBe(synced);
+    postConfig({ ...OPENAI, key: "" }, data);
+    expect(getConfig(data).body.config?.squadFolder).toBe(synced);
+    const missing = path.join(dir, "nope");
+    const bad = postConfig({ ...OPENAI, squadFolder: missing }, data);
+    expect(bad.status).toBe(400);
+    expect(JSON.stringify(bad.body)).not.toContain(missing);
+    expect(getConfig(data).body.config?.squadFolder).toBe(synced);
+    postConfig({ ...OPENAI, key: "", squadFolder: "" }, data);
+    expect(getConfig(data).body.config).not.toHaveProperty("squadFolder");
+    expect(getConfig(data).body.config?.keySet).toBe(true);
+  }),
+);

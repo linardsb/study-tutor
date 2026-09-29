@@ -1,9 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
-import { readProfile } from "../config";
+import { checkSquadFolder, readProfile } from "../config";
 import type { CasePack } from "../content/types";
 import {
   appendEvent,
+  CONFIG_FILE,
   listDataDir,
   makeDataDir,
   PROFILE_FILE,
@@ -50,7 +51,7 @@ export type SquadView = {
   week: string;
   daysLeft: number;
   profile: { squad: string; pupil: string } | null;
-  folder: string | null; // absolute path of data/squad/<squad>, shown as text for "copy friends' files here"
+  folder: string | null; // data/squad/<squad> or the parent's sync folder, shown as text for "copy friends' files here"
   round: (SquadRound & { title: string }) | null;
   mine: SquadFile | null;
   members: SquadMember[]; // other pupils this week, by pupil name
@@ -78,7 +79,37 @@ export function squadProfile(
   return squad !== null && pupil !== null ? { squad, pupil } : null;
 }
 
-const fileOf = (squad: string, pupil: string) => `squad/${squad}/${pupil}.json`;
+/**
+ * Where squad files live. Unset: data/squad/<squad> (T14). Set in config.json: directly in the
+ * parent's sync folder, pinned to its realpath (D9, #42). Set but failing the check: null, and nothing
+ * is read or written; there is no fallback to data/.
+ */
+type Place = { root: string; dir: string; sync: boolean };
+type Where = { place: Place | null; folder: string | null };
+
+function squadPlace(dataDir: string, squad: string): Where {
+  let o: unknown;
+  try {
+    o = readDataJson(dataDir, CONFIG_FILE);
+  } catch {
+    return { place: null, folder: null };
+  }
+  const set = isObj(o) ? o.squadFolder : undefined;
+  if (set === undefined) {
+    const dir = `squad/${squad}`;
+    return {
+      place: { root: dataDir, dir, sync: false },
+      folder: path.join(fs.realpathSync.native(dataDir), "squad", squad),
+    };
+  }
+  const real = checkSquadFolder(dataDir, set);
+  return real === null
+    ? { place: null, folder: typeof set === "string" ? set : null }
+    : { place: { root: real, dir: "", sync: true }, folder: real };
+}
+
+const relOf = (p: Place, name: string) =>
+  p.dir === "" ? name : `${p.dir}/${name}`;
 
 function events(dataDir: string): Event[] {
   return readLines(dataDir)
@@ -110,12 +141,13 @@ function parentDone(evs: readonly Event[], topic: string, week: string) {
 }
 
 /** mine's file, logged and left for the next GET when the disk refuses. True when it landed. */
-function writeMine(dataDir: string, f: SquadFile): boolean {
+function writeMine(p: Place | null, f: SquadFile): boolean {
+  if (p === null) return false;
   try {
-    makeDataDir(dataDir, `squad/${f.squad}`);
+    if (p.dir !== "") makeDataDir(p.root, p.dir);
     writeDataFile(
-      dataDir,
-      fileOf(f.squad, f.pupil),
+      p.root,
+      relOf(p, `${f.pupil}.json`),
       `${JSON.stringify(f, null, 2)}\n`,
     );
     return true;
@@ -126,10 +158,11 @@ function writeMine(dataDir: string, f: SquadFile): boolean {
 }
 
 /** The on-disk file equals the projection, the version aside. File existence alone does not count. */
-function onDisk(dataDir: string, f: SquadFile): boolean {
+function onDisk(p: Place | null, f: SquadFile): boolean {
+  if (p === null) return false;
   let x: unknown;
   try {
-    x = readDataJson(dataDir, fileOf(f.squad, f.pupil));
+    x = readDataJson(p.root, relOf(p, `${f.pupil}.json`));
   } catch {
     return false;
   }
@@ -148,15 +181,20 @@ type Friends = {
 
 /** Friends' files this week. Anything wrong with one file leaves that file out; nothing here throws. */
 function friends(
-  dataDir: string,
+  p: Place | null,
   profile: { squad: string; pupil: string },
   round: SquadRound,
   withAnswers: boolean,
 ): Friends {
   const out: Friends = { members: [], counted: [], unreadable: 0 };
+  if (p === null) {
+    // The sync folder is set but fails the check: solo, with the note, and nothing read.
+    out.unreadable = 1;
+    return out;
+  }
   let listed: { files: string[]; skipped: string[] };
   try {
-    listed = listDataDir(dataDir, `squad/${profile.squad}`);
+    listed = listDataDir(p.root, p.dir);
   } catch (err) {
     // The squad folder itself leaves data/ (a symlink to a synced folder, #42): solo, with the note.
     console.error(`Could not list the squad folder: ${(err as Error).message}`);
@@ -169,11 +207,13 @@ function friends(
   const files: SquadFile[] = [];
   for (const name of listed.files) {
     if (!name.endsWith(".json") || name === own) continue;
-    const rel = `squad/${profile.squad}/${name}`;
+    // A sync client's own files (`sam (1).json`, `Sam.json`) are not a pupil's file: ignored.
+    if (p.sync && slug(name.slice(0, -5)) !== name.slice(0, -5)) continue;
+    const rel = relOf(p, name);
     let f: SquadFile | null = null;
     try {
-      if (fs.statSync(resolveInData(dataDir, rel)).size <= MAX_FILE)
-        f = parseSquadFile(readDataJson(dataDir, rel));
+      if (fs.statSync(resolveInData(p.root, rel)).size <= MAX_FILE)
+        f = parseSquadFile(readDataJson(p.root, rel));
     } catch {
       f = null;
     }
@@ -232,7 +272,8 @@ export function getSquad(
   };
   if (profile === null) return { status: 200, body: view };
   // profile.json exists, so data/ does: this never creates it.
-  view.folder = path.join(fs.realpathSync(dataDir), "squad", profile.squad);
+  const where = squadPlace(dataDir, profile.squad);
+  view.folder = where.folder;
   const evs = events(dataDir);
   const e = mineEvent(evs, profile.squad, week);
   // A saved round keeps its own topic: a mid-week update that moves the pick must not re-pair its answers.
@@ -248,9 +289,10 @@ export function getSquad(
     e === null ? null : squadFile(e, profile.pupil, round.seeds, VERSION);
   view.mine = mine;
   if (mine !== null) {
-    view.shared = onDisk(dataDir, mine) || (heal && writeMine(dataDir, mine));
+    view.shared =
+      onDisk(where.place, mine) || (heal && writeMine(where.place, mine));
   }
-  const f = friends(dataDir, profile, round, mine !== null);
+  const f = friends(where.place, profile, round, mine !== null);
   view.members = f.members;
   view.unreadable = f.unreadable;
   view.total = pool(mine === null ? f.counted : [mine, ...f.counted]);
@@ -334,7 +376,7 @@ export function postSquad(
     return { status: 500, body: { error: "Could not save the round." } };
   }
   writeMine(
-    dataDir,
+    squadPlace(dataDir, profile.squad).place,
     squadFile(saved as SquadV1, profile.pupil, round.seeds, VERSION),
   );
   return { status: 201, body: getSquad(dataDir, pack, day, true).body };

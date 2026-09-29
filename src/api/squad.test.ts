@@ -14,6 +14,7 @@ import {
 } from "../flow/squad";
 import { VERSION } from "../updates";
 import { loadCasePack } from "./case";
+import { postConfig } from "./config";
 import { postEvent } from "./event";
 import { getSquad, joinSquad, postSquad } from "./squad";
 
@@ -493,5 +494,204 @@ test(
     expect(view.members).toEqual([]);
     expect(view.unreadable).toBe(2);
     expect(view.total).toEqual({ score: 4, of: 5, rounds: 1 });
+  }),
+);
+
+// #42: the parent's squad sync folder. Files sit directly in it as <pupil>.json.
+const sync = (dir: string) => path.join(dir, "synced");
+/** Sets the sync folder through the setup form, as a parent would. */
+function setSync(dir: string, data: string, folderPath = sync(dir)) {
+  fs.mkdirSync(folderPath, { recursive: true });
+  const r = postConfig(
+    { preset: "none", weeklyTarget: 3, squadFolder: folderPath },
+    data,
+  );
+  expect(r.status).toBe(200);
+}
+/** A hand edit of config.json, past the setup form's check. */
+function handSet(data: string, squadFolder: unknown) {
+  fs.mkdirSync(data, { recursive: true });
+  fs.writeFileSync(
+    path.join(data, "config.json"),
+    JSON.stringify({
+      v: 1,
+      preset: "none",
+      base_url: "",
+      key: "",
+      model: "",
+      cap: 1000,
+      squadFolder,
+    }),
+  );
+}
+const putSync = (dir: string, name: string, body: unknown) =>
+  fs.writeFileSync(
+    path.join(sync(dir), name),
+    typeof body === "string" ? body : JSON.stringify(body),
+  );
+
+test(
+  "S1. sync folder: a friend's file placed there is in the compare view, and the pupil's own file is the only one written",
+  withTemp((dir, data) => {
+    join(data);
+    setSync(dir, data);
+    putSync(dir, "alex.json", friendFile("alex", 3));
+    const alexBytes = fs.readFileSync(path.join(sync(dir), "alex.json"));
+    const before = getSquad(data, pack, DAY, true).body;
+    expect(before.folder).toBe(sync(dir));
+    expect(before.members).toEqual([{ pupil: "alex", comparable: true }]);
+    expect(post(data).status).toBe(201);
+    const view = getSquad(data, pack, DAY, true).body;
+    expect(view.shared).toBe(true);
+    expect(view.members.map((m) => m.pupil)).toEqual(["alex"]);
+    expect(view.total).toEqual({ score: 7, of: 10, rounds: 2 });
+    expect(fs.readdirSync(sync(dir)).sort()).toEqual(["alex.json", "sam.json"]);
+    expect(fs.readFileSync(path.join(sync(dir), "alex.json"))).toEqual(
+      alexBytes,
+    );
+    expect(
+      JSON.parse(fs.readFileSync(path.join(sync(dir), "sam.json"), "utf8")),
+    ).toEqual(view.mine);
+    expect(fs.existsSync(path.join(data, "squad"))).toBe(false);
+  }),
+);
+
+test(
+  "S2. sync folder: names that are not a slug (a sync client's copies) are ignored, not counted",
+  withTemp((dir, data) => {
+    join(data);
+    setSync(dir, data);
+    post(data);
+    putSync(dir, "alex.json", friendFile("alex", 3));
+    putSync(dir, "alex copy.json", friendFile("zed", 5));
+    putSync(dir, "alex (1).json", friendFile("yan", 5));
+    putSync(dir, "..json", friendFile("xi", 5));
+    const view = getSquad(data, pack, DAY, true).body;
+    expect(view.members.map((m) => m.pupil)).toEqual(["alex"]);
+    expect(view.unreadable).toBe(0);
+  }),
+);
+
+test.skipIf(process.platform === "win32")(
+  "S3. sync folder: a symlinked friend's file is left out, and an own file planted as a symlink to config.json is never written through",
+  withTemp((dir, data) => {
+    join(data);
+    setSync(dir, data);
+    const outside = path.join(dir, "outside.json");
+    fs.writeFileSync(outside, JSON.stringify(friendFile("mallory", 5)));
+    fs.symlinkSync(outside, path.join(sync(dir), "mallory.json"));
+    const config = path.join(data, "config.json");
+    const configBytes = fs.readFileSync(config);
+    fs.symlinkSync(config, path.join(sync(dir), "sam.json"));
+    post(data);
+    const view = getSquad(data, pack, DAY, true).body;
+    expect(view.members).toEqual([]);
+    expect(view.shared).toBe(false);
+    expect(view.unreadable).toBe(2); // mallory.json and sam.json, both symlinks, as T14 counts them
+    expect(fs.readFileSync(config)).toEqual(configBytes);
+    expect(fs.readFileSync(outside, "utf8")).toContain("mallory");
+  }),
+);
+
+test(
+  "S4. traversal: a relative path or a `..` path onto data/ is refused on save, and on use when hand-edited",
+  withTemp((dir, data) => {
+    join(data);
+    fs.mkdirSync(sync(dir));
+    for (const squadFolder of [
+      "../synced",
+      "synced",
+      path.join(sync(dir), "..", "data"),
+    ]) {
+      const r = postConfig(
+        { preset: "none", weeklyTarget: 3, squadFolder },
+        data,
+      );
+      expect(r.status).toBe(400);
+      expect(JSON.stringify(r.body)).not.toContain(squadFolder);
+    }
+    expect(fs.existsSync(path.join(data, "config.json"))).toBe(false);
+    for (const squadFolder of [
+      "../synced",
+      path.join(sync(dir), "..", "data"),
+    ]) {
+      handSet(data, squadFolder);
+      const config = fs.readFileSync(path.join(data, "config.json"));
+      post(data); // the second pass is a 409: the event is already in the log
+      const view = getSquad(data, pack, DAY, true).body;
+      expect(view.shared).toBe(false);
+      expect(view.members).toEqual([]);
+      expect(view.unreadable).toBe(1);
+      expect(fs.readFileSync(path.join(data, "config.json"))).toEqual(config);
+      expect(fs.existsSync(path.join(data, "sam.json"))).toBe(false);
+      expect(fs.existsSync(path.join(data, "squad"))).toBe(false);
+    }
+  }),
+);
+
+test(
+  "S5. a folder that is data/ or inside it is refused on save and on use; nothing is written in data/",
+  withTemp((dir, data) => {
+    join(data);
+    const inside = path.join(data, "squad");
+    fs.mkdirSync(inside);
+    const tries = [data, inside];
+    // macOS and Windows ignore case: DATA is data/ (realpath gives the stored case)
+    if (process.platform !== "linux") tries.push(path.join(dir, "DATA"));
+    for (const squadFolder of tries) {
+      const r = postConfig(
+        { preset: "none", weeklyTarget: 3, squadFolder },
+        data,
+      );
+      expect(r.status).toBe(400);
+    }
+    expect(fs.existsSync(path.join(data, "config.json"))).toBe(false);
+    handSet(data, data);
+    const config = fs.readFileSync(path.join(data, "config.json"));
+    post(data);
+    const view = getSquad(data, pack, DAY, true).body;
+    expect(view.unreadable).toBe(1);
+    expect(view.shared).toBe(false);
+    expect(fs.existsSync(path.join(data, "sam.json"))).toBe(false);
+    expect(fs.readFileSync(path.join(data, "config.json"))).toEqual(config);
+    expect(fs.readdirSync(inside)).toEqual([]);
+  }),
+);
+
+test(
+  "S6. a set folder that has gone (Drive not running) shows the note, writes nothing and does not fall back to data/",
+  withTemp((dir, data) => {
+    join(data);
+    setSync(dir, data);
+    fs.rmSync(sync(dir), { recursive: true });
+    post(data);
+    const view = getSquad(data, pack, DAY, true).body;
+    expect(view.folder).toBe(sync(dir));
+    expect(view.unreadable).toBe(1);
+    expect(view.shared).toBe(false);
+    expect(fs.existsSync(sync(dir))).toBe(false);
+    expect(fs.existsSync(path.join(data, "squad"))).toBe(false);
+  }),
+);
+
+test(
+  "S7. unset again: an empty field puts squad files back in data/squad/<squad>, as T14",
+  withTemp((dir, data) => {
+    join(data);
+    setSync(dir, data);
+    expect(
+      postConfig({ preset: "none", weeklyTarget: 3, squadFolder: "" }, data)
+        .status,
+    ).toBe(200);
+    expect(
+      JSON.parse(fs.readFileSync(path.join(data, "config.json"), "utf8")),
+    ).not.toHaveProperty("squadFolder");
+    put(data, "alex.json", friendFile("alex", 3));
+    post(data);
+    const view = getSquad(data, pack, DAY, true).body;
+    expect(view.folder).toBe(folder(data));
+    expect(view.shared).toBe(true);
+    expect(view.members.map((m) => m.pupil)).toEqual(["alex"]);
+    expect(fs.readdirSync(sync(dir))).toEqual([]);
   }),
 );
