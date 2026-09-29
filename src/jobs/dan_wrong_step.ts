@@ -8,7 +8,6 @@ import type { Misconception } from "../content/types";
 import { normaliseAnswer } from "../marking/normalise";
 import type { Message } from "../providers/openai-compatible";
 import { defineJob, preAttemptSystem } from "./define";
-import { numbersIn } from "./guard";
 import type { PreAttempt } from "./view";
 
 export type DanInput = {
@@ -42,16 +41,25 @@ function prompt({ view, topic, wrong }: DanInput): Message[] {
 const isObj = (x: unknown): x is Record<string, unknown> =>
   typeof x === "object" && x !== null && !Array.isArray(x);
 
-/** True when the lines land on `answer`: every number of a numeric answer appears in them; a text answer appears normalised. */
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * True when the last line lands on `answer`: the normalised answer appears there as a whole token, not
+ * inside a longer number, ratio, fraction or expression. The last line only, so an echoed scaffold cannot
+ * supply it; a token, not a set of numbers, so "3:4" for "4:3", "3" for "-3", "1" for "1/4", "9" for
+ * "9pi" and "2x" for "2x+3" are refused (R8: the pack-wide test in src/flow/coach.test.ts).
+ */
 export function reaches(lines: readonly string[], answer: string): boolean {
-  const joined = lines.join(" ");
-  const wanted = numbersIn(answer);
-  if (wanted.size > 0) {
-    const have = numbersIn(joined);
-    for (const n of wanted) if (!have.has(n)) return false;
-    return true;
-  }
-  return normaliseAnswer(joined).includes(normaliseAnswer(answer));
+  const want = normaliseAnswer(answer);
+  if (want === "") return false;
+  // normaliseAnswer drops trailing zeros only at the end of the string; a sentence ends in "." or words.
+  const last = normaliseAnswer(lines.at(-1) ?? "").replace(
+    /(\.\d*?)0+(?!\d)/g,
+    "$1",
+  );
+  return new RegExp(
+    `(?<![\\d.:/*^+-])${escapeRe(want)}(?![\\d:/*^+x]|\\.\\d|pi)`,
+  ).test(last);
 }
 
 const flat = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();

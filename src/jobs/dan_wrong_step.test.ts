@@ -197,3 +197,37 @@ test("reaches: numbers must all appear; a text answer is matched normalised", ()
   expect(reaches(["So it is a straight line"], "straight line")).toBe(true);
   expect(reaches(["So it is a curve"], "straight line")).toBe(false);
 });
+
+test("reaches (R8): the last line must hold the wrong answer as a whole token, not the right one", () => {
+  // Order, sign and fraction flips share the wrong answer's numbers (observed in the maths pack).
+  expect(reaches(["I get 3:4."], "4:3")).toBe(false);
+  expect(reaches(["I get 4:3."], "4:3")).toBe(true);
+  expect(reaches(["I get 3."], "-3")).toBe(false);
+  expect(reaches(["I get -3."], "3")).toBe(false);
+  expect(reaches(["I get -3."], "-3")).toBe(true);
+  expect(reaches(["I get 1/4."], "1")).toBe(false);
+  expect(reaches(["I get 3/4."], "4/3")).toBe(false);
+  expect(reaches(["I get 14.5."], "4.5")).toBe(false);
+  expect(reaches(["I get 4.55."], "4.5")).toBe(false);
+  expect(reaches(["It costs £9."], "9")).toBe(true);
+  expect(reaches(["The area is 9pi cm2."], "9")).toBe(false);
+  expect(reaches(["So y = 2x + 3."], "2x")).toBe(false);
+  expect(reaches(["It costs £0.80."], "0.80")).toBe(true);
+  expect(reaches(["It costs £0.80."], "0.8")).toBe(true);
+  // Only the last line counts: an earlier line cannot supply the answer.
+  expect(reaches(["10% of 45 = 4.5.", "So 20% of 45 is 45."], "4.5")).toBe(
+    false,
+  );
+});
+
+test(
+  "dan (R8): the scaffold echoed with a different final answer is a shape refusal",
+  withData(OPENAI, async (data) => {
+    const { v, calls } = await refused(
+      data,
+      '{"lines":["10% of 45 = 4.5.","So 20% of 45 is 45."]}',
+    );
+    expect(v).toEqual({ by: "fallback", value: FALLBACK, reason: "shape" });
+    expect(calls).toBe(2);
+  }),
+);
