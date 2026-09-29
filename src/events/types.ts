@@ -56,12 +56,14 @@ export type XpV1 = Line<"xp", 1> & {
   amount: number;
   reason: "attempt" | "retest" | "teachback";
 };
+export type SquadAnswer = { answer: string; working: string; correct: boolean };
 export type SquadV1 = Line<"squad", 1> & {
   squad: string;
   week: string;
   topic: string;
   score: number;
   of: number;
+  answers: SquadAnswer[]; // one per question, in round order; score = count of correct
 };
 export type PhotoV1 = Line<"photo", 1> & {
   item: string;
@@ -166,7 +168,21 @@ const FIELDS: { [K in EventKey]: (o: Obj) => boolean } = {
     (o.amount as number) > 0 &&
     oneOf(o.reason, ["attempt", "retest", "teachback"]),
   "squad@1": (o) =>
-    str(o.squad) && str(o.week) && str(o.topic) && outOf(o.score, o.of),
+    str(o.squad) &&
+    str(o.week) &&
+    str(o.topic) &&
+    outOf(o.score, o.of) &&
+    Array.isArray(o.answers) &&
+    o.answers.length === o.of &&
+    o.answers.every(
+      (a: unknown) =>
+        typeof a === "object" &&
+        a !== null &&
+        str((a as Obj).answer) &&
+        str((a as Obj).working) &&
+        bool((a as Obj).correct),
+    ) &&
+    o.answers.filter((a: Obj) => a.correct === true).length === o.score,
   "photo@1": (o) => str(o.item) && str(o.topic) && str(o.file),
   "usage@1": (o) =>
     str(o.job) &&
@@ -194,7 +210,7 @@ export const KEYS = {
   "teachback@1": ["topic", "item", "marks", "of"],
   "intake@1": ["door", "topics"],
   "xp@1": ["amount", "reason"],
-  "squad@1": ["squad", "week", "topic", "score", "of"],
+  "squad@1": ["squad", "week", "topic", "score", "of", "answers"],
   "photo@1": ["item", "topic", "file"],
   "usage@1": ["job", "model", "input", "output", "estimated"],
   "case@1": ["day", "kind", "topic", "item", "pick", "bet", "correct", "reask"],

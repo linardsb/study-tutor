@@ -6,13 +6,14 @@ import { getConfig, getUsage, postConfig } from "./api/config";
 import { postEvent } from "./api/event";
 import { lessonUrls } from "./api/lessons";
 import { nextForDay } from "./api/next";
+import { getSquad, joinSquad, postSquad } from "./api/squad";
 import { currentState } from "./api/state";
 import { restrictConfigOnStart } from "./config";
 import { loadTopics } from "./content/pack";
 import type { CasePack, Topic } from "./content/types";
 import { refusalLines, replayCheck } from "./events/check";
 import { isDay } from "./events/types";
-import { localDay, utcNow } from "./mcp/clock";
+import { isoWeek, localDay, utcNow } from "./mcp/clock";
 import { runStdio } from "./mcp/server";
 import {
   checkForUpdate,
@@ -208,6 +209,49 @@ async function postConfigRoute(
   return json(r.status, r.body);
 }
 
+/** One squad round. The day is always the clock's: a `?day=` is for reads only, and every write is today. */
+async function postSquadRoute(
+  req: Request,
+  root: string,
+  dataDir: string,
+  pack: CasePack | undefined,
+): Promise<Response> {
+  const refused = refuseForeign(req);
+  if (refused) return refused;
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return json(400, { error: "Body is not JSON" });
+  }
+  try {
+    const loaded = pack ?? (await loadCasePack("maths", root));
+    const r = postSquad(body, dataDir, loaded, localDay(utcNow()));
+    return json(r.status, r.body);
+  } catch (err) {
+    console.error(`Could not save the squad round: ${(err as Error).message}`);
+    return json(500, { error: "Could not save the squad round" });
+  }
+}
+
+async function postJoinRoute(req: Request, dataDir: string): Promise<Response> {
+  const refused = refuseForeign(req);
+  if (refused) return refused;
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return json(400, { error: "Body is not JSON" });
+  }
+  try {
+    const r = joinSquad(body, dataDir, localDay(utcNow()));
+    return json(r.status, r.body);
+  } catch (err) {
+    console.error(`Could not join the squad: ${(err as Error).message}`);
+    return json(500, { error: "Could not join the squad" });
+  }
+}
+
 /** Bun's per-request idle limit; the server passes itself to a route handler as the second argument. */
 type IdleControl = { timeout(req: Request, seconds: number): void };
 
@@ -304,6 +348,27 @@ export function apiRoutes(opts: ServerOptions) {
         postChatRoute(req, server, root, dataDir, pack),
     },
     "/api/update": { GET: (req: Request) => getUpdate(req, update) },
+    "/api/squad": {
+      // Only this week's view rewrites the pupil's own file: the file holds one week.
+      GET: (req: Request) =>
+        dayRoute(
+          req,
+          root,
+          pack,
+          "Could not read the squad",
+          (p, day) =>
+            getSquad(
+              dataDir,
+              p,
+              day,
+              isoWeek(day) === isoWeek(localDay(utcNow())),
+            ).body,
+        ),
+      POST: (req: Request) => postSquadRoute(req, root, dataDir, pack),
+    },
+    "/api/squad/join": {
+      POST: (req: Request) => postJoinRoute(req, dataDir),
+    },
   };
 }
 

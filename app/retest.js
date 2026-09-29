@@ -288,42 +288,41 @@
     return { topics, itemsByTopic };
   }
 
-  async function begin(ids, step, query, btn) {
+  async function begin(ids, step, built, titles, query, btn) {
     btn.disabled = true;
-    let pack;
-    try {
-      pack = await fetchPack(step.boss);
-    } catch {
-      ids.status.textContent = TEXT.notLoaded;
-      btn.disabled = false;
-      return;
-    }
     if (!(await postEvent(step.start))) {
       ids.status.textContent = TEXT.notSaved;
       btn.disabled = false;
       return;
     }
-    const g = globals();
-    const built = buildItems(
-      step.boss,
-      pack.topics,
-      pack.itemsByTopic,
-      g.GEN ?? {},
-      g.quiz,
-    );
-    if (built.length === 0) {
-      ids.status.textContent = TEXT.noQuestions;
-      return;
-    }
     ids.intro.replaceChildren();
-    const titles = {};
-    for (const t of pack.topics) titles[t.id] = t.title;
     renderQuestions(ids.boss, built, (results) =>
       finish(ids, step.boss, results, titles, query),
     );
   }
 
-  function renderIntro(ids, step, query) {
+  /* the boss's questions built before anything is posted; null when the pack did not load */
+  async function buildBoss(boss) {
+    let pack;
+    try {
+      pack = await fetchPack(boss);
+    } catch {
+      return null;
+    }
+    const g = globals();
+    const built = buildItems(
+      boss,
+      pack.topics,
+      pack.itemsByTopic,
+      g.GEN ?? {},
+      g.quiz,
+    );
+    const titles = {};
+    for (const t of pack.topics) titles[t.id] = t.title;
+    return { built, titles };
+  }
+
+  async function renderIntro(ids, step, query) {
     const intro = ids.intro;
     if (step.kind === "continue") {
       intro.append(el("p", "", TEXT.otherOpen), mapLink(query, TEXT.toMap));
@@ -333,12 +332,29 @@
       intro.append(el("p", "", TEXT.noBoss), mapLink(query, TEXT.toMap));
       return;
     }
+    const made = await buildBoss(step.boss);
+    if (made === null) {
+      ids.status.textContent = TEXT.notLoaded;
+      return;
+    }
+    const { built, titles } = made;
+    if (built.length === 0) {
+      ids.status.textContent = TEXT.noQuestions;
+      return;
+    }
+    /* the intro counts what was built, not what was served */
     intro.appendChild(
-      el("p", "", TEXT.intro(step.boss.slots.length, step.boss.topics.length)),
+      el(
+        "p",
+        "",
+        TEXT.intro(built.length, new Set(built.map((b) => b.slot.topic)).size),
+      ),
     );
     const btn = el("button", "", TEXT.begin);
     btn.type = "button";
-    btn.addEventListener("click", () => begin(ids, step, query, btn));
+    btn.addEventListener("click", () =>
+      begin(ids, step, built, titles, query, btn),
+    );
     intro.appendChild(btn);
   }
 
@@ -370,7 +386,7 @@
       ids.status.textContent = TEXT.couldNotClose;
       return;
     }
-    renderIntro(ids, step, query);
+    await renderIntro(ids, step, query);
   }
 
   if (typeof document !== "undefined") {
