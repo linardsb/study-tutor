@@ -44,6 +44,16 @@
     lessonsNotLoaded:
       "The lessons did not load. Check the tutor window is still open.",
     notSaved: " Not saved. Check the tutor window is still open.",
+    statLeft: "marks left on the table this week",
+    statLastLeft: (n) => `last week ${n}`,
+    statClean: "clean sheets this week",
+    snapScan:
+      "Scan this with your phone on the same Wi-Fi. It works once, for 15 minutes.",
+    snapLocal: "Or drop a photo on this computer",
+    snapNoLan:
+      "The phone cannot reach this computer from here. Drop a photo on this computer instead.",
+    snapFailed:
+      "The photo link did not open. Check the tutor window is still open.",
   };
 
   /* the two seams a test replaces: where a click sends the pupil, and the page's own reload */
@@ -160,6 +170,24 @@
     return box;
   }
 
+  /* marks left on the table (of − marks) this week and the latest week before it, and this week's
+     clean sheets; null with no photo this week. ISO week keys (YYYY-Www) sort as strings. */
+  function photoStats(state, week) {
+    const photos = state.photos ?? {};
+    const w = photos[week];
+    if (w === undefined) return null;
+    const before = Object.keys(photos)
+      .filter((k) => k < week)
+      .sort()
+      .at(-1);
+    const b = before === undefined ? undefined : photos[before];
+    return {
+      left: w.of - w.marks,
+      lastLeft: b === undefined ? null : b.of - b.marks,
+      clean: w.clean,
+    };
+  }
+
   function renderStats(holder, state, next, topics) {
     const started = topics.filter(
       (t) => (state.topics[t.id]?.rung ?? 0) >= 1,
@@ -169,6 +197,48 @@
       stat(String(state.xp.total), TEXT.statXp),
       stat(TEXT.statStarted(started, topics.length), TEXT.statStartedLabel),
     );
+    const photos = photoStats(state, next.flame.week);
+    if (photos === null) return;
+    const left = stat(String(photos.left), TEXT.statLeft);
+    if (photos.lastLeft !== null)
+      left.appendChild(el("span", "", TEXT.statLastLeft(photos.lastLeft)));
+    holder.append(left, stat(String(photos.clean), TEXT.statClean));
+  }
+
+  /* the examiner block: mint a snap for the last attempt, then the QR code (the tutor's own SVG from
+     uqr, never model text) and the local link for a dropped file */
+  async function openSnap(holder, btn) {
+    btn.disabled = true;
+    holder.replaceChildren();
+    let res;
+    let body;
+    try {
+      res = await fetch("/api/snap", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: "{}",
+      });
+      body = await res.json();
+    } catch {
+      holder.appendChild(el("p", "note", TEXT.snapFailed));
+      btn.disabled = false;
+      return;
+    }
+    btn.disabled = false;
+    if (res.status !== 201) {
+      holder.appendChild(el("p", "note", body.error || TEXT.snapFailed));
+      return;
+    }
+    holder.appendChild(el("p", "stem", body.stem));
+    if (body.qr) {
+      const svg = new DOMParser().parseFromString(body.qr, "image/svg+xml");
+      const box = el("div", "qr");
+      box.appendChild(document.importNode(svg.documentElement, true));
+      holder.append(box, el("p", "", TEXT.snapScan));
+    } else holder.appendChild(el("p", "note", TEXT.snapNoLan));
+    const a = el("a", "", TEXT.snapLocal);
+    a.href = body.local;
+    holder.appendChild(el("p")).appendChild(a);
   }
 
   /* a post action: the button posts the served body, then goes to its page or re-renders in place */
@@ -289,6 +359,10 @@
       };
       api.reload = () => load(ids);
       api.reload();
+      const snapBtn = document.getElementById("snap-open");
+      const snapBox = document.getElementById("snap");
+      if (snapBtn && snapBox)
+        snapBtn.addEventListener("click", () => openSnap(snapBox, snapBtn));
     }
   }
 
@@ -302,5 +376,6 @@
     cardClass,
     stepText,
     stepActions,
+    photoStats,
   });
 })();

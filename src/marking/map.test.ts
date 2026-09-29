@@ -21,6 +21,12 @@ type Map = {
     lessons: Record<string, string>,
     query: string,
   ) => Action[];
+  photoStats: (
+    state: {
+      photos?: Record<string, { marks: number; of: number; clean: number }>;
+    },
+    week: string,
+  ) => { left: number; lastLeft: number | null; clean: number } | null;
 };
 
 // The browser file sets a global, the way case.js does; nothing in it touches document at load.
@@ -156,4 +162,36 @@ test("register: no exclamation mark and no emoji in any map string", () => {
       emoji: false,
     });
   }
+});
+
+test("photoStats: none, one week, and the latest earlier week", () => {
+  const w = (marks: number, of: number, clean: number) => ({
+    marks,
+    of,
+    clean,
+  });
+  expect(map.photoStats({}, "2026-W42")).toBeNull();
+  expect(
+    map.photoStats({ photos: { "2026-W41": w(1, 5, 0) } }, "2026-W42"),
+  ).toBeNull();
+  expect(
+    map.photoStats({ photos: { "2026-W42": w(3, 5, 1) } }, "2026-W42"),
+  ).toEqual({
+    left: 2,
+    lastLeft: null,
+    clean: 1,
+  });
+  expect(
+    map.photoStats(
+      {
+        photos: {
+          "2026-W09": w(0, 5, 0),
+          "2026-W40": w(1, 5, 0),
+          "2026-W42": w(8, 10, 2),
+          "2026-W43": w(0, 5, 0),
+        },
+      },
+      "2026-W42",
+    ),
+  ).toEqual({ left: 2, lastLeft: 4, clean: 2 });
 });

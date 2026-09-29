@@ -1,14 +1,32 @@
 // A stand-in OpenAI-compatible provider on 127.0.0.1 for tests and manual checks of the chat route.
-// It answers POST /v1/chat/completions after `delayMs`: marks for a teach-back, Dan's given wrong answer, a fixed hint otherwise,
+// It answers POST /v1/chat/completions after `delayMs`: five examiner lines for a photo, marks for a
+// teach-back, Dan's given wrong answer, a fixed hint otherwise,
 // or "not json" in not-json mode. Run it: bun scripts/fake-provider.ts --mode not-json --delay 70000
 
 export type FakeMode = "valid" | "not-json";
 
 type Msg = { role?: string; content?: unknown };
 
-/** The reply content for one request: one mark per numbered pupil line for a teach-back, a hint otherwise. */
+// Scored 4 of 5, clean: 1 + 0 + 1 + 1 (units not needed) + 1.
+const EXAMINER = {
+  lines: [
+    { kind: "method", mark: 1, note: "" },
+    { kind: "accuracy", mark: 0, note: "Check the last step." },
+    { kind: "answer", mark: 1, note: "" },
+    { kind: "units", mark: null, note: "" },
+    { kind: "sense", mark: 1, note: "" },
+  ],
+};
+
+const hasImage = (m: Msg) =>
+  Array.isArray(m.content) &&
+  m.content.some((p) => (p as { type?: unknown })?.type === "image_url");
+
+/** The reply content for one request: examiner lines for a photo, one mark per numbered pupil line for a teach-back, a hint otherwise. */
 function contentFor(messages: Msg[], mode: FakeMode): string {
   if (mode === "not-json") return "not json";
+  // By structure, not wording: the examiner's user content is an array, which String() would spoil below.
+  if (messages.some(hasImage)) return JSON.stringify(EXAMINER);
   const system = String(messages.find((m) => m.role === "system")?.content);
   if (system.includes("You are Dan")) {
     const user = String(messages.find((m) => m.role === "user")?.content);

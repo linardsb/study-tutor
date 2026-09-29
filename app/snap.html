@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mark my working</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+  .ai-note { position: sticky; top: 0; z-index: 1; margin: 0 0 1rem; padding: 0.5rem 0.75rem; background: var(--grey-bg); border: 1px solid var(--line); }
+  #snap-form label { display: block; margin: 1rem 0 0.25rem; font-weight: 600; }
+  #snap-form button { margin-top: 0.5rem; font: inherit; padding: 0.4rem 1rem; }
+  #drop { margin-top: 1rem; padding: 1.5rem; border: 2px dashed var(--line); text-align: center; }
+  #drop.over { background: var(--grey-bg); }
+  [hidden] { display: none; }
+  #result p { margin: 0.4rem 0; }
+</style>
+</head>
+<body>
+<main class="lesson">
+  <p class="ai-note" role="note">This is an AI. It can be wrong. It marks your working and never writes the answer.</p>
+  <header>
+    <h1>Mark my working</h1>
+  </header>
+
+  <section id="item">
+    <p class="crumb" id="title"></p>
+    <p class="stem" id="stem">Loading the question.</p>
+    <div class="figure" id="figure" hidden></div>
+  </section>
+
+  <p class="note" id="no-model" hidden>No model is set up, so your photo will be stored but not marked.</p>
+
+  <form id="snap-form" hidden>
+    <label for="photo">Photo of your working</label>
+    <input type="file" id="photo" accept="image/*" capture="environment">
+    <div id="drop">Or drop a photo here</div>
+    <button type="submit" id="send">Send</button>
+  </form>
+
+  <div id="result"></div>
+  <p class="note" id="status" role="status"></p>
+</main>
+<script src="/snap.js"></script>
+</body>
+</html>

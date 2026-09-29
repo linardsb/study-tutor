@@ -35,10 +35,19 @@ const served = {
   },
   next: nextStep(state, DAY, pack, 3) as Next,
   post: { status: 201 },
+  snap: {
+    status: 201,
+    body: {
+      local: "/snap.html?token=T",
+      lan: "http://192.168.1.11:52311/snap.html?token=T",
+      qr: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><rect width="1" height="1"/></svg>',
+      stem: "Find 20% of 45.",
+    },
+  } as { status: number; body: Record<string, unknown> },
 };
 
 doc().body.innerHTML =
-  '<div id="stats"></div><div id="today" hidden></div><div id="cards"></div><p id="status"></p>';
+  '<div id="stats"></div><div id="today" hidden></div><button id="snap-open"></button><div id="snap"></div><div id="cards"></div><p id="status"></p>';
 
 const calls: { method: string; url: string; body?: unknown }[] = [];
 globalThis.fetch = (async (url: string, init?: RequestInit) => {
@@ -55,6 +64,8 @@ globalThis.fetch = (async (url: string, init?: RequestInit) => {
   if (url === "/api/next?day=2026-13-45")
     return Response.json({ error: "day must be YYYY-MM-DD" }, { status: 400 });
   if (url.startsWith("/api/next")) return Response.json(served.next);
+  if (url === "/api/snap")
+    return Response.json(served.snap.body, { status: served.snap.status });
   if (url === "/content/maths/topics.json") return Response.json(pack.topics);
   if (url === "/api/lessons") return Response.json(lessons);
   return new Response("Not found", { status: 404 });
@@ -228,4 +239,61 @@ test("F4: a malformed ?day= passes the shape check, the server refuses it, and t
   );
   expect($$("#cards .card")).toHaveLength(0);
   history.replaceState(null, "", "/map.html?day=2026-10-10");
+});
+
+test("examiner: the button posts {} to /api/snap and shows the stem, the QR code and the local link", async () => {
+  calls.length = 0;
+  $("#snap-open").click();
+  await until(() => $("#snap svg") !== null);
+  expect(posts()).toEqual([{ method: "POST", url: "/api/snap", body: {} }]);
+  expect($("#snap .stem").textContent).toBe("Find 20% of 45.");
+  expect($("#snap a").getAttribute("href")).toBe("/snap.html?token=T");
+  expect($("#snap").textContent).toContain(
+    "Scan this with your phone on the same Wi-Fi. It works once, for 15 minutes.",
+  );
+});
+
+test("examiner: with no LAN address the map says to drop a photo on this computer", async () => {
+  served.snap = {
+    status: 201,
+    body: { ...served.snap.body, lan: null, qr: null },
+  };
+  $("#snap-open").click();
+  await until(() => ($("#snap").textContent ?? "").includes("cannot reach"));
+  expect($("#snap svg")).toBeNull();
+  expect($("#snap .note").textContent).toBe(
+    "The phone cannot reach this computer from here. Drop a photo on this computer instead.",
+  );
+  expect($("#snap a").getAttribute("href")).toBe("/snap.html?token=T");
+});
+
+test("examiner: a 409 shows its sentence", async () => {
+  served.snap = {
+    status: 409,
+    body: { error: "Try a question first. Then photograph your working." },
+  };
+  $("#snap-open").click();
+  await until(() => ($("#snap").textContent ?? "").includes("Try a question"));
+  expect($("#snap .note").textContent).toBe(
+    "Try a question first. Then photograph your working.",
+  );
+});
+
+test("examiner: photos this week and last week show marks left on the table and clean sheets", async () => {
+  const week = served.next.flame.week;
+  const withPhotos = wire(state) as unknown as Record<string, unknown>;
+  withPhotos.photos = {
+    "2000-W01": { taken: 1, marked: 1, marks: 0, of: 5, clean: 0 },
+    [week]: { taken: 2, marked: 2, marks: 8, of: 10, clean: 1 },
+  };
+  served.state = { status: 200, body: withPhotos };
+  await api.reload();
+  await until(() => $$("#stats .stat").length === 5);
+  const stats = $$("#stats .stat");
+  // derived: this week 10 − 8 = 2 left; the week before 5 − 0 = 5
+  expect(stats[3]?.textContent).toBe(
+    "2marks left on the table this weeklast week 5",
+  );
+  expect(stats[4]?.textContent).toBe("1clean sheets this week");
+  served.state = { status: 200, body: wire(state) };
 });

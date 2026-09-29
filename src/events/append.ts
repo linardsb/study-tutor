@@ -167,7 +167,7 @@ export function readStoredState(dataDir: string): unknown {
 export function writeDataFile(
   dataDir: string,
   rel: string,
-  text: string,
+  data: string | Uint8Array,
 ): void {
   fs.mkdirSync(dataDir, { recursive: true });
   const file = resolveInData(dataDir, rel);
@@ -176,7 +176,9 @@ export function writeDataFile(
   fs.rmSync(tmp, { force: true });
   const fd = fs.openSync(tmp, WRITE, OWNER_ONLY);
   try {
-    fs.writeSync(fd, text);
+    // fs.writeSync has separate overloads for a string and bytes.
+    if (typeof data === "string") fs.writeSync(fd, data);
+    else fs.writeSync(fd, data);
     fs.fsyncSync(fd);
   } finally {
     fs.closeSync(fd);
@@ -196,15 +198,16 @@ export function writeDataFile(
 /**
  * Makes a folder under data/ one level at a time (`squad`, then `squad/<id>`), so every level
  * passes the realpath check before anything is made inside it. Refuses a level that is not a folder.
+ * `mode` applies to each level this call makes, not to one that already exists.
  */
-export function makeDataDir(dataDir: string, rel: string): void {
+export function makeDataDir(dataDir: string, rel: string, mode = 0o777): void {
   fs.mkdirSync(dataDir, { recursive: true });
   const parts = rel.split("/");
   for (let i = 1; i <= parts.length; i++) {
     const prefix = parts.slice(0, i).join("/");
     const real = resolveInData(dataDir, prefix);
     try {
-      fs.mkdirSync(real);
+      fs.mkdirSync(real, { mode });
     } catch (err) {
       if ((err as { code?: string }).code !== "EEXIST") throw err;
     }
@@ -234,6 +237,22 @@ export function listDataDir(
     if (isMissing(err)) return { files: [], skipped: [] };
     throw err;
   }
+}
+
+export const INTAKE_DIR = "intake";
+
+/** Saves one photo as data/intake/<name>, owner-only, and returns its path relative to data/. */
+export function writeIntakeFile(
+  dataDir: string,
+  name: string,
+  bytes: Uint8Array,
+): string {
+  if (!/^[A-Za-z0-9-]+\.(?:jpg|png|webp)$/.test(name))
+    throw new Error(`Refused: ${name} is not a photo name`);
+  makeDataDir(dataDir, INTAKE_DIR, 0o700);
+  const rel = `${INTAKE_DIR}/${name}`;
+  writeDataFile(dataDir, rel, bytes);
+  return rel;
 }
 
 type Spawn = (cmd: string[]) => { exitCode: number | null };

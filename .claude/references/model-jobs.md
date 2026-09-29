@@ -23,6 +23,8 @@ Retry table (`src/jobs/define.ts`, T9): `not-json`, `shape` (the validator refus
 
 Jobs planned: `examiner_mark` (O3, vision), `intake_read` (sheet or photo → topic codes).
 
+`examiner_mark` (T13, shipped): input `PostAttempt` plus the photo, sent as a text part and then an image part (the S2 probe's form), with `mark_scheme ?? working` as the scheme. Output: exactly five lines in a fixed order (method, accuracy, answer, units, sense), each mark 0 or 1, and units `null` when the question needs none (scored as 1). So every marked photo is out of 5. `sources` is the stem alone: handwriting is not text the guard can read, so a note may quote no number from the photo, and the corrected value cannot reach the screen that way. No transcription field. `fallback` is null, which the snap page shows as "stored, not marked yet".
+
 ## Provider
 
 `src/providers/openai-compatible.ts` is the only network call to a model: `POST ${base_url}/chat/completions` with `Authorization: Bearer ${key}`. Vision goes as `image_url` content parts. Presets are labels over the same three fields (OpenAI, OpenRouter, Groq, Mistral, DeepSeek, Ollama, LM Studio, Anthropic compat). No Gemini preset. Usage from each response feeds the monthly token counter event.

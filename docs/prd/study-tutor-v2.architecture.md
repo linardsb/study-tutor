@@ -130,6 +130,8 @@ Wi-Fi opens it and takes the photo; the binary saves it to `data/intake/` and se
 model with the item's mark scheme. Fallback: drop a file on the page. This is the only listening
 address beyond loopback, bound for the session and gated by the token. Rejected: any relay (non-goal),
 email or messaging (outbound channels are non-goals).
+T13 shipped it as `/snap.html?token=` on a listener that exists only while a snap is open: 15 minutes
+from the mint, or 10 after an upload when that is later.
 
 **D9 Squad (O4): files, no server.**
 Seed = hash(squad id, ISO week, topic), so identical numbers need no exchange. Results are one file per
