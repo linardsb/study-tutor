@@ -4,6 +4,8 @@ import os from "node:os";
 import path from "node:path";
 import {
   appendEvent,
+  listDataDir,
+  makeDataDir,
   ownerAccount,
   readLines,
   readStoredState,
@@ -447,3 +449,74 @@ test("ownerAccount qualifies the user with USERDOMAIN when it is set (#34)", () 
   expect(ownerAccount({ USERDOMAIN: "" }, "pupil")).toBe("pupil");
   expect(ownerAccount({}, "pupil")).toBe("pupil");
 });
+
+test(
+  "makeDataDir: makes data, squad and squad/<id> one level at a time; a second call is a no-op",
+  withTemp((_dir, data) => {
+    makeDataDir(data, "squad/year11-b");
+    expect(
+      fs.statSync(path.join(data, "squad", "year11-b")).isDirectory(),
+    ).toBe(true);
+    makeDataDir(data, "squad/year11-b");
+    expect(listDataDir(data, "squad/year11-b")).toEqual({
+      files: [],
+      skipped: [],
+    });
+  }),
+);
+
+test(
+  "makeDataDir: a squad symlinked out of data is refused and nothing is made outside",
+  withTemp((dir, data) => {
+    const outside = path.join(dir, "outside");
+    fs.mkdirSync(outside);
+    fs.mkdirSync(data);
+    fs.symlinkSync(outside, path.join(data, "squad"));
+    expect(() => makeDataDir(data, "squad/year11-b")).toThrow(
+      /outside the data folder/,
+    );
+    expect(fs.readdirSync(outside)).toEqual([]);
+  }),
+);
+
+test(
+  "makeDataDir: a level that is a file is refused",
+  withTemp((_dir, data) => {
+    fs.mkdirSync(path.join(data, "squad"), { recursive: true });
+    fs.writeFileSync(path.join(data, "squad", "year11-b"), "x");
+    expect(() => makeDataDir(data, "squad/year11-b")).toThrow(
+      /squad\/year11-b is not a folder/,
+    );
+  }),
+);
+
+test(
+  "listDataDir: a missing folder, or a missing data, is empty",
+  withTemp((_dir, data) => {
+    const none = { files: [], skipped: [] };
+    expect(listDataDir(data, "squad/year11-b")).toEqual(none);
+    fs.mkdirSync(data);
+    expect(listDataDir(data, "squad/year11-b")).toEqual(none);
+  }),
+);
+
+test.skipIf(process.platform === "win32")(
+  "listDataDir: regular files sorted; a symlink and a subfolder are named as skipped; a symlinked folder out of data is refused",
+  withTemp((dir, data) => {
+    const folder = path.join(data, "squad", "b");
+    fs.mkdirSync(path.join(folder, "sub"), { recursive: true });
+    fs.writeFileSync(path.join(folder, "zoe.json"), "{}");
+    fs.writeFileSync(path.join(folder, "alex.json"), "{}");
+    const outside = path.join(dir, "outside.json");
+    fs.writeFileSync(outside, "{}");
+    fs.symlinkSync(outside, path.join(folder, "link.json"));
+    expect(listDataDir(data, "squad/b")).toEqual({
+      files: ["alex.json", "zoe.json"],
+      skipped: ["link.json", "sub"],
+    });
+    fs.symlinkSync(dir, path.join(data, "squad", "out"));
+    expect(() => listDataDir(data, "squad/out")).toThrow(
+      /outside the data folder/,
+    );
+  }),
+);

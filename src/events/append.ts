@@ -193,6 +193,49 @@ export function writeDataFile(
   }
 }
 
+/**
+ * Makes a folder under data/ one level at a time (`squad`, then `squad/<id>`), so every level
+ * passes the realpath check before anything is made inside it. Refuses a level that is not a folder.
+ */
+export function makeDataDir(dataDir: string, rel: string): void {
+  fs.mkdirSync(dataDir, { recursive: true });
+  const parts = rel.split("/");
+  for (let i = 1; i <= parts.length; i++) {
+    const prefix = parts.slice(0, i).join("/");
+    const real = resolveInData(dataDir, prefix);
+    try {
+      fs.mkdirSync(real);
+    } catch (err) {
+      if ((err as { code?: string }).code !== "EEXIST") throw err;
+    }
+    if (!fs.lstatSync(real).isDirectory())
+      throw new Error(`Refused: ${prefix} is not a folder`);
+  }
+}
+
+/**
+ * One folder under data/: the regular files, sorted, and the names of what was skipped (a symlink, a
+ * subfolder), so a caller can say something was left out. Both empty when the folder is missing.
+ */
+export function listDataDir(
+  dataDir: string,
+  rel: string,
+): { files: string[]; skipped: string[] } {
+  try {
+    const real = resolveInData(dataDir, rel);
+    const entries = fs
+      .readdirSync(real, { withFileTypes: true })
+      .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+    return {
+      files: entries.filter((d) => d.isFile()).map((d) => d.name),
+      skipped: entries.filter((d) => !d.isFile()).map((d) => d.name),
+    };
+  } catch (err) {
+    if (isMissing(err)) return { files: [], skipped: [] };
+    throw err;
+  }
+}
+
 type Spawn = (cmd: string[]) => { exitCode: number | null };
 
 /**

@@ -195,7 +195,7 @@ test("register: no exclamation mark and no emoji in either page or any exported 
     expect(clean(s)).toEqual({ s, bang: false, emoji: false });
 });
 
-test("no page writes a file: no storage or file API under app/, and every POST goes to /api/event, /api/config or /api/chat", () => {
+test("no page writes a file: no storage or file API under app/, and every POST goes to /api/event, /api/config, /api/chat or /api/squad", () => {
   const files = fs
     .readdirSync(app)
     .filter((f) => f.endsWith(".js") || f.endsWith(".html"));
@@ -211,14 +211,18 @@ test("no page writes a file: no storage or file API under app/, and every POST g
         ),
     }).toEqual({ f, storage: false });
     for (const m of src.matchAll(
-      /fetch\(\s*"(\/api\/[a-z]+)"[\s\S]{0,120}?method:\s*"POST"/g,
+      /fetch\(\s*"(\/api\/[a-z/]+)"[\s\S]{0,120}?method:\s*"POST"/g,
     ))
       posts.push(`${f}:${m[1]}`);
   }
   expect(posts.length).toBeGreaterThan(2);
-  // /api/chat saves a teach-back only through postEvent, on the server, like /api/event.
+  // /api/chat saves a teach-back only through postEvent, on the server, like /api/event. The squad
+  // posts write only through appendEvent and writeDataFile on the server, and only the pupil's own file.
   for (const p of posts)
-    expect({ p, ok: /:\/api\/(event|config|chat)$/.test(p) }).toEqual({
+    expect({
+      p,
+      ok: /:\/api\/(event|config|chat|squad|squad\/join)$/.test(p),
+    }).toEqual({
       p,
       ok: true,
     });

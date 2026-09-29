@@ -22,7 +22,7 @@ export function resolveTopic(topics: readonly Topic[], code: string): string {
 const isObj = (x: unknown): x is Record<string, unknown> =>
   typeof x === "object" && x !== null && !Array.isArray(x);
 
-/** XP is the tutor's to write, a re-test has at least one question, and its pass must be the one its score gives. Null when no rule refuses. */
+/** XP is the tutor's to write, a re-test has at least one question, its pass must be the one its score gives, and a squad round has its own route. Null when no rule refuses. */
 function refusal(event: Record<string, unknown>): string | null {
   if (event.type === "xp")
     return "Refused: XP is written by the tutor, not posted";
@@ -37,6 +37,9 @@ function refusal(event: Record<string, unknown>): string | null {
     event.passed !== passes(event.score, event.of)
   )
     return "Refused: passed does not match the score";
+  // The server marks a squad round and writes its file after the event; see src/api/squad.ts.
+  if (event.type === "squad")
+    return "Refused: a squad round is saved through /api/squad";
   return null;
 }
 

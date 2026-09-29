@@ -306,3 +306,40 @@ test("finish while a lesson is open elsewhere: the retest posts, and the lesson'
   expect(posts()[0]).toEqual(startBody("boss", null));
   expect($("#result h2").textContent).toBe("Boss over.");
 });
+
+test("F5: a boss with no buildable question says so, shows no Begin button and posts nothing", async () => {
+  calls.length = 0;
+  setStep({
+    kind: "boss",
+    boss: {
+      day: DAY,
+      seed: 1,
+      topics: ["no/such"],
+      slots: [{ topic: "no/such", item: null, seed: 1 }],
+    },
+    start: startBody("boss", null),
+  });
+  await api.reload();
+  await until(() => $("#status").textContent !== "");
+  expect($("#status").textContent).toBe(
+    "The questions could not be built. Tell a parent.",
+  );
+  expect($("#intro button")).toBeNull();
+  expect(posts()).toHaveLength(0);
+});
+
+test("F5: the intro counts the questions that were built, not the slots served", async () => {
+  calls.length = 0;
+  setStep({
+    ...bossStep,
+    boss: {
+      ...b,
+      topics: [A, "no/such"],
+      slots: [...b.slots, { topic: "no/such", item: null, seed: 1 }],
+    },
+  } as Step);
+  await api.reload();
+  await until(() => Boolean($("#intro button")));
+  expect($("#intro p").textContent).toStartWith("3 questions from 1 topic.");
+  expect(posts()).toHaveLength(0);
+});

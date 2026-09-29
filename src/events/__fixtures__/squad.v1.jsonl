@@ -1,1 +1,1 @@
-{"v":1,"t":"2026-10-10T11:00:00Z","type":"squad","squad":"year11-b","week":"2026-W41","topic":"1MA1/R9","score":4,"of":5}
+{"v":1,"t":"2026-10-10T11:00:00Z","type":"squad","squad":"year11-b","week":"2026-W41","topic":"1MA1/R9","score":4,"of":5,"answers":[{"answer":"210","working":"60% of 350 = 0.6 x 350 = 210","correct":true},{"answer":"84","working":"0.35 x 240 = 84","correct":true},{"answer":"44","working":"0.55 x 80 = 44","correct":true},{"answer":"48","working":"0.12 x 40","correct":false},{"answer":"105","working":"","correct":true}]}

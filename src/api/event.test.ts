@@ -268,3 +268,26 @@ test(
     expect(types(data)).toEqual(["attempt"]);
   }),
 );
+
+test(
+  "a squad body is refused, even a valid one, and nothing is written (it goes through /api/squad)",
+  withTemp((_dir, data) => {
+    const squad = {
+      v: 1,
+      type: "squad",
+      squad: "year11-b",
+      week: "2026-W41",
+      topic: "1MA1/R9/of-an-amount",
+      score: 1,
+      of: 1,
+      answers: [{ answer: "210", working: "", correct: true }],
+    };
+    const r = postEvent(squad, data, topics, AT);
+    expect(r).toEqual({
+      status: 400,
+      body: { error: "Refused: a squad round is saved through /api/squad" },
+    });
+    expect(readLines(data)).toEqual([]);
+    expect(fs.existsSync(data)).toBe(false);
+  }),
+);

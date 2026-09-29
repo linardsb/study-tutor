@@ -12,7 +12,9 @@ import { type Next, nextStep } from "../flow/next";
 import { endBody } from "../flow/session";
 import { doc, type El, until as settle } from "./dom";
 
-GlobalRegistrator.register({ url: "http://127.0.0.1:4731/map.html" });
+GlobalRegistrator.register({
+  url: "http://127.0.0.1:4731/map.html?day=2026-10-10",
+});
 afterAll(() => GlobalRegistrator.unregister());
 
 const pack = await loadCasePack("maths");
@@ -50,7 +52,9 @@ globalThis.fetch = (async (url: string, init?: RequestInit) => {
     );
   if (url === "/api/state")
     return Response.json(served.state.body, { status: served.state.status });
-  if (url === "/api/next") return Response.json(served.next);
+  if (url === "/api/next?day=2026-13-45")
+    return Response.json({ error: "day must be YYYY-MM-DD" }, { status: 400 });
+  if (url.startsWith("/api/next")) return Response.json(served.next);
   if (url === "/content/maths/topics.json") return Response.json(pack.topics);
   if (url === "/api/lessons") return Response.json(lessons);
   return new Response("Not found", { status: 404 });
@@ -94,7 +98,9 @@ test("render: a card per pack topic with rung, due and lesson link; stats; the b
     "Boss ready. 3 questions from 1 topic",
   );
   expect($$("#today a, #today button")).toHaveLength(1);
-  expect($("#today a").getAttribute("href")).toBe("/retest.html");
+  expect($("#today a").getAttribute("href")).toBe(
+    "/retest.html?day=2026-10-10",
+  );
   expect(posts()).toHaveLength(0);
 });
 
@@ -200,4 +206,26 @@ test("failure: only /api/lessons down renders the map with no lesson links and s
     "The lessons did not load. Check the tutor window is still open.",
   );
   expect($("#cards .card").querySelector("a")).toBeNull();
+});
+
+test("F4: the page's ?day= is forwarded to /api/next", () => {
+  expect(calls.some((c) => c.url === "/api/next?day=2026-10-10")).toBe(true);
+});
+
+test("F4: a malformed ?day= passes the shape check, the server refuses it, and the map says it did not load", async () => {
+  // happy-dom's history; the repo's tsconfig carries no DOM lib
+  const history = (
+    globalThis as unknown as {
+      history: { replaceState: (s: null, t: string, u: string) => void };
+    }
+  ).history;
+  history.replaceState(null, "", "/map.html?day=2026-13-45");
+  await api.reload();
+  await until(() => $("#status").textContent !== "");
+  expect(calls.some((c) => c.url === "/api/next?day=2026-13-45")).toBe(true);
+  expect($("#status").textContent).toBe(
+    "The map did not load. Check the tutor window is still open.",
+  );
+  expect($$("#cards .card")).toHaveLength(0);
+  history.replaceState(null, "", "/map.html?day=2026-10-10");
 });
