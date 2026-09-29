@@ -32,8 +32,8 @@ test("the same state and day give the same test; another day gives other seeds",
   const a = diagnostic(replay([]), DAY, pack);
   expect(diagnostic(replay([]), DAY, pack)).toEqual(a);
   const b = diagnostic(replay([]), "2026-10-06", pack);
-  expect(b?.slots.map((s) => s.seed).sort()).not.toEqual(
-    a?.slots.map((s) => s.seed).sort(),
+  expect(b?.slots.map((s) => s.seed).sort((x, y) => x - y)).not.toEqual(
+    a?.slots.map((s) => s.seed).sort((x, y) => x - y),
   );
 });
 

@@ -37,6 +37,7 @@ const served = {
   interview: {} as unknown,
   diagnostic: null as Diagnostic | null,
   eventOk: true,
+  sheetStatus: 200,
 };
 type Call = { method: string; url: string; body?: Record<string, unknown> };
 const calls: Call[] = [];
@@ -53,7 +54,8 @@ globalThis.fetch = (async (url: string, init?: RequestInit) => {
     return Response.json(
       pack.topics.map((t) => ({ ...t, subject: subjects.get(t.id) })),
     );
-  if (url === "/api/intake/sheet") return Response.json(served.sheet);
+  if (url === "/api/intake/sheet")
+    return Response.json(served.sheet, { status: served.sheetStatus });
   if (url === "/api/intake/interview") return Response.json(served.interview);
   if (url === "/api/intake/diagnostic")
     return Response.json(wire(served.diagnostic));
@@ -85,7 +87,9 @@ type Page = {
     | "matchFailed"
     | "answerFirst"
     | "sureFirst"
-    | "nothingToAsk",
+    | "nothingToAsk"
+    | "notLoaded"
+    | "sheetRefused",
     string
   > & {
     readAs: (code: string) => string;
@@ -186,6 +190,25 @@ test("15a: a failed post says not saved", async () => {
   }
 });
 
+test("15a (PR #51 F2): after a Save the list is gone, so changing a radio cannot post a second intake", async () => {
+  await fresh("none");
+  page.confirmRows(
+    "sheet",
+    [{ topic: PCT, title: "Percentage of an amount", rag: "R" }],
+    "code",
+  );
+  $("#save").click();
+  await until(() => eventPosts().length === 1);
+  await until(() => status().startsWith(TEXT.saved));
+  const radio = doc().querySelector('#confirm input[value="G"]') as El | null;
+  radio?.click();
+  (doc().querySelector("#save") as El | null)?.click();
+  await Bun.sleep(20);
+  expect(radio).toBeNull();
+  expect(doc().querySelector("#save")).toBeNull();
+  expect(eventPosts()).toHaveLength(1);
+});
+
 // ---- 15b: sheet or photo ----
 
 async function readSheet(text: string) {
@@ -281,6 +304,19 @@ test("15b: a chosen photo is encoded and posted as {image}", async () => {
     });
   } finally {
     page.encode = real;
+  }
+});
+
+test("15b (PR #51 F4): a 400 from the sheet route names the size or type, not a closed window", async () => {
+  await fresh("none");
+  served.sheetStatus = 400;
+  served.sheet = { error: "text must be 1 to 20000 characters" };
+  try {
+    await readSheet("x");
+    await until(() => status() === TEXT.sheetRefused);
+    expect(TEXT.sheetRefused).not.toBe(TEXT.notLoaded);
+  } finally {
+    served.sheetStatus = 200;
   }
 });
 
@@ -394,6 +430,28 @@ test("15d (AC 8): two answered questions save one intake body, G and R, and noth
       { topic: s2.topic, rag: "R" },
     ],
   });
+});
+
+test("15d (PR #51 F2): after the cold test is saved, answering another question does not re-enable its Save", async () => {
+  await fresh("none");
+  const d = diagnostic(replay([]), DAY, pack) as Diagnostic;
+  const slots = d.slots.slice(0, 2);
+  served.diagnostic = { ...d, slots, topics: slots.map((s) => s.topic) };
+  await page.openDoor("diagnostic");
+  await until(() => $$("#cold .q").length === 2);
+  answerCold(0, "-987654.321", true);
+  $("#cold-save").click();
+  await until(() => confirmLis().length === 1);
+  $("#save").click();
+  await until(() => eventPosts().length === 1);
+  await until(() => status().startsWith(TEXT.saved));
+  expect($("#cold-save").disabled).toBe(true);
+  answerCold(1, "-987654.321", false);
+  expect($("#cold-save").disabled).toBe(true);
+  $("#cold-save").click();
+  (doc().querySelector("#save") as El | null)?.click();
+  await Bun.sleep(20);
+  expect(eventPosts()).toHaveLength(1);
 });
 
 test("15d (AC 7): a science item slot builds its question from the items file", async () => {

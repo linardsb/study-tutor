@@ -51,6 +51,8 @@
     nothingToAsk: "There are no questions to ask right now.",
     noQuestions: "The questions could not be built. Tell a parent.",
     notLoaded: "This did not load. Check the tutor window is still open.",
+    sheetRefused:
+      "The tutor could not take that. Paste a shorter part of the sheet, or use a JPEG, PNG or WebP photo.",
     yourAnswer: "Your answer ",
     sure: "Sure",
     notSure: "Not sure",
@@ -168,8 +170,14 @@
   };
 
   /* what the page holds between clicks: the open door, the confirm rows, whether a model is set up,
-     the /api/topics rows once fetched */
-  const page = { door: null, rows: [], model: false, topics: null };
+     the /api/topics rows once fetched, whether this cold test is already saved */
+  const page = {
+    door: null,
+    rows: [],
+    model: false,
+    topics: null,
+    coldSaved: false,
+  };
 
   function topicsOnce() {
     if (page.topics) return Promise.resolve(page.topics);
@@ -279,6 +287,13 @@
       btn.disabled = false;
       return;
     }
+    /* one intake@1 per list: the saved list goes, and a saved cold test cannot be saved again */
+    page.rows = [];
+    renderConfirm();
+    if (page.door === "diagnostic") {
+      page.coldSaved = true;
+      byId("cold-save").disabled = true;
+    }
     say(TEXT.saved);
     const a = el("a", "", TEXT.toMap);
     a.href = "/map.html";
@@ -319,6 +334,10 @@
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
       });
+      if (res.status === 400) {
+        say(TEXT.sheetRefused);
+        return;
+      }
       if (!res.ok) throw new Error(String(res.status));
       renderSheetReply(await res.json());
     } catch {
@@ -582,7 +601,7 @@
           title: titles[slot.topic] ?? slot.topic,
           rag: ragFor(ok, sure),
         });
-        saveBtn.disabled = false;
+        saveBtn.disabled = page.coldSaved;
       });
     }
     saveBtn.onclick = () => confirmRows("diagnostic", results, "code");
@@ -592,6 +611,7 @@
     byId("cold-intro").replaceChildren();
     byId("cold").replaceChildren();
     byId("cold-save").disabled = true;
+    page.coldSaved = false;
     let built;
     try {
       const d = await getJson("/api/intake/diagnostic");

@@ -39,7 +39,7 @@ Nothing is written until the pupil ticks rows and presses Save. That posts one b
 ## Validation results
 
 - `bunx tsc --noEmit`: clean (observed).
-- `bun run check` (observed, final run after the last code change): tsc clean; biome 192 files, 0 errors, 4 warnings (pre-existing `noDescendingSpecificity` in `app/style.css`); `bun test` **725 pass, 0 fail** across 70 files.
+- `bun run check` (observed, final run after the last code change): tsc clean; biome 192 files, 0 errors, 4 warnings (pre-existing `noDescendingSpecificity` in `app/style.css`); `bun test` **725 pass, 0 fail** across 70 files. After the PR #51 round 1 fixes: **728 pass, 0 fail** across 70 files (three new DOM tests; see `.claude/reports/pr-51-review-fixes.md`).
 - `bun scripts/test-generators.ts`: all 6300 runs pass (observed).
 - **Level 4** (observed, 2026-09-29, fresh throwaway `data/` in the worktree, server started with no browser opener, pages driven with `agent-browser`):
   1. No model, cold test: 8 numbered questions, no topic names. One right and Sure, one wrong and Sure, then Save. `events.jsonl` held one `intake` line (door `diagnostic`, G and R) and no `attempt`, `xp` or `session` line. State: `1MA1/R4` R at rung 0.
@@ -67,7 +67,7 @@ Nothing is written until the pupil ticks rows and presses Save. That posts one b
 - **Level 4 step 3b not performed.** It needs a GUI clipboard copy from Preview and Chrome's PDF viewer, using the donor PDFs. R3's clipboard leg is still unverified; the four text-engine runs from planning are the only evidence.
 - The worktree had no `node_modules`. `bun install` was run before `tsc`.
 - The throwaway `data/` from Level 4 was deleted afterwards (gitignored). It only held a fake-provider config with key `k`.
-- The `.DS_Store` files left untracked in the worktree are not from this ticket and were not staged.
+- `src/.DS_Store` was committed in `c0f3b9b` by mistake (PR #51 F3). The fix commit untracks it and adds `.DS_Store` to `.gitignore`. The other `.DS_Store` files stay untracked.
 
 ## Guard statement (for the PR body)
 
