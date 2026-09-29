@@ -6,6 +6,7 @@ import {
   NEXT_DAYS,
   type Rung,
 } from "../flow/ladder";
+import { rankFor } from "../flow/rank";
 import { type OpenSession, onSession } from "../flow/session";
 import { addDays, isoWeek, localDay } from "../mcp/clock";
 import {
@@ -34,7 +35,7 @@ export type CaseRecord = {
   bets: [1 | 2 | 3, boolean][]; // (bet, correct) in answer order: the first answer, then the re-ask if there was one
 };
 export type State = {
-  shape: 3; // bump when this type changes
+  shape: 4; // bump when this type changes
   lines: number; // log lines this state was built from, skipped lines included
   skipped: number; // lines replay could not read
   hash: string; // sha256 of those lines, so the check can tell a hand edit from a code change
@@ -51,6 +52,7 @@ export type State = {
   tokens: Record<string, number>; // YYYY-MM → input + output
   session: OpenSession | null; // the open session, or null when idle
   retests: Record<string, { score: number; of: number }>; // ISO week → summed re-test score and of
+  coach: { shown: number; caught: number; rank: number }; // O2: wrong steps shown, caught, and Dan's rank from rankFor
 };
 
 function topic(s: State, id: string): TopicState {
@@ -171,6 +173,13 @@ const CASES: { [K in EventKey]: (s: State, e: EventByKey[K]) => void } = {
     s.cases[e.day] = fresh();
     s.caseSeed = e.bet === 3 && !e.correct ? e.topic : null;
   },
+  // No work(): the attempt written just before this line already counts the day.
+  "coach@1": (s, e) => {
+    topic(s, e.topic);
+    s.coach.shown += 1;
+    if (e.caught) s.coach.caught += 1;
+    s.coach.rank = rankFor(s.coach.caught);
+  },
 };
 
 /** An empty map with no prototype, so an id such as `__proto__` or `constructor` is just a key. */
@@ -179,7 +188,7 @@ export const dict = <V>(): Record<string, V> => Object.create(null);
 /** Pure: the same lines always give the same state. Reads no clock and no file. */
 export function replay(lines: readonly string[]): State {
   const s: State = {
-    shape: 3,
+    shape: 4,
     lines: 0,
     skipped: 0,
     hash: "",
@@ -193,6 +202,7 @@ export function replay(lines: readonly string[]): State {
     tokens: dict(),
     session: null,
     retests: dict(),
+    coach: { shown: 0, caught: 0, rank: 0 },
   };
   const hash = createHash("sha256");
   // File order, never sorted by t: a PC clock change can write an earlier t after a later one.

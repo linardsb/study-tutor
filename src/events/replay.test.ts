@@ -53,7 +53,8 @@ test("six-week history: rungs, next-due, XP, flame, pool, calibration, tokens", 
   expect(s.tokens).toEqual({ "2026-10": 1500, "2026-11": 600 });
   expect(s.lines).toBe(33);
   expect(s.skipped).toBe(0);
-  expect(s.shape).toBe(3);
+  expect(s.shape).toBe(4);
+  expect(s.coach).toEqual({ shown: 0, caught: 0, rank: 0 });
   expect(s.retests).toEqual({
     "2026-W41": { score: 4, of: 6 },
     "2026-W42": { score: 5, of: 6 },
@@ -71,6 +72,7 @@ test("guard: derived state carries no correct answer or mark scheme", () => {
     '"markScheme"',
     '"mark_scheme"',
     '"working"',
+    '"message"',
   ]) {
     expect(json).not.toContain(key);
   }
@@ -170,6 +172,25 @@ test("case: one record a day, the re-ask joins it, the seed is set by bet 3 and 
   expect(orphan.cases["2026-10-06"]?.bets).toEqual([[2, true]]);
   expect(orphan.cases["2026-10-06"]?.item).toBeNull();
   expect(orphan.caseSeed).toBeNull();
+});
+
+const COACH_LINES = fs
+  .readFileSync(path.join(FIXTURES, "coach.v1.jsonl"), "utf8")
+  .split("\n")
+  .filter(Boolean);
+
+test("coach: shown and caught count, rank follows rankFor, an unreadable line changes nothing", () => {
+  const [caught, missed] = COACH_LINES as [string, string];
+  const s = replay([
+    ...Array.from({ length: 7 }, () => caught),
+    missed,
+    missed,
+    caught.replace('"caught":true', '"caught":"yes"'),
+  ]);
+  // derived: floor(7 / 3) = 2 with PER_RANK = 3
+  expect(s.coach).toEqual({ shown: 9, caught: 7, rank: 2 });
+  expect(s.skipped).toBe(1);
+  expect(s.topics["1MA1/R9/of-an-amount"]?.rung).toBe(0);
 });
 
 test("case: a second re-ask the same day is ignored", () => {

@@ -29,7 +29,7 @@ const isObj = (x: unknown): x is Record<string, unknown> =>
 const bad = (error: string): Result => ({ status: 400, body: { error } });
 
 /** The item a request names, or the refusal. `seed` is a non-negative integer, required for a generated item. */
-function resolveItem(
+export function resolveItem(
   pack: CasePack,
   id: unknown,
   seed: unknown,
@@ -44,7 +44,7 @@ function resolveItem(
   return item ? { item } : { status: 404, body: { error: "No such item" } };
 }
 
-const titleOf = (pack: CasePack, topic: string) =>
+export const titleOf = (pack: CasePack, topic: string) =>
   pack.topics.find((t) => t.id === topic)?.title ?? topic;
 
 /** What the panel shows for an item: its question side only, even after an attempt, plus whether a model is set up. */

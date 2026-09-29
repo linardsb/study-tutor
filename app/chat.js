@@ -7,6 +7,7 @@
 
   const $ = (id) => document.getElementById(id);
   const log = $("log");
+  let topic = "";
 
   /* one log entry; `lines` are shown as separate paragraphs */
   function say(cls, ...lines) {
@@ -31,6 +32,7 @@
   }
 
   function show(state) {
+    topic = state.topic;
     $("title").textContent = state.title;
     $("stem").textContent = state.stem;
     if (state.figure) {
@@ -82,6 +84,13 @@
         p.className = "note";
         p.textContent = "Saved to your record.";
         li.appendChild(p);
+        // O2: teaching beats preparing to teach, so Dan is offered right after a saved teach-back.
+        const coach = document.createElement("p");
+        const a = document.createElement("a");
+        a.href = `/coach.html?${new URLSearchParams({ topic })}`;
+        a.textContent = "Coach Dan on this topic";
+        coach.appendChild(a);
+        li.appendChild(coach);
       }
       return li;
     }
