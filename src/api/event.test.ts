@@ -227,6 +227,27 @@ test(
 );
 
 test(
+  "a posted job body is refused and writes nothing, not even data/",
+  withTemp((_dir, data) => {
+    const r = postEvent(
+      { v: 1, type: "job", job: "hint", reason: "timeout" },
+      data,
+      topics,
+      AT,
+    );
+    expect(r).toEqual({
+      status: 400,
+      body: {
+        error:
+          "Refused: failed model calls are recorded by the tutor, not posted",
+      },
+    });
+    expect(readLines(data)).toEqual([]);
+    expect(fs.existsSync(data)).toBe(false);
+  }),
+);
+
+test(
   "a posted xp body is refused and writes nothing, not even data/",
   withTemp((_dir, data) => {
     const r = postEvent(

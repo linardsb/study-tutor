@@ -10,6 +10,7 @@ export const EVENT_TYPES = [
   "usage",
   "case",
   "coach",
+  "job",
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 type Line<T extends EventType, V extends number> = { v: V; t: string; type: T };
@@ -101,6 +102,21 @@ export type CoachV1 = Line<"coach", 1> & {
   wrong: string; // the bank's wrong answer Dan reached (never the correct one)
   caught: boolean; // the pupil's correction was right
 };
+/** The fallback reasons `defineJob` records; `no-model` is a choice, not a failure. */
+export const JOB_REASONS = [
+  "cap",
+  "timeout",
+  "network",
+  "http",
+  "not-json",
+  "bad-response",
+  "shape",
+  "guard",
+] as const;
+export type JobV1 = Line<"job", 1> & {
+  job: string;
+  reason: (typeof JOB_REASONS)[number];
+};
 
 export type Event =
   | SessionV1
@@ -113,7 +129,8 @@ export type Event =
   | PhotoV1
   | UsageV1
   | CaseV1
-  | CoachV1;
+  | CoachV1
+  | JobV1;
 export type EventByKey = { [E in Event as `${E["type"]}@${E["v"]}`]: E };
 export type EventKey = keyof EventByKey;
 /** An event before `append` stamps `t`. */
@@ -225,6 +242,7 @@ const FIELDS: { [K in EventKey]: (o: Obj) => boolean } = {
     optInt(o.seed) &&
     str(o.wrong) &&
     bool(o.caught),
+  "job@1": (o) => str(o.job) && oneOf(o.reason, JOB_REASONS),
 };
 
 type Own<K extends EventKey> = Exclude<keyof EventByKey[K], "v" | "t" | "type">;
@@ -241,6 +259,7 @@ export const KEYS = {
   "usage@1": ["job", "model", "input", "output", "estimated"],
   "case@1": ["day", "kind", "topic", "item", "pick", "bet", "correct", "reask"],
   "coach@1": ["topic", "item", "seed", "wrong", "caught"],
+  "job@1": ["job", "reason"],
 } as const satisfies { [K in EventKey]: readonly Own<K>[] };
 // A field added to an event type and not to KEYS fails here, so append never drops it.
 type Missing = {

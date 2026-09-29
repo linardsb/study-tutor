@@ -54,15 +54,16 @@ test("six-week history: rungs, next-due, XP, flame, pool, calibration, tokens", 
   expect(s.tokens).toEqual({ "2026-10": 1500, "2026-11": 600 });
   expect(s.lines).toBe(33);
   expect(s.skipped).toBe(0);
-  expect(s.shape).toBe(5);
+  expect(s.shape).toBe(6);
   expect(s.coach).toEqual({ shown: 0, caught: 0, rank: 0 });
   expect(s.retests).toEqual({
-    "2026-W41": { score: 4, of: 6 },
-    "2026-W42": { score: 5, of: 6 },
-    "2026-W43": { score: 3, of: 3 },
-    "2026-W45": { score: 2, of: 3 },
-    "2026-W46": { score: 3, of: 3 },
+    "2026-W41": { score: 4, of: 6, taken: 2, passed: 1 },
+    "2026-W42": { score: 5, of: 6, taken: 2, passed: 2 },
+    "2026-W43": { score: 3, of: 3, taken: 1, passed: 1 },
+    "2026-W45": { score: 2, of: 3, taken: 1, passed: 1 },
+    "2026-W46": { score: 3, of: 3, taken: 1, passed: 1 },
   });
+  expect(s.failed).toEqual({});
   expect(s.session).toBeNull();
 });
 
@@ -279,4 +280,18 @@ test("photo: marks and clean sheets are summed per ISO week; unmarked photos cou
   });
   expect(isoWeek(localDay("2026-10-14T17:00:00Z"))).toBe(wa);
   expect(isoWeek(localDay("2026-10-15T17:00:00Z"))).toBe(wa);
+});
+
+test("job: failures are counted per ISO week and reason, and are not practice", () => {
+  const lines = fs
+    .readFileSync(path.join(FIXTURES, "job.v1.jsonl"), "utf8")
+    .split("\n")
+    .filter(Boolean);
+  lines.push(
+    '{"v":1,"t":"2026-11-11T09:00:00Z","type":"job","job":"hint","reason":"timeout"}',
+  );
+  const s = replay(lines);
+  expect(s.failed).toEqual({ "2026-W46": { timeout: 2, cap: 1 } });
+  expect(s.flame).toEqual({});
+  expect(s.topics).toEqual({});
 });

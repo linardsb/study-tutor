@@ -447,6 +447,27 @@ test(
 );
 
 test(
+  "api: /api/digest gives this week and last week, takes ?day=, refuses a bad day and a foreign Origin",
+  withServer(async (get) => {
+    const asked = await get("/api/digest?day=2026-11-15");
+    expect(asked.status).toBe(200);
+    const body = (await asked.json()) as {
+      now: { week: string };
+      last: { week: string };
+    };
+    expect(body.now.week).toBe("2026-W46");
+    expect(body.last.week).toBe("2026-W45");
+    expect((await get("/api/digest")).status).toBe(200);
+    expect((await get("/api/digest?day=2026-13-01")).status).toBe(400);
+    expect((await get("/api/digest?day=today")).status).toBe(400);
+    const foreign = await get("/api/digest", {
+      headers: { origin: "https://evil.example" },
+    });
+    expect(foreign.status).toBe(403);
+  }),
+);
+
+test(
   "api: /api/next gives a lesson on an empty record, takes ?day=, refuses a bad day and a foreign Origin",
   withServer(async (get, _dir, opts) => {
     type NextBody = {

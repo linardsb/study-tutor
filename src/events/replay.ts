@@ -42,7 +42,7 @@ export type PhotoWeek = {
   clean: number;
 };
 export type State = {
-  shape: 5; // bump when this type changes
+  shape: 6; // bump when this type changes
   lines: number; // log lines this state was built from, skipped lines included
   skipped: number; // lines replay could not read
   hash: string; // sha256 of those lines, so the check can tell a hand edit from a code change
@@ -58,9 +58,13 @@ export type State = {
   caseSeed: string | null; // topic a confident-wrong case sends back tomorrow; cleared by the next day's first answer
   tokens: Record<string, number>; // YYYY-MM → input + output
   session: OpenSession | null; // the open session, or null when idle
-  retests: Record<string, { score: number; of: number }>; // ISO week → summed re-test score and of
+  retests: Record<
+    string,
+    { score: number; of: number; taken: number; passed: number }
+  >; // ISO week → summed re-test score and of, and how many were taken and passed
   coach: { shown: number; caught: number; rank: number }; // O2: wrong steps shown, caught, and Dan's rank from rankFor
   photos: Record<string, PhotoWeek>; // ISO week → photo counts and summed marks (O3)
+  failed: Record<string, Record<string, number>>; // ISO week → job@1 reason → count (model calls that fell back)
 };
 
 function topic(s: State, id: string): TopicState {
@@ -123,9 +127,11 @@ const CASES: { [K in EventKey]: (s: State, e: EventByKey[K]) => void } = {
     ts.nextDue = addDays(localDay(e.t), NEXT_DAYS[r]);
     work(s, e.t);
     const week = isoWeek(localDay(e.t));
-    const sum = s.retests[week] ?? { score: 0, of: 0 };
+    const sum = s.retests[week] ?? { score: 0, of: 0, taken: 0, passed: 0 };
     sum.score += e.score;
     sum.of += e.of;
+    sum.taken += 1;
+    if (e.passed) sum.passed += 1;
     s.retests[week] = sum;
   },
   "teachback@1": (s, e) => {
@@ -204,6 +210,13 @@ const CASES: { [K in EventKey]: (s: State, e: EventByKey[K]) => void } = {
     if (e.caught) s.coach.caught += 1;
     s.coach.rank = rankFor(s.coach.caught);
   },
+  // No topic(), no work(): a failed model call is not practice.
+  "job@1": (s, e) => {
+    const week = isoWeek(localDay(e.t));
+    const w = s.failed[week] ?? dict<number>();
+    w[e.reason] = (w[e.reason] ?? 0) + 1;
+    s.failed[week] = w;
+  },
 };
 
 /** An empty map with no prototype, so an id such as `__proto__` or `constructor` is just a key. */
@@ -212,7 +225,7 @@ export const dict = <V>(): Record<string, V> => Object.create(null);
 /** Pure: the same lines always give the same state. Reads no clock and no file. */
 export function replay(lines: readonly string[]): State {
   const s: State = {
-    shape: 5,
+    shape: 6,
     lines: 0,
     skipped: 0,
     hash: "",
@@ -228,6 +241,7 @@ export function replay(lines: readonly string[]): State {
     retests: dict(),
     coach: { shown: 0, caught: 0, rank: 0 },
     photos: dict(),
+    failed: dict(),
   };
   const hash = createHash("sha256");
   // File order, never sorted by t: a PC clock change can write an earlier t after a later one.

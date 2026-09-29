@@ -43,6 +43,7 @@ export const MCP_WRITABLE: Record<EventType, boolean> = {
   usage: false,
   case: false, // the page marks the pick and the bet, as with attempt (T7 merge)
   coach: false, // the server marks the correction and writes it with its attempt (T12)
+  job: false, // the tutor records its own failed model calls (T15)
 };
 const WRITABLE = EVENT_TYPES.filter((t) => MCP_WRITABLE[t]);
 
