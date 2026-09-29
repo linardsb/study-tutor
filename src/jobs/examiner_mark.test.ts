@@ -109,7 +109,7 @@ test(
   withData(OPENAI, async (data) => {
     const { v, calls } = await run(data, [reply(FIVE.slice(0, 4))]);
     expect(v).toEqual({ by: "fallback", value: null, reason: "shape" });
-    expect(calls.length).toBe(2);
+    expect(calls).toHaveLength(2);
   }),
 );
 
@@ -157,7 +157,7 @@ test.each([
       reply(withRow(1, { kind: "accuracy", mark: 0, note })),
     ]);
     expect(v).toEqual({ by: "fallback", value: null, reason: "shape" });
-    expect(calls.length).toBe(2);
+    expect(calls).toHaveLength(2);
   })(),
 );
 
@@ -210,7 +210,7 @@ test(
   withData(OPENAI, async (data) => {
     const { v, calls } = await run(data, [chatReply("oops")]);
     expect(v.value).toBeNull();
-    expect(calls.length).toBe(2);
+    expect(calls).toHaveLength(2);
   }),
 );
 
@@ -219,7 +219,7 @@ test(
   withData(OPENAI, async (data) => {
     const { v, calls } = await run(data, [down]);
     expect(v).toEqual({ by: "fallback", value: null, reason: "network" });
-    expect(calls.length).toBe(1);
+    expect(calls).toHaveLength(1);
   }),
 );
 
@@ -228,7 +228,7 @@ test(
   withData(NO_MODEL, async (data) => {
     const { v, calls } = await run(data, [reply(FIVE)]);
     expect(v.value).toBeNull();
-    expect(calls.length).toBe(0);
+    expect(calls).toHaveLength(0);
   }),
 );
 
@@ -271,6 +271,6 @@ test(
       () => Response.json({ error: { message: "no images" } }, { status: 400 }),
     ]);
     expect(v).toEqual({ by: "fallback", value: null, reason: "http" });
-    expect(calls.length).toBe(1);
+    expect(calls).toHaveLength(1);
   }),
 );

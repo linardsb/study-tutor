@@ -75,7 +75,7 @@ On a 403 from the upload, the page reads the snap. If it is `marking` or `done`,
 
 ## Needs a human look
 
-- **F1 (High) SonarCloud quality gate.** The issue list is not readable from here: unauthenticated `api/issues/search` returns `total: 0` for the private project (observed). Open the dashboard on the PR, then fix or justify each issue there. The ratings after this push are recorded in the PR comment.
+- **F1 (High) SonarCloud quality gate.** The issue list is not readable from here: unauthenticated `api/issues/search` returns `total: 0` for the private project (observed). Open the dashboard on the PR, then fix or justify each issue there. The ratings after this push are recorded in the PR comment. (Superseded in round 2: the list is readable through the check run's annotations, `gh api repos/{owner}/{repo}/check-runs/{id}/annotations`. See `pr-44-review-fixes-2.md`.)
 - Phone-only checks the implementation report already lists as owed (reach, firewall prompt, WebKit HEIC, locking the phone mid-mark).
 
 ## Dropped

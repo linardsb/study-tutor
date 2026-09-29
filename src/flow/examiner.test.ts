@@ -58,7 +58,7 @@ test(
       { dataDir: data, fetch: f, now: NOW },
     );
     expect(r).toEqual({ kind: "refused" });
-    expect(calls.length).toBe(0);
+    expect(calls).toHaveLength(0);
   }),
 );
 
@@ -73,7 +73,7 @@ test(
       { dataDir: data, fetch: f, now: NOW },
     );
     expect(r).toEqual({ kind: "refused" });
-    expect(calls.length).toBe(0);
+    expect(calls).toHaveLength(0);
   }),
 );
 

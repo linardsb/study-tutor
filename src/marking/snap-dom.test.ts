@@ -7,7 +7,17 @@ import path from "node:path";
 import { GlobalRegistrator } from "@happy-dom/global-registrator";
 import { doc, type El, until as settle } from "./dom";
 
-GlobalRegistrator.register({ url: "http://127.0.0.1:4731/snap.html?token=T" });
+// a token of the shape src/snap.ts mints: 32 bytes as base64url
+const TOK = `${"A".repeat(42)}_`;
+const PAGE = `http://127.0.0.1:4731/snap.html?token=${TOK}`;
+GlobalRegistrator.register({ url: PAGE });
+/** Moves the page to another address on the same origin, as a different link would. */
+const goTo = (url: string) =>
+  (
+    globalThis as unknown as {
+      history: { replaceState: (s: null, t: string, u: string) => void };
+    }
+  ).history.replaceState(null, "", url);
 afterAll(() => GlobalRegistrator.unregister());
 
 const file = path.resolve(import.meta.dir, "../../app/snap.js");
@@ -33,7 +43,12 @@ globalThis.fetch = (async (url: string, init?: RequestInit) => {
   });
   if (method === "POST" && url === "/api/snap/photo")
     return Response.json(served.post.body, { status: served.post.status });
-  if (url === "/api/snap?token=T") {
+  if (url === "/api/snap?token=")
+    return Response.json(
+      { error: "This link has expired. Open a new one from the map." },
+      { status: 403 },
+    );
+  if (url === `/api/snap?token=${TOK}`) {
     const r = (
       served.gets.length > 1 ? served.gets.shift() : served.gets[0]
     ) as Reply;
@@ -118,7 +133,7 @@ test("send, then two polls (marking, then done unmarked): the stored sentence", 
     {
       method: "POST",
       url: "/api/snap/photo",
-      body: { token: "T", image: DATA },
+      body: { token: TOK, image: DATA },
     },
   ]);
   expect(rows()).toEqual(["Your photo is stored. It is not marked yet."]);
@@ -200,6 +215,22 @@ test("an expired link: the form stays hidden and the error shows", async () => {
   expect($("#status").textContent).toBe(
     "This link has expired. Open a new one from the map.",
   );
+});
+
+test("a token that is not the minted shape is not sent: the page asks with an empty token and shows expired (PR #44 F1)", async () => {
+  try {
+    for (const bad of ["T", "../api/config", `${TOK}&x=1`]) {
+      goTo(`/snap.html?token=${encodeURIComponent(bad)}`);
+      await load([view()]);
+      expect(calls.map((c) => c.url)).toEqual(["/api/snap?token="]);
+      expect($("#status").textContent).toBe(
+        "This link has expired. Open a new one from the map.",
+      );
+      expect($("#snap-form").hidden).toBe(true);
+    }
+  } finally {
+    goTo(PAGE);
+  }
 });
 
 test("a failed upload: the network sentence, and the form stays for another try", async () => {

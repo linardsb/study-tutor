@@ -176,9 +176,8 @@ export function writeDataFile(
   fs.rmSync(tmp, { force: true });
   const fd = fs.openSync(tmp, WRITE, OWNER_ONLY);
   try {
-    // fs.writeSync has separate overloads for a string and bytes.
-    if (typeof data === "string") fs.writeSync(fd, data);
-    else fs.writeSync(fd, data);
+    // takes a string or bytes, and writes all of it (fs.writeSync may write part)
+    fs.writeFileSync(fd, data);
     fs.fsyncSync(fd);
   } finally {
     fs.closeSync(fd);

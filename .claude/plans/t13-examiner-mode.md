@@ -258,7 +258,7 @@ export const teachbackMark = defineJob<TeachbackInput, TeachbackOutput>({
 ### Task 7. UPDATE `src/events/append.ts`: bytes and the intake folder
 
 - **IMPLEMENT**:
-  - `writeDataFile(dataDir, rel, data: string | Uint8Array)`. Inside, branch the write: `typeof data === "string" ? fs.writeSync(fd, data) : fs.writeSync(fd, data)`.
+  - `writeDataFile(dataDir, rel, data: string | Uint8Array)`. Inside, branch the write: `typeof data === "string" ? fs.writeSync(fd, data) : fs.writeSync(fd, data)`. (PR #44 round 2: replaced by `fs.writeFileSync(fd, data)`, which takes either and writes all of it; Sonar flagged the identical branches.)
   - New export:
     ```ts
     export const INTAKE_DIR = "intake";
@@ -275,7 +275,7 @@ export const teachbackMark = defineJob<TeachbackInput, TeachbackOutput>({
       return rel;
     }
     ```
-- **GOTCHA**: `fs.writeSync` has separate overloads for `string` and `ArrayBufferView`; a `string | Uint8Array` argument matches neither, so `tsc` fails without the branch.
+- **GOTCHA**: `fs.writeSync` has separate overloads for `string` and `ArrayBufferView`; a `string | Uint8Array` argument matches neither, so `tsc` fails without the branch. Retired in PR #44 round 2: `fs.writeFileSync(fd, data)` accepts the union.
 - **GOTCHA**: `resolveInData(dataDir, "intake")` works when `intake/` is missing (its ENOENT branch, `append.ts:34-44`). It throws when `intake` is a symlink out of `data/`, which is the confinement rule. No `mkdirSync` on an unresolved path.
 - **VALIDATE**: `bun test src/events/append.test.ts` with new tests: bytes round-trip byte for byte; the file mode is `0o600` on POSIX (skip on win32, as the existing mode tests do); a name with `/`, `..` or `.exe` is refused; `data/intake` as a symlink to a temp dir outside `data/` is refused and nothing is written there.
 - **SATISFIES**: AC 7, CLAUDE.md "`data/` confinement"

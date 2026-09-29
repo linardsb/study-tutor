@@ -43,7 +43,7 @@ type Result = { status: number; body: unknown };
 type Listener = ReturnType<typeof Bun.serve>;
 
 const VIRTUAL =
-  /^(utun|awdl|llw|bridge|docker|vboxnet|vmnet)|vEthernet|VirtualBox|VMware|Hyper-V|WSL|Tailscale|ZeroTier/i;
+  /(?:^(?:utun|awdl|llw|bridge|docker|vboxnet|vmnet))|(?:vEthernet|VirtualBox|VMware|Hyper-V|WSL|Tailscale|ZeroTier)/i;
 
 /** Rank of a private IPv4 address a phone on the home Wi-Fi can reach; null when it is not one. */
 function rank(a: string): number | null {
@@ -177,7 +177,7 @@ export function createSnaps({
   /** The upload's claim: re-checks and sets the state in one synchronous step, so two uploads cannot both pass. */
   function take(t: unknown): Snap | null {
     const snap = find(t);
-    if (snap === null || snap.state !== "open") return null;
+    if (snap?.state !== "open") return null;
     snap.state = "marking";
     snap.deadline = Math.max(snap.deadline, now() + AFTER_UPLOAD_MS);
     snap.cancel();
@@ -277,7 +277,7 @@ export async function postPhoto(
 ): Promise<Result> {
   const token = isObj(body) ? body.token : undefined;
   const open = ctx.snaps.find(token);
-  if (open === null || open.state !== "open")
+  if (open?.state !== "open")
     return { status: 403, body: { error: TEXT.expired } };
   const bytes = decodeDataUrl(isObj(body) ? body.image : undefined);
   const kind = bytes === null ? null : sniffImage(bytes);

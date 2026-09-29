@@ -31,8 +31,9 @@
   // expected: Anthropic resizes above 1568 px on the long side, and refuses an image over 5 MB.
   const LONG_SIDE = 1568;
   const MAX_BYTES = 5 * 1024 * 1024;
-  const SENDABLE = ["image/jpeg", "image/png", "image/webp"];
+  const SENDABLE = new Set(["image/jpeg", "image/png", "image/webp"]);
   const POLL_MS = 2000;
+  const TOKEN = /^[\w-]{43}$/;
   /* expected: 15 failed polls in a row (about 30 s) means the snap closed. On the phone a closed snap's
      listener is stopped, so the poll fails to connect rather than getting a 403. A reply that is not OK
      (a 409, a 500) counts as a failed poll too; only an OK reply resets the count. */
@@ -60,12 +61,13 @@
       };
       img.onerror = () => {
         URL.revokeObjectURL(url);
-        if (!SENDABLE.includes(file.type) || file.size > MAX_BYTES) {
+        if (!SENDABLE.has(file.type) || file.size > MAX_BYTES) {
           reject(new Error(TEXT.heic));
           return;
         }
         const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result));
+        // readAsDataURL: the result is a string
+        reader.onload = () => resolve(reader.result);
         reader.onerror = () => reject(new Error(TEXT.heic));
         reader.readAsDataURL(file);
       };
@@ -89,10 +91,10 @@
       for (const l of result.lines) {
         const label = LABELS[l.kind];
         if (l.mark === null) out.push(`${label}: ${TEXT.notNeeded}`);
-        else
-          out.push(
-            `${label}: ${l.mark === 1 ? "1 mark" : "0 marks"}${l.note ? `. ${l.note}` : ""}`,
-          );
+        else {
+          const note = l.note ? `. ${l.note}` : "";
+          out.push(`${label}: ${l.mark === 1 ? "1 mark" : "0 marks"}${note}`);
+        }
       }
       out.push(TEXT.total(result.marks, result.of));
       if (result.clean) out.push(TEXT.clean);
@@ -103,7 +105,10 @@
 
   function start() {
     const $ = (id) => document.getElementById(id);
-    const token = new URLSearchParams(location.search).get("token") || "";
+    // A token is 32 random bytes as base64url (src/snap.ts). Any other value is not sent: the server
+    // refuses the empty token with the expired sentence.
+    const given = new URLSearchParams(location.search).get("token") || "";
+    const token = TOKEN.test(given) ? given : "";
     const q = `/api/snap?token=${encodeURIComponent(token)}`;
     const form = $("snap-form");
     const status = $("status");
