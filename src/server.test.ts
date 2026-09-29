@@ -23,6 +23,8 @@ import { checkForUpdate, RELEASES_PAGE } from "./updates";
 const root = process.cwd();
 const topics = await loadTopics("maths");
 const pack = await loadCasePack("maths");
+// Pinned to maths: without these the server loads every content/<subject>/, and a new subject would change the counts below.
+const subjects = new Map(topics.map((t) => [t.id, "maths"]));
 
 /** A realpathed temp dir (macOS maps /var to /private/var), removed afterwards. */
 function withTemp(fn: (dir: string, opts: ServerOptions) => Promise<void>) {
@@ -31,7 +33,13 @@ function withTemp(fn: (dir: string, opts: ServerOptions) => Promise<void>) {
       fs.mkdtempSync(path.join(os.tmpdir(), "st-server-")),
     );
     try {
-      await fn(dir, { root, dataDir: path.join(dir, "data"), topics });
+      await fn(dir, {
+        root,
+        dataDir: path.join(dir, "data"),
+        topics,
+        pack,
+        subjects,
+      });
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }
@@ -517,6 +525,25 @@ test(
     expect(lesson.status).toBe(200);
     expect(await lesson.text()).toContain("data-items=");
     const foreign = await get("/api/lessons", {
+      headers: { origin: "https://evil.example" },
+    });
+    expect(foreign.status).toBe(403);
+  }),
+);
+
+test(
+  "api: /api/topics gives every topic with its subject, and refuses a foreign Origin",
+  withServer(async (get) => {
+    const res = await get("/api/topics");
+    expect(res.status).toBe(200);
+    const rows = (await res.json()) as Array<{ id: string; subject: string }>;
+    expect(rows).toHaveLength(21); // observed at 4b5125a: 21 maths topics
+    expect(rows.every((r) => r.subject === "maths")).toBe(true);
+    expect(rows[0]).toMatchObject({
+      id: topics[0]?.id,
+      aliases: topics[0]?.aliases,
+    });
+    const foreign = await get("/api/topics", {
       headers: { origin: "https://evil.example" },
     });
     expect(foreign.status).toBe(403);

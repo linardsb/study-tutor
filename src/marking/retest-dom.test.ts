@@ -96,7 +96,8 @@ globalThis.fetch = (async (url: string, init?: RequestInit) => {
   }
   if (url === `/api/next${QUERY}`) return Response.json(served.next);
   if (url === "/api/state") return Response.json(served.state);
-  if (url === "/content/maths/topics.json") return Response.json(pack.topics);
+  if (url === "/api/topics")
+    return Response.json(pack.topics.map((t) => ({ ...t, subject: "maths" })));
   if (url === `/content/maths/items/${itemsFileName(A)}`)
     return Response.json(packItems);
   return new Response("Not found", { status: 404 });

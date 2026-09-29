@@ -51,7 +51,12 @@ function slotsFor(
   day: string,
   pack: CasePack,
 ): BossSlot[] {
-  const ids = new Set((pack.items.get(topic.id) ?? []).map((i) => i.id));
+  // A short or extended item has no answers to mark here, so it is never asked.
+  const ids = new Set(
+    (pack.items.get(topic.id) ?? [])
+      .filter((i) => (i.answers?.length ?? 0) > 0)
+      .map((i) => i.id),
+  );
   const fixed = (id: string): BossSlot => ({
     topic: topic.id,
     item: id,

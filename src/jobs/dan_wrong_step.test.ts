@@ -185,7 +185,7 @@ test(
       expect(sent).not.toContain(s);
     expect(messages[0]?.content).toContain(PRE_ATTEMPT_GUARD);
     expect(messages[0]?.content).toContain(DAN_VOICE);
-    expect(messages[0]?.content).not.toContain("maths tutor");
+    expect(messages[0]?.content).not.toContain("GCSE tutor");
   }),
 );
 

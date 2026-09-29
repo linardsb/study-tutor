@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { appendEvent } from "../events/append";
 import type { NewEvent } from "../events/types";
-import { caseForDay, loadCasePack } from "./case";
+import { caseForDay, loadCasePack, loadPacks } from "./case";
 
 const DAY = "2026-10-06";
 const AT = () => `${DAY}T07:12:00Z`;
@@ -103,5 +103,53 @@ test(
     expect(r.record?.item).toBe("1MA1/R9/of-an-amount#99");
     expect(r.case).toBeNull();
     expect(r.reask).not.toBeNull(); // the topic still exists, so the same-idea re-ask can be built
+  }),
+);
+
+/** A tmp root with content/<subject>/topics.json per row; no generators.js unless written. */
+function writeSubject(dir: string, subject: string, topics: object[]) {
+  const d = path.join(dir, "content", subject);
+  fs.mkdirSync(d, { recursive: true });
+  fs.writeFileSync(path.join(d, "topics.json"), JSON.stringify(topics));
+}
+const row = (id: string, alias: string) => ({
+  id,
+  title: id,
+  aliases: [alias],
+  prerequisites: [],
+  tier: "F",
+});
+
+test("loadPacks: the repo's subjects merged, each topic mapped to its subject", async () => {
+  const { pack: all, subjects } = await loadPacks();
+  expect(subjects.get("1MA1/R4")).toBe("maths");
+  for (const t of pack.topics) expect(all.topics).toContain(t);
+  expect(Object.keys(all.gens)).toEqual(
+    expect.arrayContaining(Object.keys(pack.gens)),
+  );
+  expect((await loadPacks()).pack).toBe(all);
+});
+
+test(
+  "loadPacks: an alias in two subjects is refused, naming both files",
+  withTemp(async (dir) => {
+    writeSubject(dir, "aaa", [row("AA1/X1", "SAME")]);
+    writeSubject(dir, "bbb", [row("BB1/X1", "SAME")]);
+    await expect(loadPacks(dir)).rejects.toThrow(
+      "content/bbb/topics.json: alias SAME is also in content/aaa",
+    );
+  }),
+);
+
+test(
+  "loadPacks: a subject with no generators.js loads with no generators; a non-word folder is skipped",
+  withTemp(async (dir) => {
+    writeSubject(dir, "zz", [row("ZZ1/X1", "ZZX1")]);
+    fs.mkdirSync(path.join(dir, "content", ".DS_Store"));
+    fs.mkdirSync(path.join(dir, "content", "e1"));
+    const { pack: p, subjects } = await loadPacks(dir);
+    expect(p.gens).toEqual({});
+    expect(p.items.get("ZZ1/X1")).toEqual([]);
+    expect([...subjects]).toEqual([["ZZ1/X1", "zz"]]);
   }),
 );

@@ -15,7 +15,7 @@ import { guardReply, type ShadowJudge } from "./guard";
 export const PRE_ATTEMPT_GUARD =
   "Do not state the answer. The pupil has not attempted this yet.";
 const VOICE =
-  'You are a maths tutor for a 15-year-old at GCSE Foundation. Speak to the pupil as "you". Plain words, short sentences, British English, sentence case. No emoji, no exclamation marks, never a grade or a prediction.';
+  'You are a GCSE tutor for a 15-year-old at GCSE Foundation. Speak to the pupil as "you". Plain words, short sentences, British English, sentence case. No emoji, no exclamation marks, never a grade or a prediction.';
 // Both lines go in every system message, pre and post. ONE: the S2 two-block failure (Q12). NUM: the invented-number rule (guard.ts).
 const ONE =
   "Reply with exactly one JSON object and nothing else: no text before or after it, and no second attempt.";

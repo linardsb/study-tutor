@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { caseForDay, loadCasePack } from "./api/case";
+import { caseForDay, loadPacks } from "./api/case";
 import { getChat, postChat } from "./api/chat";
 import { getCoach, postCoach } from "./api/coach";
 import { getConfig, getUsage, postConfig } from "./api/config";
@@ -11,8 +11,8 @@ import { lessonUrls } from "./api/lessons";
 import { nextForDay } from "./api/next";
 import { getSquad, joinSquad, postSquad } from "./api/squad";
 import { currentState } from "./api/state";
+import { topicRows } from "./api/topics";
 import { restrictConfigOnStart } from "./config";
-import { loadTopics } from "./content/pack";
 import type { CasePack, Topic } from "./content/types";
 import { refusalLines, replayCheck } from "./events/check";
 import { isDay } from "./events/types";
@@ -41,6 +41,7 @@ export type ServerOptions = {
   dataDir: string;
   topics: readonly Topic[];
   pack?: CasePack; // loaded on the first /api/case when absent (the tests' options predate it)
+  subjects?: ReadonlyMap<string, string>; // topic id → subject; loaded with the pack when absent
   update?: Promise<UpdateInfo>; // the start-up feed check; absent → no update
   // The phone listener's address. Absent → none, so a test that mints never binds the Wi-Fi address.
   snapHost?: () => string | null;
@@ -156,7 +157,7 @@ async function dayRoute(
   if (asked !== null && !isDay(asked))
     return json(400, { error: "day must be YYYY-MM-DD" });
   try {
-    const loaded = pack ?? (await loadCasePack("maths", root));
+    const loaded = pack ?? (await loadPacks(root)).pack;
     return json(200, build(loaded, asked ?? localDay(utcNow())));
   } catch (err) {
     console.error(`${failed}: ${(err as Error).message}`);
@@ -257,7 +258,7 @@ async function postSquadRoute(
     return json(400, { error: "Body is not JSON" });
   }
   try {
-    const loaded = pack ?? (await loadCasePack("maths", root));
+    const loaded = pack ?? (await loadPacks(root)).pack;
     const r = postSquad(body, dataDir, loaded, localDay(utcNow()));
     return json(r.status, r.body);
   } catch (err) {
@@ -296,7 +297,7 @@ async function getChatRoute(
   const refused = refuseForeign(req);
   if (refused) return refused;
   try {
-    const loaded = pack ?? (await loadCasePack("maths", root));
+    const loaded = pack ?? (await loadPacks(root)).pack;
     const r = getChat(dataDir, loaded, new URL(req.url).searchParams);
     return json(r.status, r.body);
   } catch (err) {
@@ -330,7 +331,7 @@ async function postJobRoute(
     return json(400, { error: "Body is not JSON" });
   }
   try {
-    const r = await handler(body, pack ?? (await loadCasePack("maths", root)));
+    const r = await handler(body, pack ?? (await loadPacks(root)).pack);
     return json(r.status, r.body);
   } catch (err) {
     console.error(`${failed}: ${(err as Error).message}`);
@@ -359,7 +360,7 @@ async function snapRoute(
     }
   }
   try {
-    const loaded = pack ?? (await loadCasePack("maths", ctx.root));
+    const loaded = pack ?? (await loadPacks(ctx.root)).pack;
     const r = await handler(body, { ...ctx, pack: loaded });
     return json(r.status, r.body);
   } catch (err) {
@@ -370,7 +371,9 @@ async function snapRoute(
 
 /** Every /api route. Exported so the key-leak test walks the same table the server serves. */
 export function apiRoutes(opts: ServerOptions) {
-  const { root, dataDir, topics, pack, update } = opts;
+  const { root, dataDir, topics, pack, subjects, update } = opts;
+  const packs = async () =>
+    pack && subjects ? { pack, subjects } : await loadPacks(root);
   const snap = {
     root,
     dataDir,
@@ -396,11 +399,22 @@ export function apiRoutes(opts: ServerOptions) {
         ),
     },
     "/api/lessons": {
-      GET: (req: Request) =>
-        readRoute(req, "the lesson list", () => ({
+      GET: async (req: Request) => {
+        const loaded = await packs();
+        return readRoute(req, "the lesson list", () => ({
           status: 200,
-          body: lessonUrls(root, "maths", topics),
-        })),
+          body: lessonUrls(root, loaded.subjects, loaded.pack.topics),
+        }));
+      },
+    },
+    "/api/topics": {
+      GET: async (req: Request) => {
+        const loaded = await packs();
+        return readRoute(req, "the topic list", () => ({
+          status: 200,
+          body: topicRows(loaded.pack, loaded.subjects),
+        }));
+      },
     },
     "/api/event": {
       POST: (req: Request) => postEventRoute(req, dataDir, topics),
@@ -543,9 +557,9 @@ if (import.meta.main) {
         `no app folder in ${root}. Start the tutor from its own folder.`,
       );
     }
-    const topics = await loadTopics("maths", root);
     const dataDir = path.join(root, "data");
-    const pack = await loadCasePack("maths", root);
+    const { pack, subjects } = await loadPacks(root);
+    const topics = pack.topics;
     // Before the check: a refused start still leaves the key owner-only.
     restrictConfigOnStart(dataDir);
     if (!checkOnStart(dataDir)) process.exit(1);
@@ -557,6 +571,7 @@ if (import.meta.main) {
       dataDir,
       topics,
       pack,
+      subjects,
       update,
       snapHost: () => lanAddress(os.networkInterfaces()),
       snaps,
@@ -572,7 +587,7 @@ if (import.meta.main) {
           out.write(`${line}\n`);
           out.flush();
         },
-        { root, dataDir, subject: "maths", topics, origin: url.slice(0, -1) },
+        { root, dataDir, subjects, topics, origin: url.slice(0, -1) },
       );
       await out.end(); // a stdout pipe can be asynchronous; the last reply must reach the harness
       server.stop(true); // no new snap can be minted from here on
