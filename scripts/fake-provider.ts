@@ -1,7 +1,11 @@
 // A stand-in OpenAI-compatible provider on 127.0.0.1 for tests and manual checks of the chat route.
 // It answers POST /v1/chat/completions after `delayMs`: five examiner lines for a photo, marks for a
-// teach-back, Dan's given wrong answer, a fixed hint otherwise,
-// or "not json" in not-json mode. Run it: bun scripts/fake-provider.ts --mode not-json --delay 70000
+// teach-back, Dan's given wrong answer, two codes for a school sheet (text or photo), one topic for
+// the intake interview, a fixed hint otherwise, or "not json" in not-json mode.
+// Run it: bun scripts/fake-provider.ts --mode not-json --delay 70000
+
+import { INTAKE_READ_MARK } from "../src/jobs/intake_read";
+import { INTERVIEW_MARK } from "../src/jobs/interview";
 
 export type FakeMode = "valid" | "not-json";
 
@@ -25,6 +29,19 @@ const hasImage = (m: Msg) =>
 /** The reply content for one request: examiner lines for a photo, one mark per numbered pupil line for a teach-back, a hint otherwise. */
 function contentFor(messages: Msg[], mode: FakeMode): string {
   if (mode === "not-json") return "not json";
+  // Before the image check: a sheet photo is not an examiner's photo. A pasted sheet must hold both codes.
+  const head = String(messages.find((m) => m.role === "system")?.content);
+  if (head.includes(INTAKE_READ_MARK))
+    return JSON.stringify({
+      codes: [
+        { code: "U349", rag: "R" },
+        { code: "U976", rag: "G" },
+      ],
+    });
+  if (head.includes(INTERVIEW_MARK))
+    return JSON.stringify({
+      topics: [{ topic: "1MA1/R4", confidence: "unsure" }],
+    });
   // By structure, not wording: the examiner's user content is an array, which String() would spoil below.
   if (messages.some(hasImage)) return JSON.stringify(EXAMINER);
   const system = String(messages.find((m) => m.role === "system")?.content);

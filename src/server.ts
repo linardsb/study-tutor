@@ -7,6 +7,7 @@ import { getCoach, postCoach } from "./api/coach";
 import { getConfig, getUsage, postConfig } from "./api/config";
 import { getDigest } from "./api/digest";
 import { postEvent } from "./api/event";
+import { diagnosticForDay, postInterview, postSheet } from "./api/intake";
 import { lessonUrls } from "./api/lessons";
 import { nextForDay } from "./api/next";
 import { getSquad, joinSquad, postSquad } from "./api/squad";
@@ -449,6 +450,34 @@ export function apiRoutes(opts: ServerOptions) {
       POST: (req: Request, server: IdleControl) =>
         postJobRoute(req, server, root, pack, "Could not answer Dan", (b, p) =>
           postCoach(b, dataDir, p, { dataDir }),
+        ),
+    },
+    "/api/intake/sheet": {
+      POST: (req: Request, server: IdleControl) =>
+        postJobRoute(
+          req,
+          server,
+          root,
+          pack,
+          "Could not read the sheet",
+          (b, p) => postSheet(b, p, { dataDir }),
+        ),
+    },
+    "/api/intake/interview": {
+      POST: (req: Request, server: IdleControl) =>
+        postJobRoute(
+          req,
+          server,
+          root,
+          pack,
+          "Could not read your answers",
+          (b, p) => postInterview(b, p, { dataDir }),
+        ),
+    },
+    "/api/intake/diagnostic": {
+      GET: (req: Request) =>
+        dayRoute(req, root, pack, "Could not build the cold test", (p, day) =>
+          diagnosticForDay(dataDir, p, day),
         ),
     },
     "/api/update": { GET: (req: Request) => getUpdate(req, update) },

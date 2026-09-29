@@ -195,7 +195,7 @@ test("register: no exclamation mark and no emoji in either page or any exported 
     expect(clean(s)).toEqual({ s, bang: false, emoji: false });
 });
 
-test("no page writes a file: no storage or file API under app/, and every POST goes to /api/event, /api/config, /api/chat, /api/squad, /api/coach or a snap route", () => {
+test("no page writes a file: no storage or file API under app/, and every POST goes to /api/event, /api/config, /api/chat, /api/squad, /api/coach, an intake read or a snap route", () => {
   const files = fs
     .readdirSync(app)
     .filter((f) => f.endsWith(".js") || f.endsWith(".html"));
@@ -220,10 +220,11 @@ test("no page writes a file: no storage or file API under app/, and every POST g
   // posts write only through appendEvent and writeDataFile on the server, and only the pupil's own file.
   // /api/coach saves the attempt and the coach record the same way. /api/snap mints a token held in
   // memory; /api/snap/photo saves through writeIntakeFile and appendEvent, on the server.
+  // /api/intake/sheet and /api/intake/interview write nothing; the page saves through /api/event.
   for (const p of posts)
     expect({
       p,
-      ok: /:\/api\/(event|config|chat|squad|squad\/join|coach|snap|snap\/photo)$/.test(
+      ok: /:\/api\/(event|config|chat|squad|squad\/join|coach|snap|snap\/photo|intake\/sheet|intake\/interview)$/.test(
         p,
       ),
     }).toEqual({

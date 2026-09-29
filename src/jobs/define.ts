@@ -22,11 +22,18 @@ const ONE =
 const NUM =
   "Use only numbers that appear in the question, the lesson's hint or the pupil's own words. Do not calculate anything new.";
 
-/** System message for a job that runs before an attempt: the guard line is always in it. `voice` replaces the tutor persona (Dan speaks as a classmate). */
-export function preAttemptSystem(task: string, voice = VOICE): Message {
+/**
+ * System message for a job that runs before an attempt: the guard line is always in it. `voice` replaces the tutor persona (Dan speaks as a classmate).
+ * `num` replaces the invented-number line for a job with no question (intake copies codes).
+ */
+export function preAttemptSystem(
+  task: string,
+  voice = VOICE,
+  num = NUM,
+): Message {
   return {
     role: "system",
-    content: [voice, PRE_ATTEMPT_GUARD, task, NUM, ONE].join("\n"),
+    content: [voice, PRE_ATTEMPT_GUARD, task, num, ONE].join("\n"),
   };
 }
 
