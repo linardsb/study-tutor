@@ -5,6 +5,7 @@ import { caseForDay, loadCasePack } from "./api/case";
 import { getChat, postChat } from "./api/chat";
 import { getCoach, postCoach } from "./api/coach";
 import { getConfig, getUsage, postConfig } from "./api/config";
+import { getDigest } from "./api/digest";
 import { postEvent } from "./api/event";
 import { lessonUrls } from "./api/lessons";
 import { nextForDay } from "./api/next";
@@ -160,6 +161,23 @@ async function dayRoute(
   } catch (err) {
     console.error(`${failed}: ${(err as Error).message}`);
     return json(500, { error: failed });
+  }
+}
+
+/** This week's digest and last week's; `?day=` reads another week and writes nothing (src/api/digest.ts). */
+function digestRoute(req: Request, dataDir: string): Response {
+  const refused = refuseForeign(req);
+  if (refused) return refused;
+  const asked = new URL(req.url).searchParams.get("day");
+  if (asked !== null && !isDay(asked))
+    return json(400, { error: "day must be YYYY-MM-DD" });
+  try {
+    const today = localDay(utcNow());
+    const r = getDigest(dataDir, asked ?? today, today);
+    return json(r.status, r.body);
+  } catch (err) {
+    console.error(`Could not build the digest: ${(err as Error).message}`);
+    return json(500, { error: "Could not build the digest" });
   }
 }
 
@@ -396,6 +414,7 @@ export function apiRoutes(opts: ServerOptions) {
       GET: (req: Request) =>
         readRoute(req, "the token count", () => getUsage(dataDir)),
     },
+    "/api/digest": { GET: (req: Request) => digestRoute(req, dataDir) },
     "/api/chat": {
       GET: (req: Request) => getChatRoute(req, root, dataDir, pack),
       POST: (req: Request, server: IdleControl) =>

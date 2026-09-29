@@ -5,7 +5,7 @@ import path from "node:path";
 import { saveSetup } from "../../config";
 import type { Item } from "../../content/types";
 import { readLines } from "../../events/append";
-import type { NewEvent } from "../../events/types";
+import { type NewEvent, parseEvent } from "../../events/types";
 import type { Fetch } from "../../providers/openai-compatible";
 
 export const KEY = "sk-test-SECRET-9f3a";
@@ -75,6 +75,16 @@ export const down: Reply = () => {
 /** The count of usage lines in the log. */
 export const countUsage = (dataDir: string): number =>
   readLines(dataDir).filter((l) => JSON.parse(l).type === "usage").length;
+
+/** The job@1 lines in the log, as `{job, reason}`. */
+export const countFailures = (
+  dataDir: string,
+): { job: string; reason: string }[] =>
+  readLines(dataDir)
+    .map(parseEvent)
+    .flatMap((e) =>
+      e?.type === "job" ? [{ job: e.job, reason: e.reason }] : [],
+    );
 
 /** An item whose answer-side fields hold sentinels, so a leak into a prompt is a plain string search. */
 export function sentinelItem(over: Partial<Item> = {}): Item {

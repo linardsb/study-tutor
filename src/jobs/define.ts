@@ -2,6 +2,8 @@
  * A model job: prompt, shape validated in code, the reply guard, one retry, then a deterministic
  * fallback. Every job gets the same policy from here; src/flow decides when a job runs.
  */
+import { appendEvent } from "../events/append";
+import type { JobV1 } from "../events/types";
 import {
   chatJson,
   type Failure,
@@ -37,6 +39,11 @@ export function postAttemptSystem(task: string, num = NUM): Message {
 }
 
 export type JobFailure = Failure | "shape" | "guard";
+type Recorded = Exclude<JobFailure, "no-model">;
+// A new failure reason that is not in JOB_REASONS (or the reverse) fails here.
+const _reasons: [Recorded, JobV1["reason"]] extends [JobV1["reason"], Recorded]
+  ? true
+  : never = true;
 export type Verdict<O> =
   | { by: "model"; value: O }
   | { by: "fallback"; value: O | null; reason: JobFailure }; // null = no verdict
@@ -107,6 +114,7 @@ export function defineJob<I, O>(spec: JobSpec<I, O>): Job<I, O> {
         console.error(`Model reply refused (${name}): ${reason}`);
       if (!RETRYABLE.has(reason)) break;
     }
+    if (reason !== "no-model") recordFailure(deps, name, reason);
     return { by: "fallback", value: spec.fallback(input), reason };
   }
 
@@ -122,6 +130,17 @@ export function defineJob<I, O>(spec: JobSpec<I, O>): Job<I, O> {
   }
 
   return { name, run };
+}
+
+/** One job@1 line per fallback verdict, for the parent digest. Never throws: the fallback still runs. */
+function recordFailure(deps: JobDeps, job: string, reason: Recorded): void {
+  try {
+    appendEvent(deps.dataDir, { v: 1, type: "job", job, reason }, deps.now);
+  } catch (err) {
+    console.error(
+      `Could not record the failed model call (${job}): ${(err as Error).name}`,
+    );
+  }
 }
 
 const isObj = (x: unknown): x is Record<string, unknown> =>

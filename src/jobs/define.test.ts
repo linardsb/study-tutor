@@ -1,6 +1,7 @@
 import { expect, spyOn, test } from "bun:test";
 import {
   chatReply,
+  countFailures,
   countUsage,
   down,
   mockFetch,
@@ -135,6 +136,12 @@ for (const row of rows)
         }
         expect(calls.length).toBe(row.calls);
         expect(countUsage(data)).toBe(row.usage);
+        // One line per fallback verdict, not per try: the not-json, shape and guard rows call twice.
+        expect(countFailures(data)).toEqual(
+          row.by === "fallback"
+            ? [{ job: "probe", reason: row.reason as string }]
+            : [],
+        );
       } finally {
         quiet.mockRestore();
       }
@@ -148,8 +155,13 @@ for (const [name, setup] of [
   test(
     `retry policy: ${name} → no-model, no fetch`,
     withData(setup, async (data) => {
+      const logged = spyOn(console, "error");
       const { f, calls } = mockFetch(valid);
       const v = await probe.run(Q, { dataDir: data, fetch: f, now: NOW });
+      const errors = logged.mock.calls.length;
+      logged.mockRestore();
+      // No-model is a choice: no job line, and no refused-append error in the log either.
+      expect(errors).toBe(0);
       expect(v).toEqual({
         by: "fallback",
         value: { text: "fallback" },
@@ -157,6 +169,7 @@ for (const [name, setup] of [
       });
       expect(calls.length).toBe(0);
       expect(countUsage(data)).toBe(0);
+      expect(countFailures(data)).toEqual([]);
     }),
   );
 

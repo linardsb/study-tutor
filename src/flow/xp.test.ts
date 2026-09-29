@@ -75,7 +75,7 @@ const withWeeks = (
   const s = replay([]);
   for (const [week, xp, score, of] of weeks) {
     s.xp.byWeek[week] = xp;
-    s.retests[week] = { score, of };
+    s.retests[week] = { score, of, taken: 0, passed: 0 }; // guardrail reads score and of only
   }
   return s;
 };
