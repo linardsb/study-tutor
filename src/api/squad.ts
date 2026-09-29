@@ -9,6 +9,7 @@ import {
   PROFILE_FILE,
   readDataJson,
   readLines,
+  resolveInData,
   writeDataFile,
 } from "../events/append";
 import {
@@ -20,11 +21,14 @@ import {
 import {
   comparable,
   daysLeft,
+  MAX_ANSWER,
+  MAX_WORKING,
   markRound,
   PARENT_SLOTS,
   parseSquadFile,
   pool,
   roll,
+  roundOf,
   SQUAD_SLOTS,
   type SquadFile,
   type SquadRound,
@@ -57,8 +61,8 @@ export type SquadView = {
 };
 type Refusal = { status: 400 | 409 | 500; body: { error: string } };
 
-const MAX_ANSWER = 100;
-const MAX_WORKING = 500;
+// derived: 5 answers × (100 + 500) characters ≈ 3 KB of text, plus keys and seeds; 64 KB leaves room for any honest file
+const MAX_FILE = 64 * 1024;
 
 type Obj = Record<string, unknown>;
 const isObj = (x: unknown): x is Obj =>
@@ -165,11 +169,11 @@ function friends(
   const files: SquadFile[] = [];
   for (const name of listed.files) {
     if (!name.endsWith(".json") || name === own) continue;
+    const rel = `squad/${profile.squad}/${name}`;
     let f: SquadFile | null = null;
     try {
-      f = parseSquadFile(
-        readDataJson(dataDir, `squad/${profile.squad}/${name}`),
-      );
+      if (fs.statSync(resolveInData(dataDir, rel)).size <= MAX_FILE)
+        f = parseSquadFile(readDataJson(dataDir, rel));
     } catch {
       f = null;
     }
@@ -229,13 +233,17 @@ export function getSquad(
   if (profile === null) return { status: 200, body: view };
   // profile.json exists, so data/ does: this never creates it.
   view.folder = path.join(fs.realpathSync(dataDir), "squad", profile.squad);
-  const round = squadRound(profile.squad, week, pack);
+  const evs = events(dataDir);
+  const e = mineEvent(evs, profile.squad, week);
+  // A saved round keeps its own topic: a mid-week update that moves the pick must not re-pair its answers.
+  const round =
+    e === null
+      ? squadRound(profile.squad, week, pack)
+      : roundOf(profile.squad, week, e.topic);
   if (round === null) return { status: 200, body: view };
   const title =
     pack.topics.find((t) => t.id === round.topic)?.title ?? round.topic;
   view.round = { ...round, title };
-  const evs = events(dataDir);
-  const e = mineEvent(evs, profile.squad, week);
   const mine =
     e === null ? null : squadFile(e, profile.pupil, round.seeds, VERSION);
   view.mine = mine;
@@ -332,13 +340,17 @@ export function postSquad(
   return { status: 201, body: getSquad(dataDir, pack, day, true).body };
 }
 
-/** Squad id and pupil name into profile.json, every other key kept. */
+/**
+ * Squad id and pupil name into profile.json, every other key kept. Once this week's round is saved,
+ * both stay as they are until next week: a new name would leave the old file behind as a friend.
+ */
 export function joinSquad(
   body: unknown,
   dataDir: string,
+  day: string,
 ):
   | { status: 200; body: { profile: { squad: string; pupil: string } } }
-  | { status: 400; body: { error: string } } {
+  | { status: 400 | 409; body: { error: string } } {
   const squad = isObj(body) ? slug(body.squad) : null;
   const pupil = isObj(body) ? slug(body.pupil) : null;
   if (squad === null || pupil === null)
@@ -346,6 +358,19 @@ export function joinSquad(
       status: 400,
       body: {
         error: "Use letters, numbers and dashes for the squad and your name.",
+      },
+    };
+  const now = squadProfile(dataDir);
+  if (
+    now !== null &&
+    (now.squad !== squad || now.pupil !== pupil) &&
+    mineEvent(events(dataDir), now.squad, isoWeek(day)) !== null
+  )
+    return {
+      status: 409,
+      body: {
+        error:
+          "You have done this week's round, so your squad and name stay as they are until Monday.",
       },
     };
   const profile = { ...readProfile(dataDir), squad, pupil };

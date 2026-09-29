@@ -117,6 +117,7 @@ type Page = {
     | "solo"
     | "notShared"
     | "notComparable"
+    | "folder"
     | "notSaved"
     | "parentDone",
     string
@@ -161,9 +162,15 @@ test("1. no profile: the join form; submitting posts squad and name to /api/squa
     },
   ]);
   expect($("#join").children).toHaveLength(0);
+  // PR #43 L1: before the round, no 0-of-0 total and no solo line, but the folder is there to copy into
+  expect(texts("#week p")).toEqual([
+    "The squad week ends on Sunday. 2 days left, today included.",
+    TEXT.folder,
+    "/home/sam/tutor/data/squad/year11-b",
+  ]);
 });
 
-test("2. the round: five questions, no working until a check, one go each, then exactly one POST with the week and five answers", async () => {
+test("2. the round: five questions, no working or named mistake before the save (PR #43 M2), one go each, then exactly one POST with the week and five answers", async () => {
   expect(texts("#week p")[0]).toBe(
     "The squad week ends on Sunday. 2 days left, today included.",
   );
@@ -172,14 +179,19 @@ test("2. the round: five questions, no working until a check, one go each, then 
   expect($$("#round textarea")).toHaveLength(5);
   const q0 = answer("#round", 0, right[0] as string, "0.6 x 350");
   expect(q0.classList.contains("right")).toBe(true);
-  expect(q0.textContent).toContain(qs[0]?.working as string);
+  expect(q0.textContent).not.toContain(qs[0]?.working as string);
   // one go: a second check changes nothing
   (q0.querySelector("input") as El).value = "999";
   (q0.querySelector(".check") as El).click();
   expect(q0.classList.contains("wrong")).toBe(false);
   expect((q0.querySelector("textarea") as El).disabled).toBe(true);
+  const named = Object.keys(qs[3]?.wrong ?? {})[0] as string;
   for (let i = 1; i < 5; i++)
-    answer("#round", i, i === 3 ? "1" : (right[i] as string), `w${i}`);
+    answer("#round", i, i === 3 ? named : (right[i] as string), `w${i}`);
+  const q3 = $$("#round .q")[3] as El;
+  expect(q3.querySelector(".feedback")?.textContent).toBe("Not this time.");
+  const shown = $("#round").textContent ?? "";
+  for (const q of qs) expect(shown).not.toContain(q.working);
   await until(() => posts("/api/squad").length === 1);
   expect(posts("/api/squad")[0]?.body).toEqual({
     week: WEEK,
@@ -187,14 +199,14 @@ test("2. the round: five questions, no working until a check, one go each, then 
       { answer: right[0], working: "0.6 x 350" },
       { answer: right[1], working: "w1" },
       { answer: right[2], working: "w2" },
-      { answer: "1", working: "w3" },
+      { answer: named, working: "w3" },
       { answer: right[4], working: "w4" },
     ],
   });
   await until(() => $$("#compare .q").length === 5);
   expect($("#status").textContent).toBe(TEXT.saved);
   expect($("#share a").getAttribute("download")).toBe("sam.json");
-  expect($("#share .folder").textContent).toBe(
+  expect($("#week .folder").textContent).toBe(
     "/home/sam/tutor/data/squad/year11-b",
   );
 });
@@ -247,7 +259,9 @@ test("3b. a friend on other questions is named with the note and gets no rows", 
       (b) => b.textContent,
     ),
   ).toEqual(["You"]);
-  expect(texts("#compare p.note")).toEqual([`kit ${TEXT.notComparable}`]);
+  expect(texts("#compare p.note")).toEqual([
+    "kit: their tutor set different questions this week, so their round is not counted. Updating either tutor fixes it.",
+  ]);
 });
 
 test("4. no members: the solo line; two unreadable files: the unreadable line", async () => {

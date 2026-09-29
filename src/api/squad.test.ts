@@ -6,6 +6,7 @@ import { appendEvent, readLines } from "../events/append";
 import {
   PARENT_SLOTS,
   roll,
+  roundOf,
   type SquadFile,
   type SquadRound,
   squadFile,
@@ -44,7 +45,7 @@ function withTemp(fn: (dir: string, data: string) => void | Promise<void>) {
 }
 
 const join = (data: string) =>
-  joinSquad({ squad: " Year11 B", pupil: "Sam" }, data);
+  joinSquad({ squad: " Year11 B", pupil: "Sam" }, data, DAY);
 const post = (data: string) =>
   postSquad({ week: WEEK, answers }, data, pack, DAY, AT);
 const squadLines = (data: string) =>
@@ -121,8 +122,10 @@ test(
       pupil: "sam",
     });
     const before = saved();
-    expect(joinSquad({ squad: "b", pupil: "../x" }, data).status).toBe(400);
-    expect(joinSquad(null, data).status).toBe(400);
+    expect(joinSquad({ squad: "b", pupil: "../x" }, data, DAY).status).toBe(
+      400,
+    );
+    expect(joinSquad(null, data, DAY).status).toBe(400);
     expect(saved()).toEqual(before);
     const view = getSquad(data, pack, DAY, true).body;
     expect(view.folder).toBe(folder(data));
@@ -409,5 +412,86 @@ test(
     expect(done()).toBe(false);
     tb({}, "2026-10-10T12:00:00Z");
     expect(done()).toBe(true);
+  }),
+);
+
+test(
+  "14. no rename once the week's round is saved (PR #43 M1): a new name or squad is 409, so the old file is never counted as a friend",
+  withTemp((_dir, data) => {
+    join(data);
+    post(data);
+    const profile = () =>
+      JSON.parse(fs.readFileSync(path.join(data, "profile.json"), "utf8"));
+    const before = profile();
+    const rename = (squad: string, pupil: string, day = DAY) =>
+      joinSquad({ squad, pupil }, data, day);
+    expect(rename("year11-b", "sammy").status).toBe(409);
+    // the two-join path: another squad first, then back under the new name
+    expect(rename("year11-c", "sammy").status).toBe(409);
+    expect(profile()).toEqual(before);
+    const view = getSquad(data, pack, DAY, true).body;
+    expect(view.members).toEqual([]);
+    expect(view.total).toEqual({ score: 4, of: 5, rounds: 1 });
+    // the same name typed again is not a change; next Monday the name is free
+    expect(rename("Year11 B", "SAM").status).toBe(200);
+    expect(rename("year11-b", "sammy", "2026-10-12").status).toBe(200);
+  }),
+);
+
+test(
+  "15. a saved round keeps its own topic after an update moves the pick (PR #43 M3): mine's seeds, the view round and the comparison follow the event",
+  withTemp((_dir, data) => {
+    join(data);
+    const other = "1MA1/R4";
+    expect(other).not.toBe(round.topic);
+    const was = roundOf("year11-b", WEEK, other);
+    appendEvent(
+      data,
+      {
+        v: 1,
+        type: "squad",
+        squad: "year11-b",
+        week: WEEK,
+        topic: other,
+        score: 1,
+        of: 5,
+        answers: was.seeds.map((_, k) => ({
+          answer: String(k),
+          working: "",
+          correct: k === 0,
+        })),
+      },
+      AT,
+    );
+    put(data, "alex.json", friendFile("alex", 3));
+    const view = getSquad(data, pack, DAY, true).body;
+    expect(view.round?.topic).toBe(other);
+    expect(view.round?.seeds).toEqual(was.seeds);
+    expect(view.round?.parentSeeds).toEqual(was.parentSeeds);
+    expect(view.mine?.seeds).toEqual(was.seeds);
+    expect(view.members.map((m) => [m.pupil, m.comparable])).toEqual([
+      ["alex", false],
+    ]);
+    expect(view.total).toEqual({ score: 1, of: 5, rounds: 1 });
+    const own = JSON.parse(
+      fs.readFileSync(path.join(folder(data), "sam.json"), "utf8"),
+    );
+    expect(own.seeds).toEqual(was.seeds);
+  }),
+);
+
+test(
+  "16. a friend's file over 64 KB, or with an answer over the page's cap, is unreadable (PR #43 L3)",
+  withTemp((_dir, data) => {
+    join(data);
+    post(data);
+    put(data, "big.json", { ...friendFile("big", 5), pad: "x".repeat(70_000) });
+    const long = friendFile("long", 5);
+    (long.answers[0] as { answer: string }).answer = "1".repeat(101);
+    put(data, "long.json", long);
+    const view = getSquad(data, pack, DAY, true).body;
+    expect(view.members).toEqual([]);
+    expect(view.unreadable).toBe(2);
+    expect(view.total).toEqual({ score: 4, of: 5, rounds: 1 });
   }),
 );

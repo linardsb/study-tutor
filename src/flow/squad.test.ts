@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { loadCasePack } from "../api/case";
 import type { CasePack } from "../content/types";
+import type { SquadAnswer } from "../events/types";
 import {
   comparable,
   daysLeft,
@@ -11,6 +12,7 @@ import {
   parseSquadFile,
   pool,
   roll,
+  roundOf,
   SQUAD_SLOTS,
   type SquadFile,
   type SquadRound,
@@ -33,9 +35,12 @@ const file = (over: Record<string, unknown> = {}): Record<string, unknown> => ({
   answers: [
     { answer: "210", working: "0.6 x 350", correct: true },
     { answer: "1", working: "", correct: false },
+    { answer: "2", working: "", correct: false },
+    { answer: "3", working: "", correct: false },
+    { answer: "4", working: "", correct: false },
   ],
   score: 1,
-  of: 2,
+  of: 5,
   ...over,
 });
 
@@ -140,6 +145,16 @@ test("parseSquadFile: a good file parses with stray keys dropped; each bad shape
     file({ week: "2026-41" }),
     file({ seeds: [1.5] }),
     file({ app: 1 }),
+    file({
+      answers: [{ answer: "1".repeat(101), working: "", correct: true }],
+      score: 1,
+      of: 1,
+    }),
+    file({
+      answers: [{ answer: "1", working: "w".repeat(501), correct: true }],
+      score: 1,
+      of: 1,
+    }),
   ];
   for (const b of bad) expect(parseSquadFile(b)).toBeNull();
 });
@@ -153,6 +168,19 @@ test("comparable: false on another topic, other seeds or another week", () => {
   );
   expect(comparable(round, { ...f, seeds: f.seeds.slice(1) })).toBe(false);
   expect(comparable(round, { ...f, week: "2026-W40" })).toBe(false);
+  // PR #43 L2: matching seeds with the wrong number of answers is not the same round
+  const fifty = Array.from({ length: 50 }, () => f.answers[0] as SquadAnswer);
+  expect(comparable(round, { ...f, answers: fifty, score: 50, of: 50 })).toBe(
+    false,
+  );
+  expect(comparable(round, { ...f, answers: f.answers.slice(1) })).toBe(false);
+});
+
+test("roundOf: the picked topic gives squadRound's round exactly; another topic gives its own seeds", () => {
+  expect(roundOf("year11-b", "2026-W41", round.topic)).toEqual(round);
+  expect(roundOf("year11-b", "2026-W41", "1MA1/R4").seeds).not.toEqual(
+    round.seeds,
+  );
 });
 
 test("pool: sums score and of and counts rounds", () => {

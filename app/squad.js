@@ -1,10 +1,11 @@
 /* The squad page: the week's shared round from GET /api/squad, built in the browser from the served
-   seeds, so every member of the squad gets the same numbers. One go per question, marked here for
-   instant feedback and marked again on the server, which saves the round and writes the pupil's file.
+   seeds, so every member of the squad gets the same numbers. One go per question, marked here as right
+   or not and marked again on the server, which saves the round and writes the pupil's file.
    After the round: each question with everyone's answer and working, in name order, and the squad's
    pooled total. No one is scored against anyone else. Then a parent round of three fresh questions,
    saved as a teachback through POST /api/event.
-   Invariant: an item's answer and working enter the DOM only inside the check handler, as retest.js.
+   Invariant: in the pupil's round an item's working enters the DOM only in the compare view, after the
+   save, because a reload rolls the same questions. In the parent round it enters in the check handler.
    Friends' answers and working are typed by pupils, so they go in with textContent only.
    Runs in the browser. Loaded under Bun by src/marking/squad.test.ts, so nothing here touches
    document, window.GEN or window.quiz at load time. */
@@ -12,7 +13,7 @@
   const PARENT_SLOTS = 3; // the same value as src/flow/squad.ts
   const TEXT = {
     joinIntro:
-      "Join your squad. Everyone in it types the same squad name. Use letters, numbers and dashes.",
+      "Join your squad. Everyone in it types the same squad name. Use letters, numbers and dashes, and pick a name no one else in the squad uses.",
     squadLabel: "Squad name ",
     pupilLabel: "Your name ",
     join: "Join",
@@ -23,11 +24,12 @@
       `The squad week ends on Sunday. ${n} ${n === 1 ? "day" : "days"} left, today included.`,
     total: (score, of, rounds) =>
       `Squad total this week: ${score} of ${of} from ${rounds} ${rounds === 1 ? "round" : "rounds"}.`,
-    solo: "Only your round so far. Friends' files go in the folder below.",
+    solo: "Only your round so far.",
+    folder: "Friends' files go in this folder on this computer:",
     unreadable: (n) =>
       `${n} ${n === 1 ? "file" : "files"} in the squad folder could not be read and ${n === 1 ? "is" : "are"} left out.`,
     notComparable:
-      "Their tutor set different questions this week, so their round is not counted. Updating either tutor fixes it.",
+      ": their tutor set different questions this week, so their round is not counted. Updating either tutor fixes it.",
     roundIntro: (title) =>
       `This week: ${title}. Five questions, one go each. Write your working if you can. Your squad sees it once they have done their own round.`,
     yourAnswer: "Your answer ",
@@ -55,8 +57,7 @@
       `Your parent got ${m} of ${of}. Saved as a teach-back.`,
     parentDone: "The parent round is done for this week.",
     share: "Share your round",
-    shareIntro:
-      "Save your file and give it to each friend's parent. Friends' files go in this folder on this computer:",
+    shareIntro: "Save your file and give it to each friend's parent.",
     saveFile: "Save my file",
   };
 
@@ -151,8 +152,9 @@
     return q;
   }
 
-  /* one go: the first check marks, shows the working, locks the question and reports what was typed */
-  function wireCheck(q, item, onDone) {
+  /* one go: the first check marks, locks the question and reports what was typed; reveal shows the working
+     and any named mistake, which the pupil's round leaves for the compare view */
+  function wireCheck(q, item, reveal, onDone) {
     const input = q.querySelector("input");
     const area = q.querySelector("textarea");
     const btn = q.querySelector(".check");
@@ -168,10 +170,11 @@
       }
       const { ok, named } = quiz.mark(item, input.value);
       q.classList.add("done", ok ? "right" : "wrong");
-      fb.textContent = ok ? TEXT.correct : named || TEXT.wrong;
-      /* the working enters the page here and nowhere earlier */
-      work.appendChild(el("p", "", item.working));
-      work.hidden = false;
+      fb.textContent = ok ? TEXT.correct : (reveal && named) || TEXT.wrong;
+      if (reveal) {
+        work.appendChild(el("p", "", item.working));
+        work.hidden = false;
+      }
       input.disabled = true;
       btn.disabled = true;
       if (area) area.disabled = true;
@@ -193,7 +196,7 @@
     for (const [i, item] of items.entries()) {
       const q = buildQ(item, i + 1, withWorking);
       holder.appendChild(q);
-      wireCheck(q, item, (r) => {
+      wireCheck(q, item, !withWorking, (r) => {
         results[i] = r;
         left -= 1;
         if (left === 0) onAllDone(results);
@@ -244,9 +247,12 @@
 
   function renderWeek(holder, view) {
     holder.appendChild(el("p", "", daysText(view.daysLeft)));
-    holder.appendChild(el("p", "total", totalText(view.total)));
-    if (view.members.length === 0)
+    if (view.total.rounds > 0)
+      holder.appendChild(el("p", "total", totalText(view.total)));
+    if (view.mine && view.members.length === 0)
       holder.appendChild(el("p", "note", TEXT.solo));
+    holder.appendChild(el("p", "", TEXT.folder));
+    holder.appendChild(el("p", "folder", view.folder ?? ""));
     if (view.unreadable > 0)
       holder.appendChild(el("p", "note", TEXT.unreadable(view.unreadable)));
     if (view.mine && !view.shared)
@@ -321,7 +327,7 @@
     for (const m of members.filter((m) => !m.comparable)) {
       const p = el("p", "note");
       p.appendChild(el("b", "", m.pupil));
-      p.append(` ${TEXT.notComparable}`);
+      p.append(TEXT.notComparable);
       holder.appendChild(p);
     }
   }
@@ -365,7 +371,6 @@
   function renderShare(holder, view) {
     holder.appendChild(el("h2", "", TEXT.share));
     holder.appendChild(el("p", "", TEXT.shareIntro));
-    holder.appendChild(el("p", "folder", view.folder ?? ""));
     const a = el("a", "", TEXT.saveFile);
     a.download = `${view.profile.pupil}.json`;
     a.href = URL.createObjectURL(

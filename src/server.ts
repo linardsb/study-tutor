@@ -244,7 +244,7 @@ async function postJoinRoute(req: Request, dataDir: string): Promise<Response> {
     return json(400, { error: "Body is not JSON" });
   }
   try {
-    const r = joinSquad(body, dataDir);
+    const r = joinSquad(body, dataDir, localDay(utcNow()));
     return json(r.status, r.body);
   } catch (err) {
     console.error(`Could not join the squad: ${(err as Error).message}`);

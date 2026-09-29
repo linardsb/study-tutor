@@ -26,8 +26,8 @@ Squad mode. A seeded weekly round comes from `hash(squad, ISO week, topic)`, so 
 - E3 → `.claude/references/events.md` (UPDATE)
 
 ## Tests added
-- `src/flow/squad.test.ts` (11): slug including Windows device names; determinism and seed sets; null pack; golden topic and five stems for `year11-b`/`2026-W41`; `daysLeft` Mon 7 … Sun 1; `markRound`; `parseSquadFile` refusals and stray-key drop; `comparable`; `pool`; **two Bun processes** (Europe/London en_GB vs Pacific/Auckland de_DE) produce byte-identical output, and `year11-c` differs; `generators.js` has no locale, clock or `Math.random`.
-- `src/api/squad.test.ts` (15): C3 #1–#13 as planned, plus 9b (a squad folder symlinked out of `data/` → 200, solo, `unreadable: 1`), and 10b split out.
+- `src/flow/squad.test.ts` (12, one from the PR #43 review fixes): slug including Windows device names; determinism and seed sets; null pack; golden topic and five stems for `year11-b`/`2026-W41`; `daysLeft` Mon 7 … Sun 1; `markRound`; `parseSquadFile` refusals and stray-key drop; `comparable`; `pool`; **two Bun processes** (Europe/London en_GB vs Pacific/Auckland de_DE) produce byte-identical output, and `year11-c` differs; `generators.js` has no locale, clock or `Math.random`.
+- `src/api/squad.test.ts` (18): C3 #1–#13 as planned, plus 9b (a squad folder symlinked out of `data/` → 200, solo, `unreadable: 1`), and 10b split out. #14–#16 come from the PR #43 review fixes.
 - `src/events/append.test.ts` (+5): nested make; `squad` symlinked out is refused with nothing made outside; a level that is a file is refused; a missing folder or `data/` lists as empty; list skips a symlink and a subfolder and names them.
 - `src/api/event.test.ts` (+1): a valid squad body → 400, nothing written, no `data/`.
 - `src/marking/squad.test.ts` (4): browser roll = Bun roll (round and parent seeds); helpers; register; ranking-word grep.
@@ -41,7 +41,7 @@ Squad mode. A seeded weekly round comes from `hash(squad, ISO week, topic)`, so 
 - E1: appending `fetch("/api/other", { method: "POST" })` to `squad.js` turns the allowlist test red with `squad.js:/api/other`. Restored → green.
 
 ## Validation results
-- `bun run check` (tsc + biome + bun test): green, 479 pass, 0 fail across 48 files (observed).
+- `bun run check` (tsc + biome + bun test): green, 479 pass, 0 fail across 48 files (observed at `2e17251`). After the PR #43 review fixes: 483 pass, 0 fail across 48 files (observed; the fixes report has the run).
 - `bun scripts/test-generators.ts`: all 6300 runs pass (observed).
 - Biome reports 4 warnings, all `noDescendingSpecificity` in `app/style.css`, a file this ticket did not touch (observed).
 - **Level 4, over HTTP:** two `startServer` instances on free ports, each with its own `data/`, both reading this worktree's `app/` and `content/`. Observed:
@@ -55,7 +55,7 @@ Squad mode. A seeded weekly round comes from `hash(squad, ISO week, topic)`, so 
   9. A squad body to `/api/event` → 400 with the refusal sentence.
   - A second round → 409. `?day=2026-01-05` → 200, week `2026-W02`.
 
-  The UI half of steps 1, 5 and 7 (clicking through the page) was not run in a browser. The happy-dom tests cover it. Level 5 `agent-browser` was not run.
+  Step 8 (`/retest.html` with nothing due) was not run; the F5 happy-dom tests cover its logic. The UI half of steps 1, 5 and 7 (clicking through the page) was not run in a browser. The happy-dom tests cover it. Level 5 `agent-browser` was not run.
 
 ## Deviations from the plan
 1. **`listDataDir` returns `{files, skipped}`**, not `string[]`. The plan's view counts a symlinked file as unreadable (AC 5: "symlinked … degrades to solo with … a visible note"). A list that drops symlinks silently cannot report one. Skipped `*.json` entries count toward `unreadable`; other names (`.DS_Store`, `.tmp`) are ignored.
@@ -90,5 +90,6 @@ UX states per surface:
 
 ## Issues encountered
 - **Two `data/` folders stood in for two installs.** The plan's Level 4 step 3 worktree plus `bun install` was not used: two `startServer` instances on free ports, each with its own `data/`, test the same property without opening browser tabs.
-- **Stale seeds after a mid-week pack update.** If the pack updates mid-week and the topic pick moves, `mine`'s file is projected with the *current* round's seeds while the event carries the old topic. The compare view would then pair the pupil's answers with the new questions. It is rare (it needs a content update between a pupil's round and a later view in the same week) and is not handled.
+- **Stale seeds after a mid-week pack update.** If the pack updates mid-week and the topic pick moves, `mine`'s file was projected with the *current* round's seeds while the event carries the old topic. Fixed in the PR #43 review round 1 (M3): once the pupil's round is saved, the view's round is rebuilt from the event's own topic (`roundOf`).
+- **A reload before the save can retry a question** (PR #43 M2, accepted limit). The squad round shows right or not on each check, with no working and no named mistake until the save. A reload rolls the same questions, so a pupil told "not this time" can guess again, but never after seeing the working.
 - **Squad lines without `answers`.** A `squad` line hand-written without `answers` is now skipped by `parseEvent`, since the shape was edited in place (A0: no release exists). No line of that shape exists in any fixture or script (grep, observed).

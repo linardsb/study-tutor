@@ -12,6 +12,8 @@ import { hash } from "./detective";
 
 export const SQUAD_SLOTS = 5; // expected: 5 questions ≈ a 10-minute round (the v1 re-test is 3; a squad round is the week's one shared test)
 export const PARENT_SLOTS = 3; // the parent answers 3 fresh rolls after being taught
+export const MAX_ANSWER = 100;
+export const MAX_WORKING = 500;
 
 const SLUG = /^[a-z0-9][a-z0-9-]{0,31}$/;
 // Windows refuses these as a file or folder name, with or without an extension.
@@ -51,6 +53,15 @@ export function squadRound(
   const topic = (
     topics[hash(`${squad}:${week}`) % topics.length] as (typeof topics)[number]
   ).id;
+  return roundOf(squad, week, topic);
+}
+
+/** The round for a known topic: a saved squad event keeps the questions it was answered on after an update moves the pick. */
+export function roundOf(
+  squad: string,
+  week: string,
+  topic: string,
+): SquadRound {
   const seeds = Array.from({ length: SQUAD_SLOTS }, (_, k) =>
     hash(`${squad}:${week}:${topic}:${k}`),
   );
@@ -149,7 +160,9 @@ export function parseSquadFile(x: unknown): SquadFile | null {
     if (
       !isObj(a) ||
       typeof a.answer !== "string" ||
+      a.answer.length > MAX_ANSWER ||
       typeof a.working !== "string" ||
+      a.working.length > MAX_WORKING ||
       typeof a.correct !== "boolean"
     )
       return null;
@@ -171,12 +184,13 @@ export function parseSquadFile(x: unknown): SquadFile | null {
   };
 }
 
-/** Same week, topic and seeds as mine. */
+/** Same week, topic and seeds as mine, and one answer per seed. */
 export function comparable(mine: SquadRound, f: SquadFile): boolean {
   return (
     f.week === mine.week &&
     f.topic === mine.topic &&
     f.seeds.length === mine.seeds.length &&
+    f.answers.length === mine.seeds.length &&
     f.seeds.every((s, i) => s === mine.seeds[i])
   );
 }

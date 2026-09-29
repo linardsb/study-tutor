@@ -507,8 +507,8 @@ first because it is small and isolated. It can be its own commit.
 - **GUARD (restated per CLAUDE.md)**: no model job and no prompt in this ticket. The answer-withholding
   rule applies to friends' answers: `members[].answers` is only present when this pupil's `squad` event for
   the week exists. That is enforced in `getSquad` and tested in C3. The round's own answers reach the
-  browser the way boss and practice answers already do (rolled in the page, working revealed only in
-  the check handler).
+  browser the way boss and practice answers already do (rolled in the page). The round's working appears
+  only in the compare view, after the save (PR #43 M2).
 - **IMPORTS**: `readLines`, `appendEvent`, `readDataJson`, `writeDataFile`, `makeDataDir`, `listDataDir`,
   `resolveInData` from `../events/append`; `parseEvent` from `../events/types`; `readProfile`, `PROFILE_FILE`
   from `../config` / `../events/append`; `isoWeek`, `utcNow` from `../mcp/clock`; `VERSION` from `../updates`;
@@ -596,9 +596,10 @@ first because it is small and isolated. It can be its own commit.
 - **IMPLEMENT**: An IIFE in the `retest.js` shape. Exports on `globals().squad = Object.assign(api, {TEXT, buildRound, parentItems, roundBody, daysText, totalText, memberOrder})`.
   - `TEXT` holds every pupil-facing string, including `daysLeft(n)` ("The squad week ends on Sunday. n
     days left, today included." with the singular handled), `total(score, of, rounds)` ("Squad total this week: 12 of
-    15 from 3 rounds."), `solo` ("Only your round so far. Friends' files go in the folder below."),
-    `notComparable` ("Their tutor set different questions this week, so their round is not counted. An
-    update on either side fixes it."), `unreadable(n)`, `saved`, `notShared` ("Saved to your record. Your
+    15 from 3 rounds."), `solo` ("Only your round so far.", shown only once
+    the pupil's round is saved), `folder` (the folder path, shown whenever the pupil has joined; PR #43 L1),
+    `notComparable` (after the friend's name: ": their tutor set different questions this week, so their
+    round is not counted. Updating either tutor fixes it."), `unreadable(n)`, `saved`, `notShared` ("Saved to your record. Your
     squad file could not be written yet; it is tried again next time this page opens."), `done`, the
     join labels, and the parent round text (`parentIntro`: "Explain question 1 to a parent using your
     working. Then they answer these three on their own.", `parentResult(m, of)`).
@@ -607,8 +608,10 @@ first because it is small and isolated. It can be its own commit.
   - Flow: `GET /api/squad${dayQuery()}`.
     - `profile === null`: a join form posting to `/api/squad/join`, then reload.
     - `mine === null`: the round, one go per question with an optional working box (`textarea`,
-      maxlength 500), marked locally with `quiz.mark` for instant feedback, working revealed in the check
-      handler only. When all are checked, `POST /api/squad` `{week, answers}`. The render uses the
+      maxlength 500), marked locally with `quiz.mark` as right or not, with no working and no named
+      mistake until the compare view after the save (PR #43 M2). Accepted limit: a reload before the save
+      rolls the same questions, so a pupil told "not this time" can guess again; they never see the
+      working first. When all are checked, `POST /api/squad` `{week, answers}`. The render uses the
       returned view. On failure: `TEXT.notSaved` and a "Try saving again" button that re-posts the same
       body.
     - `mine !== null`: the compare view. One block per question: stem, the model working, then one row
@@ -655,7 +658,7 @@ first because it is small and isolated. It can be its own commit.
   fetch serving `/api/squad*`, `/api/squad/join`, `/api/event` and `/content/maths/topics.json`. Import
   the page with `?dom`.
   1. `profile: null` → the join form. Submitting posts `{squad, pupil}` to `/api/squad/join` once.
-  2. Round: 5 questions, no working in the DOM before a check, one go each. After 5 checks, exactly one POST
+  2. Round: 5 questions, no working in the DOM before the save, one go each per page load. After 5 checks, exactly one POST
      to `/api/squad` with `week` and 5 `{answer, working}`.
   3. Compare view with members `zoe` (score 5) and `alex` (score 1): the rows read you, alex, zoe
      (alphabetical, not by score). No element's text matches `/\b\d+ of 5\b/` except the pooled total
@@ -963,3 +966,8 @@ and tested with a stub pack.
     - The prose gate reworded the D1 footer to "The total belongs to the whole squad. Names are in alphabetical order.". It also changed the endings of `notComparable` ("Updating either tutor fixes it.") and `notShared` ("the tutor tries again next time you open this page.").
   - E1: the register test's file list is unchanged. D3 covers `squad.html` and `TEXT`.
   - Level 4: run over HTTP with two `startServer` instances and two `data/` folders, not a second worktree. The browser half of steps 1, 5 and 7 was not run.
+- 2026-09-29 (PR #43 review round 1, superseding the tasks named; detail in `.claude/reports/pr-43-review-fixes.md`):
+  - B2: `roundOf(squad, week, topic)` is split out of `squadRound`, same seed strings. `MAX_ANSWER` and `MAX_WORKING` move here from C2 and `parseSquadFile` applies them. `comparable` also requires one answer per seed.
+  - C2: `getSquad` builds the view round from the saved event's topic once it exists (M3). `friends()` skips a file over 64 KB as unreadable (L3). `joinSquad(body, dataDir, day)` returns 409 on a squad or name change after this week's round is saved (M1), and `postJoinRoute` passes the day.
+  - D2: the squad round's check shows right or not only; working and named mistakes wait for the compare view (M2). The total shows only when `rounds > 0`, superseding "the pooled total shows before the pupil's own round too" when no round exists. `solo` needs the pupil's own round. The folder path moved from the share block to the week block (L1). The join intro asks for a name unique in the squad (L4).
+  - C3: adds #14 (rename refused), #15 (saved round keeps its topic), #16 (oversized or over-cap friend's file).
