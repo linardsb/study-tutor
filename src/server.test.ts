@@ -3,8 +3,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { startFakeProvider } from "../scripts/fake-provider";
+import { loadCasePack } from "./api/case";
 import { loadTopics } from "./content/pack";
 import { appendEvent } from "./events/append";
+import { findItem } from "./flow/chat";
+import { chooseWrong } from "./flow/coach";
 import { addDays, isoWeek, localDay } from "./mcp/clock";
 import {
   apiRoutes,
@@ -19,6 +22,7 @@ import { checkForUpdate, RELEASES_PAGE } from "./updates";
 // The repo root: pack.test.ts reads content/maths the same way.
 const root = process.cwd();
 const topics = await loadTopics("maths");
+const pack = await loadCasePack("maths");
 
 /** A realpathed temp dir (macOS maps /var to /private/var), removed afterwards. */
 function withTemp(fn: (dir: string, opts: ServerOptions) => Promise<void>) {
@@ -718,6 +722,112 @@ test(
     } finally {
       fake.stop();
     }
+  }),
+);
+
+test(
+  "api: /api/coach end to end: attempt on the topic, GET, dan by the model, correct saves attempt, xp and coach",
+  withServer(async (get, _dir, opts) => {
+    const fake = startFakeProvider({ mode: "valid" });
+    try {
+      const post = postJson(get);
+      const saved = await post("/api/config", {
+        preset: "custom",
+        base_url: fake.url,
+        model: "fake",
+        key: "",
+        cap: 50_000,
+        weeklyTarget: 3,
+      });
+      expect(saved.status).toBe(200);
+      const topic = "1MA1/R9/of-an-amount";
+      appendEvent(opts.dataDir, {
+        v: 1,
+        type: "attempt",
+        item: `${topic}#1`,
+        topic,
+        correct: true,
+        sure: true,
+        answer: "9",
+      });
+      const opened = await get(`/api/coach?${new URLSearchParams({ topic })}`);
+      expect(opened.status).toBe(200);
+      const text = await opened.text();
+      expect(text).not.toContain('"answers"');
+      const q = JSON.parse(text) as {
+        ready: boolean;
+        item: string;
+        seed: number;
+      };
+      expect(q.ready).toBe(true);
+      const item = findItem(pack, q.item, q.seed);
+      if (item === null) throw new Error("no item");
+      const wrong = chooseWrong(item)?.answer as string;
+
+      const dan = await post("/api/coach", {
+        step: "dan",
+        item: q.item,
+        seed: q.seed,
+      });
+      expect(dan.status).toBe(200);
+      const lines = (await dan.json()) as { by: string; lines: string[] };
+      expect(lines.by).toBe("model");
+      expect(lines.lines.join(" ")).toContain(wrong);
+
+      const marked = await post("/api/coach", {
+        step: "correct",
+        item: q.item,
+        seed: q.seed,
+        answer: item.answers?.[0],
+        sure: true,
+      });
+      expect(marked.status).toBe(200);
+      expect(await marked.json()).toMatchObject({ caught: true, saved: true });
+      const types = fs
+        .readFileSync(path.join(opts.dataDir, "events.jsonl"), "utf8")
+        .trim()
+        .split("\n")
+        .map((l) => (JSON.parse(l) as { type: string }).type);
+      expect(types).toEqual(["attempt", "usage", "attempt", "xp", "coach"]);
+    } finally {
+      fake.stop();
+    }
+  }),
+);
+
+test(
+  "api: /api/coach with no model: dan is the fallback line and no usage line is written",
+  withServer(async (get, _dir, opts) => {
+    const post = postJson(get);
+    expect(
+      (await post("/api/config", { preset: "none", weeklyTarget: 3 })).status,
+    ).toBe(200);
+    const topic = "1MA1/R9/of-an-amount";
+    appendEvent(opts.dataDir, {
+      v: 1,
+      type: "attempt",
+      item: `${topic}#1`,
+      topic,
+      correct: true,
+      sure: true,
+      answer: "9",
+    });
+    const q = (await (
+      await get(`/api/coach?${new URLSearchParams({ topic })}`)
+    ).json()) as { item: string; seed: number };
+    const dan = await post("/api/coach", {
+      step: "dan",
+      item: q.item,
+      seed: q.seed,
+    });
+    expect(dan.status).toBe(200);
+    expect(await dan.json()).toMatchObject({ kind: "dan", by: "fallback" });
+    const types = fs
+      .readFileSync(path.join(opts.dataDir, "events.jsonl"), "utf8")
+      .trim()
+      .split("\n")
+      .map((l) => (JSON.parse(l) as { type: string }).type);
+    expect(types).toEqual(["attempt"]);
   }),
 );
 

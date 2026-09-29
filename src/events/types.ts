@@ -9,6 +9,7 @@ export const EVENT_TYPES = [
   "photo",
   "usage",
   "case",
+  "coach",
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 type Line<T extends EventType, V extends number> = { v: V; t: string; type: T };
@@ -88,6 +89,13 @@ export type CaseV1 = Line<"case", 1> & {
   correct: boolean;
   reask: boolean; // the second case after a confident-wrong first answer
 };
+export type CoachV1 = Line<"coach", 1> & {
+  topic: string;
+  item: string;
+  seed?: number; // the generator seed when the item is `#gen`
+  wrong: string; // the bank's wrong answer Dan reached (never the correct one)
+  caught: boolean; // the pupil's correction was right
+};
 
 export type Event =
   | SessionV1
@@ -99,7 +107,8 @@ export type Event =
   | SquadV1
   | PhotoV1
   | UsageV1
-  | CaseV1;
+  | CaseV1
+  | CoachV1;
 export type EventByKey = { [E in Event as `${E["type"]}@${E["v"]}`]: E };
 export type EventKey = keyof EventByKey;
 /** An event before `append` stamps `t`. */
@@ -199,6 +208,12 @@ const FIELDS: { [K in EventKey]: (o: Obj) => boolean } = {
     (o.bet === 1 || o.bet === 2 || o.bet === 3) &&
     bool(o.correct) &&
     bool(o.reask),
+  "coach@1": (o) =>
+    str(o.topic) &&
+    str(o.item) &&
+    optInt(o.seed) &&
+    str(o.wrong) &&
+    bool(o.caught),
 };
 
 type Own<K extends EventKey> = Exclude<keyof EventByKey[K], "v" | "t" | "type">;
@@ -214,6 +229,7 @@ export const KEYS = {
   "photo@1": ["item", "topic", "file"],
   "usage@1": ["job", "model", "input", "output", "estimated"],
   "case@1": ["day", "kind", "topic", "item", "pick", "bet", "correct", "reask"],
+  "coach@1": ["topic", "item", "seed", "wrong", "caught"],
 } as const satisfies { [K in EventKey]: readonly Own<K>[] };
 // A field added to an event type and not to KEYS fails here, so append never drops it.
 type Missing = {

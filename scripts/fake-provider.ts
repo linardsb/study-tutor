@@ -1,5 +1,5 @@
 // A stand-in OpenAI-compatible provider on 127.0.0.1 for tests and manual checks of the chat route.
-// It answers POST /v1/chat/completions after `delayMs`: marks for a teach-back, a fixed hint otherwise,
+// It answers POST /v1/chat/completions after `delayMs`: marks for a teach-back, Dan's given wrong answer, a fixed hint otherwise,
 // or "not json" in not-json mode. Run it: bun scripts/fake-provider.ts --mode not-json --delay 70000
 
 export type FakeMode = "valid" | "not-json";
@@ -10,6 +10,11 @@ type Msg = { role?: string; content?: unknown };
 function contentFor(messages: Msg[], mode: FakeMode): string {
   if (mode === "not-json") return "not json";
   const system = String(messages.find((m) => m.role === "system")?.content);
+  if (system.includes("You are Dan")) {
+    const user = String(messages.find((m) => m.role === "user")?.content);
+    const answer = /The answer you reach: (.+)/.exec(user)?.[1] ?? "";
+    return JSON.stringify({ lines: [`I get ${answer}.`] });
+  }
   if (!system.includes("Mark the pupil's"))
     return JSON.stringify({ text: "Start with 10%." });
   const user = String(messages.find((m) => m.role === "user")?.content);

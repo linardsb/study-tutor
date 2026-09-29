@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { caseForDay, loadCasePack } from "./api/case";
 import { getChat, postChat } from "./api/chat";
+import { getCoach, postCoach } from "./api/coach";
 import { getConfig, getUsage, postConfig } from "./api/config";
 import { postEvent } from "./api/event";
 import { lessonUrls } from "./api/lessons";
@@ -273,12 +274,17 @@ async function getChatRoute(
   }
 }
 
-async function postChatRoute(
+/** A POST that may run a model job: the idle cut is off, the body is JSON, the pack is loaded, a throw is a plain 500. */
+async function postJobRoute(
   req: Request,
   server: IdleControl,
   root: string,
-  dataDir: string,
   pack: CasePack | undefined,
+  failed: string,
+  handler: (
+    body: unknown,
+    pack: CasePack,
+  ) => Promise<{ status: number; body: unknown }>,
 ): Promise<Response> {
   const refused = refuseForeign(req);
   if (refused) return refused;
@@ -293,12 +299,11 @@ async function postChatRoute(
     return json(400, { error: "Body is not JSON" });
   }
   try {
-    const loaded = pack ?? (await loadCasePack("maths", root));
-    const r = await postChat(body, dataDir, loaded, { dataDir });
+    const r = await handler(body, pack ?? (await loadCasePack("maths", root)));
     return json(r.status, r.body);
   } catch (err) {
-    console.error(`Could not answer the chat: ${(err as Error).message}`);
-    return json(500, { error: "Could not answer the chat" });
+    console.error(`${failed}: ${(err as Error).message}`);
+    return json(500, { error: failed });
   }
 }
 
@@ -345,7 +350,24 @@ export function apiRoutes(opts: ServerOptions) {
     "/api/chat": {
       GET: (req: Request) => getChatRoute(req, root, dataDir, pack),
       POST: (req: Request, server: IdleControl) =>
-        postChatRoute(req, server, root, dataDir, pack),
+        postJobRoute(
+          req,
+          server,
+          root,
+          pack,
+          "Could not answer the chat",
+          (b, p) => postChat(b, dataDir, p, { dataDir }),
+        ),
+    },
+    "/api/coach": {
+      GET: (req: Request) =>
+        dayRoute(req, root, pack, "Could not open the coach", (p, day) =>
+          getCoach(dataDir, p, day, new URL(req.url).searchParams),
+        ),
+      POST: (req: Request, server: IdleControl) =>
+        postJobRoute(req, server, root, pack, "Could not answer Dan", (b, p) =>
+          postCoach(b, dataDir, p, { dataDir }),
+        ),
     },
     "/api/update": { GET: (req: Request) => getUpdate(req, update) },
     "/api/squad": {
