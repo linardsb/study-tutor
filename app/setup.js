@@ -1,4 +1,4 @@
-/* The parent's settings page: provider, key, model, monthly token limit, weekly target.
+/* The parent's settings page: provider, key, model, monthly token limit, weekly target, squad folder.
    The key is sent once on save and never comes back: /api/config has no key field, only keySet. */
 (() => {
   const form = document.getElementById("setup");
@@ -11,6 +11,7 @@
   const keyNote = document.getElementById("key-note");
   const cap = document.getElementById("cap");
   const weekly = document.getElementById("weeklyTarget");
+  const squadFolder = document.getElementById("squadFolder");
   const usage = document.getElementById("usage");
   const error = document.getElementById("error");
   const saved = document.getElementById("saved");
@@ -88,6 +89,7 @@
     model.value = current ? current.model : (p?.model ?? "");
     cap.value = current ? current.cap : view.defaultCap;
     weekly.value = view.weeklyTarget;
+    squadFolder.value = current?.squadFolder ?? "";
     key.value = "";
     showFields();
   }
@@ -108,6 +110,7 @@
     const body = {
       preset: preset.value,
       weeklyTarget: Number(weekly.value),
+      squadFolder: squadFolder.value,
     };
     if (preset.value !== "none") {
       body.base_url = baseUrl.value;

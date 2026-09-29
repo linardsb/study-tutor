@@ -52,6 +52,13 @@
       <input id="weeklyTarget" name="weeklyTarget" type="number" min="1" max="7" step="1">
     </section>
 
+    <section>
+      <h2>Squad</h2>
+      <label for="squadFolder">Squad sync folder</label>
+      <input id="squadFolder" name="squadFolder" type="text" autocomplete="off" spellcheck="false">
+      <p class="note">Optional. The full path of a folder your child and their friends share through Google Drive, OneDrive or iCloud, for example C:\Users\you\OneDrive\Squad. The tutor writes only your child's file there and reads the friends' files. Leave it empty to keep squad files in the tutor's data folder.</p>
+    </section>
+
     <button type="submit">Save</button>
     <p id="error" role="alert"></p>
     <p id="saved" hidden>Saved. <a href="/">Back to the lessons</a></p>

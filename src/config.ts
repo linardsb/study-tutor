@@ -114,6 +114,7 @@ export type Config = {
   key: string;
   model: string;
   cap: number;
+  squadFolder?: string; // realpath of the parent's squad sync folder (D9, #42); absent = data/squad/<id>
 };
 /** The only config shape that reaches the browser: no key, only whether one is saved. */
 export type PublicConfig = Omit<Config, "key" | "v"> & { keySet: boolean };
@@ -157,7 +158,42 @@ export function readConfig(dataDir: string): Config | null {
     key: o.key,
     model: o.model,
     cap: o.cap as number,
+    ...(str(o.squadFolder) ? { squadFolder: o.squadFolder } : {}),
   };
+}
+
+/**
+ * The squad sync folder's realpath, or null when it is not an absolute path to an existing folder, or
+ * is data/ itself or inside it (a pupil slug such as `config` would then overwrite config.json).
+ * Run when the parent saves it and again on every squad read and write.
+ */
+export function checkSquadFolder(dataDir: string, p: unknown): string | null {
+  if (!str(p) || !path.isAbsolute(p)) return null;
+  let real: string;
+  try {
+    real = fs.realpathSync.native(p);
+    if (!fs.statSync(real).isDirectory()) return null;
+  } catch {
+    return null;
+  }
+  let data: string;
+  try {
+    data = fs.realpathSync.native(dataDir);
+  } catch {
+    // data/ is made on the first save: compare against where it will be.
+    try {
+      data = path.join(
+        fs.realpathSync.native(path.dirname(dataDir)),
+        path.basename(dataDir),
+      );
+    } catch {
+      return null;
+    }
+  }
+  const r = path.relative(data, real);
+  const outside =
+    r === ".." || r.startsWith(`..${path.sep}`) || path.isAbsolute(r);
+  return outside ? real : null;
 }
 
 /** Built field by field, never by spreading `c`, so a field added to Config does not reach the browser. */
@@ -168,6 +204,7 @@ export function publicConfig(c: Config): PublicConfig {
     model: c.model,
     cap: c.cap,
     keySet: c.key !== "",
+    ...(c.squadFolder === undefined ? {} : { squadFolder: c.squadFolder }),
   };
 }
 
@@ -235,6 +272,27 @@ export function saveSetup(dataDir: string, body: unknown): SetupResult {
     };
   const weeklyTarget = body.weeklyTarget as number;
 
+  // Absent keeps the saved folder; empty unsets it. One pair of quotes is dropped: Windows'
+  // "Copy as path" adds them.
+  let squadFolder: string | undefined;
+  if (body.squadFolder === undefined) {
+    squadFolder = readConfig(dataDir)?.squadFolder;
+  } else {
+    const typed = str(body.squadFolder)
+      ? body.squadFolder.trim().replace(/^"(.*)"$/, "$1")
+      : null;
+    if (typed !== "") {
+      const real = checkSquadFolder(dataDir, typed);
+      if (real === null)
+        return {
+          ok: false,
+          error:
+            "The squad sync folder must be the full path of a folder that exists on this computer, and not the tutor's data folder or a folder inside it.",
+        };
+      squadFolder = real;
+    }
+  }
+
   let config: Config;
   if (body.preset === "none") {
     // The form hides the limit for "No model"; the saved one is kept so switching back does not raise it.
@@ -294,6 +352,7 @@ export function saveSetup(dataDir: string, body: unknown): SetupResult {
     };
   }
 
+  if (squadFolder !== undefined) config.squadFolder = squadFolder;
   const profile = { ...readProfile(dataDir), weeklyTarget };
   writeDataFile(dataDir, CONFIG_FILE, `${JSON.stringify(config, null, 2)}\n`);
   restrictToOwner(resolveInData(dataDir, CONFIG_FILE));

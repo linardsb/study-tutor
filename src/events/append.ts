@@ -216,7 +216,7 @@ export function makeDataDir(dataDir: string, rel: string, mode = 0o777): void {
 }
 
 /**
- * One folder under data/: the regular files, sorted, and the names of what was skipped (a symlink, a
+ * One folder under data/ (or `dataDir` itself when `rel` is ""): the regular files, sorted, and the names of what was skipped (a symlink, a
  * subfolder), so a caller can say something was left out. Both empty when the folder is missing.
  */
 export function listDataDir(
@@ -224,7 +224,11 @@ export function listDataDir(
   rel: string,
 ): { files: string[]; skipped: string[] } {
   try {
-    const real = resolveInData(dataDir, rel);
+    // "" lists the root itself (the squad sync folder, #42); resolveInData refuses the root as a target.
+    const real =
+      rel === ""
+        ? fs.realpathSync.native(dataDir)
+        : resolveInData(dataDir, rel);
     const entries = fs
       .readdirSync(real, { withFileTypes: true })
       .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
