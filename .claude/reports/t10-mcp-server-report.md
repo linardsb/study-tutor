@@ -4,7 +4,7 @@
 
 ## Summary
 
-The binary gains `--mcp`: it runs the HTTP server as before and speaks MCP (JSON-RPC 2.0, `initialize` era) over stdin/stdout. It writes nothing but JSON-RPC to stdout and exits 0 when stdin closes. The four tools live in `src/mcp/tools.ts` as plain functions (`TOOLS`, `runTool`) for T9 to call. `appendEvent` now refuses a `photo.file` outside `data/`. S3 ran on the compiled binary with Claude Code 2.1.280, and the decision is to keep MCP in v1 (`.claude/reports/s3-mcp-seam.md`). The Codex leg is owed by [#28](https://github.com/linardsb/study-tutor/issues/28) (open, observed).
+The binary gains `--mcp`: it runs the HTTP server as before and speaks MCP (JSON-RPC 2.0, `initialize` era) over stdin/stdout. It writes nothing but JSON-RPC to stdout and exits 0 when stdin closes. The four tools live in `src/mcp/tools.ts` as plain functions (`TOOLS`, `runTool`) for T9 to call. `appendEvent` now refuses a `photo.file` outside `data/`. S3 ran on the compiled binary with Claude Code 2.1.280, and the decision is to keep MCP in v1 (`.claude/reports/s3-mcp-seam.md`). The Codex leg is owed by [#28](https://github.com/linardsb/study-tutor/issues/28) (open, observed). Codex leg run 2026-09-28: `initialize` at protocol `2025-06-18` and `tools/list` worked on Codex CLI 0.158.0; the session did not run because the Codex ChatGPT login returned 401 (observed, S3 report "Codex leg (#28)").
 
 ### Guard restatement
 
