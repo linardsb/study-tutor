@@ -12,7 +12,7 @@ export type ToolName = "read_state" | "write_event" | "open_lesson" | "clock";
 export type ToolContext = {
   root: string;
   dataDir: string;
-  subject: string;
+  subjects: ReadonlyMap<string, string>; // topic id → content/<subject>
   topics: readonly Topic[];
   /** http://127.0.0.1:<port>, no trailing slash. */
   origin: string;
@@ -88,8 +88,11 @@ const readState: Tool = {
     const code = String(args.topic);
     const id = topicId(ctx, code);
     if (id === null) return { ok: false, error: `Unknown topic: ${code}` };
+    const subject = ctx.subjects.get(id);
+    if (subject === undefined)
+      return { ok: false, error: `Unknown topic: ${code}` };
     const seen = attemptedItems(lines);
-    const items = (await loadItems(ctx.subject, id, ctx.root)).map((i) =>
+    const items = (await loadItems(subject, id, ctx.root)).map((i) =>
       seen.has(i.id) ? i : toItemView(i),
     );
     return { ok: true, value: { state, topics, topic: id, items } };
@@ -142,7 +145,10 @@ const openLesson: Tool = {
     const code = String(args.topic);
     const id = topicId(ctx, code);
     if (id === null) return { ok: false, error: `Unknown topic: ${code}` };
-    const file = lessonFile(ctx.root, ctx.subject, id);
+    const subject = ctx.subjects.get(id);
+    if (subject === undefined)
+      return { ok: false, error: `Unknown topic: ${code}` };
+    const file = lessonFile(ctx.root, subject, id);
     if (file === null) return { ok: false, error: `No lesson for ${id}` };
     const title = ctx.topics.find((t) => t.id === id)?.title;
     return {
@@ -150,7 +156,7 @@ const openLesson: Tool = {
       value: {
         topic: id,
         title,
-        url: `${ctx.origin}/content/${ctx.subject}/lessons/${file}`,
+        url: `${ctx.origin}/content/${subject}/lessons/${file}`,
       },
     };
   },

@@ -1,6 +1,8 @@
+import fs from "node:fs";
+import path from "node:path";
 import { loadGenerators } from "../content/generators";
 import { loadItems, loadTopics, subjectDir } from "../content/pack";
-import type { CasePack, Item } from "../content/types";
+import type { CasePack, Generator, Item, Topic } from "../content/types";
 import type { CaseRecord } from "../events/replay";
 import {
   buildCase,
@@ -29,9 +31,64 @@ export function loadCasePack(
     const items = new Map<string, readonly Item[]>();
     for (const t of topics)
       items.set(t.id, await loadItems(subject, t.id, root));
-    return { topics, items, gens: await loadGenerators(subject, root) };
+    // A subject may ship no generators.js (science): its topics take their fixed items only.
+    const gens = fs.existsSync(path.join(key, "generators.js"))
+      ? await loadGenerators(subject, root)
+      : {};
+    return { topics, items, gens };
   })();
   packs.set(key, loading);
+  return loading;
+}
+
+export type Packs = { pack: CasePack; subjects: ReadonlyMap<string, string> };
+
+const merged = new Map<string, Promise<Packs>>();
+
+/** Every content/<subject>/ with a topics.json, merged into one pack, plus topic id → subject. Topic ids, aliases and generator codes must be unique across subjects: resolveTopic takes the first match. */
+export function loadPacks(root = process.cwd()): Promise<Packs> {
+  const key = path.resolve(root, "content");
+  const cached = merged.get(key);
+  if (cached) return cached;
+  const loading = (async (): Promise<Packs> => {
+    // A stray .DS_Store or e1 folder is not a subject: subjectDir would throw on it.
+    const names = fs
+      .readdirSync(key)
+      .filter(
+        (s) =>
+          /^[a-z]+$/.test(s) && fs.existsSync(path.join(key, s, "topics.json")),
+      )
+      .sort((a, b) => a.localeCompare(b));
+    const topics: Topic[] = [];
+    const items = new Map<string, readonly Item[]>();
+    const gens: Record<string, Generator> = {};
+    const subjects = new Map<string, string>();
+    const owner = new Map<string, string>(); // "topic id x" / "alias x" / "generator code x" → subject
+    const claim = (s: string, what: string) => {
+      const other = owner.get(what);
+      if (other !== undefined)
+        throw new Error(
+          `content/${s}/topics.json: ${what} is also in content/${other}`,
+        );
+      owner.set(what, s);
+    };
+    for (const s of names) {
+      const p = await loadCasePack(s, root);
+      for (const t of p.topics) {
+        claim(s, `topic id ${t.id}`);
+        for (const a of t.aliases) claim(s, `alias ${a}`);
+        topics.push(t);
+        items.set(t.id, p.items.get(t.id) ?? []);
+        subjects.set(t.id, s);
+      }
+      for (const [code, g] of Object.entries(p.gens)) {
+        claim(s, `generator code ${code}`);
+        gens[code] = g;
+      }
+    }
+    return { pack: { topics, items, gens }, subjects };
+  })();
+  merged.set(key, loading);
   return loading;
 }
 

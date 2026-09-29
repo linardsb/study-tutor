@@ -18,7 +18,7 @@ type BossPage = {
   RUNGS: string[];
   NEXT_DAYS: Record<number, number>;
   passes: (score: number, of: number) => boolean;
-  itemsFile: (topic: string) => string;
+  itemsFile: (row: { id: string; subject: string }) => string;
   buildItems: (
     boss: Boss,
     topics: readonly Topic[],
@@ -64,7 +64,7 @@ test("passes, itemsFile, NEXT_DAYS and RUNGS in the browser match the server's",
     for (let score = 0; score <= of; score++)
       expect(page.passes(score, of)).toBe(passes(score, of));
   for (const t of pack.topics)
-    expect(page.itemsFile(t.id)).toBe(
+    expect(page.itemsFile({ id: t.id, subject: "maths" })).toBe(
       `/content/maths/items/${itemsFileName(t.id)}`,
     );
   expect(page.NEXT_DAYS).toEqual(NEXT_DAYS);

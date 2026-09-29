@@ -185,3 +185,40 @@ test("unlabelled and answer-free: no topic title and no answer-bearing key", () 
   ])
     expect(json).not.toContain(`"${key}"`);
 });
+
+test("an item with no answers is never a slot, even when it is confident-wrong", () => {
+  const topic = {
+    id: "ZZ1/X1",
+    title: "Dry run",
+    aliases: ["ZZX1"],
+    prerequisites: [],
+    tier: "F" as const,
+  };
+  const cloze = (n: number) => ({
+    id: `ZZ1/X1#${n}`,
+    topic: topic.id,
+    type: "cloze" as const,
+    stem: "?",
+    answers: ["1"],
+    misconceptions: [],
+  });
+  const short = {
+    id: "ZZ1/X1#3",
+    topic: topic.id,
+    type: "short" as const,
+    stem: "Explain.",
+    mark_scheme: "One point.",
+    misconceptions: [],
+  };
+  const hand = {
+    topics: [topic],
+    items: new Map([[topic.id, [cloze(1), cloze(2), short]]]),
+    gens: {},
+  };
+  const s = due([[topic.id, DAY]]);
+  wrong(s, short.id, topic.id, "2026-10-05T16:00:00Z");
+  for (const day of [DAY, "2026-10-11", "2026-10-12"]) {
+    const slots = boss(s, day, hand)?.slots ?? [];
+    expect(slots.map((x) => x.item).sort()).toEqual(["ZZ1/X1#1", "ZZ1/X1#2"]);
+  }
+});

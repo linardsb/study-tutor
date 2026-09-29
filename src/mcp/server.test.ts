@@ -19,7 +19,7 @@ function withTemp(fn: (ctx: ToolContext) => Promise<void>) {
       await fn({
         root: process.cwd(),
         dataDir: path.join(dir, "data"),
-        subject: "maths",
+        subjects: new Map(topics.map((t) => [t.id, "maths"])),
         topics,
         origin: "http://127.0.0.1:4731",
         now: AT,

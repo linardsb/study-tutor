@@ -25,6 +25,36 @@
       .replace(/\.$/, "");
   }
 
+  /* the same as src/marking/vocab.ts: a leading "the", "a" or "an" is dropped */
+  function vocabCanon(s) {
+    return norm(String(s).replace(/^\s*(the|a|an)\s+/i, ""));
+  }
+
+  /* the same as src/marking/sequence.ts: "B, D, A, C", "b then d then a then c" and "BDAC" are all "bdac" */
+  function sequenceCanon(s) {
+    return String(s)
+      .toLowerCase()
+      .replace(/\b(then|and)\b/g, "")
+      .replace(/[^a-z]/g, "");
+  }
+
+  /* the same as src/marking/label.ts: parts in order, comma-separated, each a vocab answer */
+  function labelCanon(s) {
+    return String(s)
+      .split(/[,;\n]/)
+      .map(vocabCanon)
+      .filter((x) => x !== "")
+      .join("|");
+  }
+
+  /* the same choice as canonFor in src/marking/answer.ts; a generated item has no type */
+  function canonFor(type) {
+    if (type === "vocab") return vocabCanon;
+    if (type === "sequence") return sequenceCanon;
+    if (type === "label") return labelCanon;
+    return norm;
+  }
+
   /* the same seeded rng as scripts/test-generators.ts, so a seed in an event rebuilds the numbers */
   function lcg(seed) {
     let s = seed >>> 0;
@@ -50,11 +80,13 @@
 
   /* right, or the named misconception the typed answer matches, or neither */
   function mark(item, typed) {
-    const val = norm(typed);
-    const ok = item.answers.some((a) => norm(a) === val);
+    const canon = canonFor(item.type);
+    const val = canon(typed);
+    /* an empty answer is never right, whatever the type */
+    const ok = val !== "" && (item.answers ?? []).some((a) => canon(a) === val);
     const named = ok
       ? null
-      : (item.misconceptions.find((m) => norm(m.answer) === val)?.message ??
+      : (item.misconceptions.find((m) => canon(m.answer) === val)?.message ??
         null);
     return { ok, named };
   }
@@ -226,7 +258,11 @@
 
   let quizCount = 0;
 
-  function initQuiz(section, items) {
+  function initQuiz(section, all) {
+    /* a short or extended item has no answers to check here: it is never asked in the quiz */
+    const items = (all || []).filter(
+      (i) => Array.isArray(i.answers) && i.answers.length > 0,
+    );
     if (!section || section.dataset.inited || !items.length) return;
     section.dataset.inited = "1";
     /* a lesson quiz and its fresh set share a data-code; the count keeps their radio groups apart */
@@ -459,6 +495,9 @@
   const root = typeof window === "undefined" ? globalThis : window;
   root.quiz = {
     norm,
+    vocabCanon,
+    sequenceCanon,
+    labelCanon,
     lcg,
     mark,
     itemFromGenerated,

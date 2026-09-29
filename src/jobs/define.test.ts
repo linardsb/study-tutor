@@ -242,6 +242,6 @@ test(
 test("the guard line is in the pre-attempt system message and not in the post-attempt one", () => {
   expect(preAttemptSystem("x").content).toContain(PRE_ATTEMPT_GUARD);
   expect(preAttemptSystem("x", "As Dan.").content).toContain(PRE_ATTEMPT_GUARD);
-  expect(preAttemptSystem("x", "As Dan.").content).not.toContain("maths tutor");
+  expect(preAttemptSystem("x", "As Dan.").content).not.toContain("GCSE tutor");
   expect(postAttemptSystem("x").content).not.toContain(PRE_ATTEMPT_GUARD);
 });

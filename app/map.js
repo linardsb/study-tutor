@@ -347,7 +347,7 @@
       [state, next, topics] = await Promise.all([
         getJson("/api/state"),
         getJson(`/api/next${query}`),
-        getJson("/content/maths/topics.json"),
+        getJson("/api/topics"),
       ]);
     } catch {
       ids.status.textContent = TEXT.notLoaded;

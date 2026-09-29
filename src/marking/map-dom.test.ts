@@ -21,7 +21,8 @@ afterAll(() => GlobalRegistrator.unregister());
 const pack = await loadCasePack("maths");
 const DAY = "2026-10-10";
 const first = pack.topics[0]?.id as string;
-const lessons = lessonUrls(process.cwd(), "maths", pack.topics);
+const subjects = new Map(pack.topics.map((t) => [t.id, "maths"]));
+const lessons = lessonUrls(process.cwd(), subjects, pack.topics);
 const firstLesson = lessons[first] as string;
 
 const state = replay([]);
@@ -67,7 +68,8 @@ globalThis.fetch = (async (url: string, init?: RequestInit) => {
   if (url.startsWith("/api/next")) return Response.json(served.next);
   if (url === "/api/snap")
     return Response.json(served.snap.body, { status: served.snap.status });
-  if (url === "/content/maths/topics.json") return Response.json(pack.topics);
+  if (url === "/api/topics")
+    return Response.json(pack.topics.map((t) => ({ ...t, subject: "maths" })));
   if (url === "/api/lessons") return Response.json(lessons);
   return new Response("Not found", { status: 404 });
 }) as typeof fetch;

@@ -1,0 +1,103 @@
+[
+  {
+    "id": "8464/4.1.1.2#1",
+    "topic": "8464/4.1.1.2",
+    "type": "vocab",
+    "stem": "Which part of a cell holds the enzymes for respiration, and is where most of the energy is released?",
+    "hint": "Animal and plant cells both have it. A muscle cell has a lot of them.",
+    "answers": ["mitochondria", "mitochondrion"],
+    "working": "Respiration releases energy, and most of it is released in the mitochondria.",
+    "misconceptions": [
+      {
+        "answer": "cytoplasm",
+        "message": "That is the jelly where many reactions happen. Respiration has its own structure."
+      },
+      {
+        "answer": "nucleus",
+        "message": "The nucleus does not release energy for the cell."
+      }
+    ]
+  },
+  {
+    "id": "8464/4.1.1.2#2",
+    "topic": "8464/4.1.1.2",
+    "type": "vocab",
+    "stem": "Which part of a cell holds the genetic material and controls what the cell does?",
+    "hint": "In most animal cells it is the biggest structure you can see under a light microscope.",
+    "answers": ["nucleus"],
+    "working": "The nucleus holds the genetic material, which controls the cell's activities.",
+    "misconceptions": [
+      {
+        "answer": "DNA",
+        "message": "DNA is the molecule. The question asks for the structure that holds it."
+      },
+      {
+        "answer": "cell membrane",
+        "message": "The membrane controls what goes in and out of the cell. That is a different job."
+      }
+    ]
+  },
+  {
+    "id": "8464/4.1.1.2#3",
+    "topic": "8464/4.1.1.2",
+    "type": "vocab",
+    "stem": "Which part of a plant cell contains chlorophyll, the green pigment that absorbs light for photosynthesis?",
+    "hint": "Animal cells never have it, and not every plant cell does either.",
+    "answers": ["chloroplast", "chloroplasts"],
+    "working": "Chlorophyll sits inside the chloroplasts, and that is where photosynthesis happens.",
+    "misconceptions": [
+      {
+        "answer": "chlorophyll",
+        "message": "Chlorophyll is the green pigment. The question asks for the structure it sits in."
+      },
+      {
+        "answer": "cell wall",
+        "message": "The cell wall gives strength and support. Light is absorbed somewhere else."
+      }
+    ]
+  },
+  {
+    "id": "8464/4.1.1.2#4",
+    "topic": "8464/4.1.1.2",
+    "type": "label",
+    "stem": "The diagram shows a plant cell. Name parts A, B, C and D, in that order, with commas between them.",
+    "figure": "<svg viewBox=\"0 0 260 170\" width=\"100%\" style=\"max-width:260px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"13\" aria-label=\"A plant cell with four parts lettered: A the thick outer layer, B the thin layer just inside it, C the large round body, D one of the small green bodies\">\n        <rect x=\"20\" y=\"15\" width=\"170\" height=\"140\" rx=\"6\" fill=\"none\" stroke=\"#5f5f5a\" stroke-width=\"6\"/>\n        <rect x=\"28\" y=\"23\" width=\"154\" height=\"124\" rx=\"4\" fill=\"#f4f8ee\" stroke=\"#2b5797\" stroke-width=\"1.5\"/>\n        <circle cx=\"70\" cy=\"85\" r=\"20\" fill=\"#e6e0f0\" stroke=\"#5f5f5a\" stroke-width=\"1.5\"/>\n        <g fill=\"#6aa84f\" stroke=\"#38761d\" stroke-width=\"1\"><ellipse cx=\"140\" cy=\"45\" rx=\"12\" ry=\"7\"/><ellipse cx=\"150\" cy=\"115\" rx=\"12\" ry=\"7\"/><ellipse cx=\"60\" cy=\"130\" rx=\"12\" ry=\"7\"/></g>\n        <g stroke=\"#5f5f5a\" stroke-width=\"1\"><line x1=\"190\" y1=\"30\" x2=\"225\" y2=\"30\"/><line x1=\"182\" y1=\"55\" x2=\"225\" y2=\"55\"/><line x1=\"90\" y1=\"85\" x2=\"225\" y2=\"85\"/><line x1=\"162\" y1=\"115\" x2=\"225\" y2=\"115\"/></g>\n        <g fill=\"#1f1f1c\" font-weight=\"600\"><text x=\"232\" y=\"34\">A</text><text x=\"232\" y=\"59\">B</text><text x=\"232\" y=\"89\">C</text><text x=\"232\" y=\"119\">D</text></g>\n      </svg>",
+    "hint": "Work from the outside in. A plant cell has two layers around it.",
+    "answers": [
+      "cell wall, cell membrane, nucleus, chloroplast",
+      "cell wall, cell membrane, nucleus, chloroplasts"
+    ],
+    "working": "A is the stiff cell wall, B is the cell membrane just inside it, C is the nucleus and D is a chloroplast. So: cell wall, cell membrane, nucleus, chloroplast.",
+    "misconceptions": [
+      {
+        "answer": "cell membrane, cell wall, nucleus, chloroplast",
+        "message": "You have swapped the two outer layers."
+      }
+    ]
+  },
+  {
+    "id": "8464/4.1.1.2#5",
+    "topic": "8464/4.1.1.2",
+    "type": "sequence",
+    "stem": "Put these in size order, smallest first. Write the letters with commas between them. A a cell, B an atom, C the nucleus of a cell, D a molecule.",
+    "hint": "Ask what each one is made of. Anything built from smaller things is bigger than them.",
+    "answers": ["B, D, C, A"],
+    "working": "Atoms join to make molecules, molecules build up the nucleus, and the nucleus sits inside the cell. So B, D, C, A.",
+    "misconceptions": [
+      {
+        "answer": "B, D, A, C",
+        "message": "A cell is bigger than its own nucleus. The nucleus sits inside it."
+      }
+    ]
+  },
+  {
+    "id": "8464/4.1.1.2#6",
+    "topic": "8464/4.1.1.2",
+    "type": "short",
+    "stem": "Root hair cells are plant cells, but they have no chloroplasts. Explain why.",
+    "hint": "Think about where root hair cells are, and what chloroplasts are for.",
+    "working": "Root hair cells are underground where there is no light, and chloroplasts are only useful for photosynthesis, which needs light.",
+    "mark_scheme": "2 marks. 1 mark: root hair cells are underground, so no light reaches them. 1 mark: chloroplasts are where photosynthesis happens, and photosynthesis needs light, so chloroplasts would be no use there.",
+    "misconceptions": []
+  }
+]

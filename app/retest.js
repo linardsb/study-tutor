@@ -43,9 +43,9 @@
     return of > 0 && score * 3 >= of * 2;
   }
 
-  /* the same file name as itemsFileName in src/content/pack.ts */
-  function itemsFile(topic) {
-    return `/content/maths/items/${topic.replaceAll("/", "-")}.json`;
+  /* the same file name as itemsFileName in src/content/pack.ts, under the topic's subject (a row of /api/topics) */
+  function itemsFile(row) {
+    return `/content/${row.subject}/items/${row.id.replaceAll("/", "-")}.json`;
   }
 
   /* a fresh roll from the slot's seed, or null when the topic has no generator here */
@@ -274,15 +274,18 @@
     renderResult(ids.result, rows, titles, after, query);
   }
 
-  /* topics.json and the items file of each topic with a fixed slot, in parallel */
+  /* the topic rows, then the items file of each topic with a fixed slot: the rows name each topic's subject */
   async function fetchPack(boss) {
     const fixedTopics = [
       ...new Set(boss.slots.filter((s) => s.item !== null).map((s) => s.topic)),
     ];
-    const [topics, ...lists] = await Promise.all([
-      getJson("/content/maths/topics.json"),
-      ...fixedTopics.map((id) => getJson(itemsFile(id))),
-    ]);
+    const topics = await getJson("/api/topics");
+    const lists = await Promise.all(
+      fixedTopics.map((id) => {
+        const row = topics.find((t) => t.id === id);
+        return row ? getJson(itemsFile(row)) : [];
+      }),
+    );
     const itemsByTopic = {};
     for (const [i, id] of fixedTopics.entries()) itemsByTopic[id] = lists[i];
     return { topics, itemsByTopic };
