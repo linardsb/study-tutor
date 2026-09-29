@@ -18,8 +18,17 @@ content/maths/
 
 | type | marked by |
 |---|---|
-| generator, cloze, label, sequence, vocab | `src/marking/<type>.ts`, deterministic |
-| short, extended, practical-method | `teachback_mark` or `examiner_mark` job with `mark_scheme`; fallback is "not marked yet" |
+| generator, cloze | `normaliseAnswer` (`src/marking/normalise.ts`), deterministic |
+| label, sequence, vocab | `src/marking/<type>.ts`, deterministic, with a twin in `app/quiz.js` pinned by `src/marking/types.test.ts` |
+| short, extended, practical-method | `teachback_mark` or `examiner_mark` job with `mark_scheme`; fallback is "not marked yet". No `answers`, `misconceptions: []`; never asked in a lesson quiz or a boss |
+
+The canon rules, one text box for every type:
+
+- `vocab`: a leading "the", "a" or "an" dropped, then `normaliseAnswer`. "The nucleus" is "nucleus".
+- `sequence`: lower case, "then" and "and" dropped, letters only. "B, D, A, C", "b then d then a then c" and "BDAC" are the same.
+- `label`: split on commas, semicolons or new lines, each part a `vocab` answer, in order. Every slot and the count must match.
+
+An empty canon is never right. `loadPacks` (`src/api/case.ts`) merges every `content/<subject>/` with a `topics.json`; a subject may ship no `generators.js`, and a topic id, alias or generator code seen in two subjects is refused at start-up.
 
 `misconceptions` are per item and are the only source for O2's scripted wrong steps and O5's planted mistakes. An item with none cannot appear in O2 or O5. A rule case comes from a topic's `concept` block and three generator rolls; it needs no item.
 

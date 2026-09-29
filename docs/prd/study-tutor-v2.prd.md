@@ -244,6 +244,11 @@ errors return without a re-test; invention-first d = 0.36 on transfer (Sinha & K
 - **E4. Squad (2 pupils, 4 weeks).** O4 once two installs exist: one squad re-test a week held?
 - **E5. Second subject (content only).** Oak coverage check for AQA 8464; one science topic
   through the three intake doors and one re-test cycle.
+  Observed 2026-09-29 (T16, #18): the first attempt needed a seam in `src/` (9 hard-coded `maths`
+  sites, the job persona, the vocab, sequence and label markers; commit 4a82354). After it, the
+  science pack (`8464/4.1.1.2`) went in with an empty `src/` diff and passed one re-test cycle in
+  `scripts/e5-science.test.ts`. Oak covers all 24 content sections of 8464 at unit level, with
+  lesson-level gaps in 10 (`content/science/COVERAGE.md`). The three intake doors are owed by #19.
 
 Door check: E1 and E2 are two-way doors (a folder and a zip). The engine choice in E2 is the
 one one-way-ish door, since every option after it sits on it; spike it in `/plan-architecture`
