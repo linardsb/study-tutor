@@ -196,6 +196,17 @@ export function writeDataFile(
 type Spawn = (cmd: string[]) => { exitCode: number | null };
 
 /**
+ * DOMAIN\user, so icacls cannot pick a same-named local account on a domain-joined PC (#34). On a
+ * machine off any domain USERDOMAIN is the computer name, so a local account still resolves.
+ */
+export function ownerAccount(
+  env: Record<string, string | undefined> = process.env,
+  username = os.userInfo().username,
+): string {
+  return env.USERDOMAIN ? `${env.USERDOMAIN}\\${username}` : username;
+}
+
+/**
  * Windows ignores 0600, so the file takes the folder's ACL: drop inheritance and grant only this
  * account (#29). Called after the write, so it covers the rename and the copy fallback alike. Warns
  * rather than throws: the file has already saved.
@@ -205,7 +216,7 @@ export function restrictToOwner(
   platform: NodeJS.Platform = process.platform,
   spawn: Spawn = (cmd) =>
     Bun.spawnSync(cmd, { stdio: ["ignore", "ignore", "pipe"] }),
-  user = os.userInfo().username,
+  user = ownerAccount(),
 ): void {
   if (platform !== "win32") return;
   let ok = false;
