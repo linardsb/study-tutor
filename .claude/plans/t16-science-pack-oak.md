@@ -219,7 +219,7 @@ Makes any `content/<subject>/` loadable, servable, re-testable and marked by typ
   - `ServerOptions` gains `subjects?: ReadonlyMap<string, string>`.
   - The five lazy fallbacks (`:159`, `:260`, `:299`, `:333`, `:362`) become `pack ?? (await loadPacks(root)).pack`, with `ctx.root` at `:362`.
   - Start (`:546-548`): `const { pack, subjects } = await loadPacks(root); const topics = pack.topics;`. Pass `subjects` in the options.
-  - `lessonUrls(root, subjects, topics)`: for each topic, `const s = subjects.get(t.id)`, `lessonFile(root, s, t.id)`. The cache key becomes `path.resolve(root, "content")`.
+  - `lessonUrls(root, subjects, topics)`: for each topic, `const s = subjects.get(t.id)`, `lessonFile(root, s, t.id)`. The cache key is `path.resolve(root, "content")` plus the topic ids (amended: a root-only key lets whichever caller runs first fix the result for later callers with different topics).
   - `readRoute` takes a **sync** handler (`src/server.ts:212-216`, observed). So `/api/lessons` and `/api/topics` become `GET: async (req) => { const loaded = pack && subjects ? { pack, subjects } : await loadPacks(root); return readRoute(req, "…", () => ({ status: 200, body: … })); }`. Do not make `readRoute` async; other routes use it.
   - CREATE `src/api/topics.ts`: `export function topicRows(pack: CasePack, subjects): Array<Topic & { subject: string }>`, in pack order.
   - ADD route `"/api/topics": { GET: … readRoute(req, "the topic list", …) }`.
@@ -241,7 +241,7 @@ Makes any `content/<subject>/` loadable, servable, re-testable and marked by typ
   - `vocab`: `normaliseAnswer(s.replace(/^\s*(the|a|an)\s+/i, ""))`. Why a separate type: "the nucleus" and "nucleus" are the same word answer.
   - `sequence`: `s.toLowerCase().replace(/\b(then|and)\b/g, "").replace(/[^a-z]/g, "")`. It turns "B, D, A, C", "b then d then a then c" and "BDAC" all into `"bdac"`. Answers are written as letters, e.g. `"B, D, A, C"`.
   - `label`: `s.split(/[,;\n]/).map(vocabCanon).filter(x => x !== "").join("|")`. The pupil names the lettered parts in order, comma-separated. Every slot must match, and so must the count.
-  - `markAnswer(item, typed)` takes `Pick<Item, "answers" | "misconceptions"> & { type?: ItemType }`. `type` is optional because generated items (`itemFromGenerated`, `quiz.js:62-75`) have none, and `coach.ts:124` passes those. It picks the canon with `item.type === "vocab" ? vocabCanon : …`, and `normaliseAnswer` otherwise.
+  - `markAnswer(item, typed)` takes `Pick<Item, "answers" | "misconceptions"> & { type?: ItemType }`. The choice of canon is an exported `canonFor(type)` in `answer.ts`, with a `canonFor` twin in `quiz.js` (amended). The empty-never-right rule applies to untyped items too. `type` is optional because generated items (`itemFromGenerated`, `quiz.js:62-75`) have none, and `coach.ts:124` passes those. It picks the canon with `item.type === "vocab" ? vocabCanon : …`, and `normaliseAnswer` otherwise.
   - `app/quiz.js`: ADD `vocabCanon`, `sequenceCanon` and `labelCanon` beside `norm`. Each carries a comment naming its TS twin. `mark` dispatches the same way. Export them on the `quiz` global.
 - **PATTERN**: `app/quiz.js:8` twin comment; `src/marking/answer.ts`.
 - **GOTCHA**:
@@ -336,10 +336,10 @@ Makes any `content/<subject>/` loadable, servable, re-testable and marked by typ
 - **IMPLEMENT**: 6 items, ids `8464/4.1.1.2#1` … `#6`. The sources below were read from the Oak lesson pages' embedded data on 2026-09-29 (observed; the scratchpad copies of the three pages are not kept). All text is reworded to the 15-year-old register, and the Oak source is named in `LICENCE.md`.
   - **#1 `vocab`, mitochondria.** Oak keyword (animal lesson): "Sub-cellular structures that contain the enzymes for respiration, and is where most energy is released in respiration." `answers: ["mitochondria", "mitochondrion"]`. Misconceptions:
     - `"cytoplasm"`: "That is the jelly where many reactions happen. Respiration has its own structure."
-    - `"nucleus"`: "The nucleus holds the genetic material. It does not release energy."
+    - `"nucleus"`: "The nucleus does not release energy for the cell." (Amended 2026-09-29: the first wording stated #2's answer.)
   - **#2 `vocab`, nucleus.** Oak short-answer question (microscopy lesson): "Which structure contains genetic material, which controls the cell's activities?" `answers: ["nucleus"]`. Misconceptions:
     - `"DNA"`: "DNA is the molecule. The question asks for the structure that holds it."
-    - `"cell membrane"`: "The membrane controls what goes in and out, not the cell's activities."
+    - `"cell membrane"`: "The membrane controls what goes in and out of the cell. That is a different job."
   - **#3 `vocab`, chloroplast.** Oak keyword (plant lesson): "contains the green pigment chlorophyll, which absorbs light for photosynthesis". `answers: ["chloroplast", "chloroplasts"]`. Misconceptions:
     - `"chlorophyll"`: "Chlorophyll is the green pigment. The question asks for the structure it sits in."
     - `"cell wall"`: "The cell wall gives strength and support. Light is absorbed somewhere else."
@@ -347,7 +347,7 @@ Makes any `content/<subject>/` loadable, servable, re-testable and marked by typ
     - `figure`: a self-drawn inline SVG of a plant cell, with parts lettered A cell wall, B cell membrane, C nucleus, D chloroplast. No Oak diagram is used, because images can be third-party (Oak licensing guide).
     - Stem: "Name parts A, B, C and D, in that order, with commas between them."
     - `answers: ["cell wall, cell membrane, nucleus, chloroplast", "cell wall, cell membrane, nucleus, chloroplasts"]`.
-    - Misconception `"cell membrane, cell wall, nucleus, chloroplast"`: "The two outer layers are swapped. The wall is the stiff outside layer."
+    - Misconception `"cell membrane, cell wall, nucleus, chloroplast"`: "You have swapped the two outer layers." (Amended 2026-09-29: the first wording gave away part A.)
     - Keep the figure markup the same as the maths figures: an `<svg` start, no `xmlns`. `coach.js:107` parses figures as HTML.
   - **#5 `sequence`.** Oak `order` question (microscopy lesson starter quiz): "Starting with the smallest, sort the following in size order": atom, molecule, nucleus of a cell, cell. Stem lists them shuffled and lettered: "A a cell, B an atom, C the nucleus of a cell, D a molecule". `answers: ["B, D, C, A"]`. Misconception `"B, D, A, C"`: "A cell is bigger than its own nucleus. The nucleus sits inside it." (The message names the mix-up, not the order.)
   - **#6 `short`.** Built on Oak's plant-lesson misconception, "All plant cells contain chloroplasts". Question (own-written): "Root hair cells are plant cells, but they have no chloroplasts. Explain why." `mark_scheme` (own-written, 2 marks):
@@ -541,3 +541,11 @@ All risks raised at first draft are resolved. Each entry names what closed it.
 ## AMENDMENTS
 
 - 2026-09-29: risk pass before implementation. Found and fixed the one concrete Phase B breakage: `src/server.test.ts` loads packs by default, which is pinned in A2. Pinned the B3 items to Oak page data read that day (the `order` question exists). Rewrote B6 and Level 4 against the verified flow (`nextStep`, `postEvent` with `now`, and the replay rung and `nextDue` arithmetic). Opened #49 for the short-item attempt. The open questions are now all closed or owned.
+- 2026-09-29, implementation (`SEAM` 4a82354; report `.claude/reports/t16-science-pack-oak-report.md`). What shipped differs from the tasks above in these ways:
+  - A2 also updated `src/mcp/server.test.ts` (it builds a `ToolContext` too), `src/marking/retest.test.ts` (`itemsFile` takes a row) and the first `lessons.test.ts` test (now over every subject through `loadPacks`). `apiRoutes` gained a small `packs()` helper.
+  - A8 ran twice. The second run used a zz fixture with alias `9.9.9.9`, science's item mix and a real lesson marker, and ran the drafted E5 walk against it before `SEAM`. A picker audit confirmed that detective, squad, chat, coach, boss and the fresh-set button all guard on a missing generator.
+  - B1 mapped chemistry and physics at unit level too.
+  - B4's crumb links to `/map.html` ("Map"), because `index.html` lists maths only.
+  - B3 and B4 prose: `no-ai-slop` and `humanizer` ran after the first Phase B commit. They fixed five findings (F1–F5, as amended in B3) and split one list of three in the lesson aim. All edits stayed in `content/science`.
+  - A post-`SEAM` probe of case, coach and chat on the merged pack found nothing to fix. E5 `src/` diff: empty.
+

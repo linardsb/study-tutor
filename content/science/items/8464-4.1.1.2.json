@@ -14,7 +14,7 @@
       },
       {
         "answer": "nucleus",
-        "message": "The nucleus holds the genetic material. It does not release energy."
+        "message": "The nucleus does not release energy for the cell."
       }
     ]
   },
@@ -25,7 +25,7 @@
     "stem": "Which part of a cell holds the genetic material and controls what the cell does?",
     "hint": "In most animal cells it is the biggest structure you can see under a light microscope.",
     "answers": ["nucleus"],
-    "working": "The genetic material is kept in the nucleus, and it controls the cell's activities.",
+    "working": "The nucleus holds the genetic material, which controls the cell's activities.",
     "misconceptions": [
       {
         "answer": "DNA",
@@ -33,7 +33,7 @@
       },
       {
         "answer": "cell membrane",
-        "message": "The membrane controls what goes in and out, not the cell's activities."
+        "message": "The membrane controls what goes in and out of the cell. That is a different job."
       }
     ]
   },
@@ -71,7 +71,7 @@
     "misconceptions": [
       {
         "answer": "cell membrane, cell wall, nucleus, chloroplast",
-        "message": "The two outer layers are swapped. The wall is the stiff outside layer."
+        "message": "You have swapped the two outer layers."
       }
     ]
   },
