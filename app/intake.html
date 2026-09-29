@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Start here</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main class="lesson practice">
+  <header>
+    <p class="crumb"><a href="/map.html">Map</a> · start here</p>
+    <h1>Start here</h1>
+    <p class="aim">Tell the tutor where you are, so the map starts from what you can already do. Pick one way in.</p>
+  </header>
+
+  <nav id="doors">
+    <button type="button" data-door="sheet">Sheet or photo</button>
+    <button type="button" data-door="interview">Tell me</button>
+    <button type="button" data-door="diagnostic">Cold test</button>
+  </nav>
+
+  <section id="sheet" hidden>
+    <h2>Sheet or photo</h2>
+    <p>Paste the text of a school test report or topic sheet, or choose a photo or screenshot of it.</p>
+    <label for="sheet-text">Paste the sheet here</label>
+    <textarea id="sheet-text" rows="8"></textarea>
+    <p><button type="button" id="sheet-read">Read the text</button></p>
+    <label for="sheet-file">Or choose a photo</label>
+    <input type="file" id="sheet-file" accept="image/jpeg,image/png,image/webp,image/heic">
+    <p class="note" id="model-line" hidden></p>
+    <div id="unknown"></div>
+  </section>
+
+  <section id="interview" hidden>
+    <h2>Tell me</h2>
+    <p class="note" id="ai-line">This is an AI. It matches your words to topics. Check each one before you save.</p>
+    <div id="answers"></div>
+    <div id="checklist"></div>
+  </section>
+
+  <section id="diagnostic" hidden>
+    <h2>Cold test</h2>
+    <div id="cold-intro"></div>
+    <div id="cold" class="quiz"></div>
+    <p><button type="button" id="cold-save" disabled>Save what I have done</button></p>
+  </section>
+
+  <section id="confirm" hidden></section>
+  <p class="note" id="status"></p>
+
+  <footer>
+    <p>Nothing is saved until you tick the topics and press Save. You can come back and change a topic later.</p>
+  </footer>
+</main>
+<script src="/content/maths/generators.js"></script>
+<script src="/quiz.js"></script>
+<script src="/retest.js"></script>
+<script src="/intake.js"></script>
+</body>
+</html>

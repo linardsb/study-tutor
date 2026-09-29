@@ -9,3 +9,6 @@ data/
 # build outputs and dependencies
 node_modules/
 dist/
+
+# macOS folder metadata
+.DS_Store
