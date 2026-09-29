@@ -15,6 +15,8 @@ import {
   OPENAI,
   withData,
 } from "../jobs/__fixtures__/provider";
+import { reaches } from "../jobs/dan_wrong_step";
+import { normaliseAnswer } from "../marking/normalise";
 import { findItem } from "./chat";
 import {
   chooseWrong,
@@ -57,6 +59,28 @@ test("R8: chooseWrong is always one entry of the item's bank, over every item an
     expect(x.misconceptions).toContainEqual(w);
     expect(chooseWrong(x)).toEqual(w);
   }
+});
+
+test("R8: over the pack, Dan's fallback line reaches every wrong answer, and a line ending in a right answer reaches none", () => {
+  const seen: (Item & { seed?: number })[] = [...pack.items.values()].flat();
+  for (const t of pack.topics)
+    for (let seed = 1; seed <= SEEDS; seed += 1) {
+      const rolled = findItem(pack, `${t.id}#gen`, seed);
+      if (rolled !== null) seen.push(rolled);
+    }
+  const leaks: string[] = [];
+  for (const x of seen)
+    for (const m of x.misconceptions) {
+      if (!reaches([`I get ${m.answer}.`], m.answer))
+        leaks.push(`${x.id} fallback misses ${m.answer}`);
+      for (const a of x.answers ?? [])
+        if (
+          normaliseAnswer(a) !== normaliseAnswer(m.answer) &&
+          reaches([`I get ${a}.`], m.answer)
+        )
+          leaks.push(`${x.id} right ${a} passes as ${m.answer}`);
+    }
+  expect(leaks).toEqual([]);
 });
 
 test("pickItem: a generator roll with a named wrong answer first, else an items-file item, else null; stable per base", () => {
