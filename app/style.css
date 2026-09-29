@@ -791,3 +791,13 @@ ul.prompts li.link {
   font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
   font-weight: 600;
 }
+
+/* map: the examiner block (T13); the QR code at a size a phone scans from the screen */
+.examiner #snap {
+  margin-top: 0.75rem;
+}
+.examiner .qr svg {
+  display: block;
+  width: 14rem;
+  height: 14rem;
+}

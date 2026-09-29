@@ -69,7 +69,12 @@ export type SquadV1 = Line<"squad", 1> & {
 export type PhotoV1 = Line<"photo", 1> & {
   item: string;
   topic: string;
-  file: string;
+  file: string; // relative to data/, e.g. intake/20261014-180000-a1b2c3.jpg
+  seed?: number; // a generated (#gen) item's seed, so the item can be rebuilt
+  // Present together when the photo was marked; all absent when it is stored and not marked yet.
+  marks?: number;
+  of?: number;
+  clean?: boolean; // every presentation line (answer, units, sense) earned its mark
 };
 export type UsageV1 = Line<"usage", 1> & {
   job: string;
@@ -192,7 +197,13 @@ const FIELDS: { [K in EventKey]: (o: Obj) => boolean } = {
         bool((a as Obj).correct),
     ) &&
     o.answers.filter((a: Obj) => a.correct === true).length === o.score,
-  "photo@1": (o) => str(o.item) && str(o.topic) && str(o.file),
+  "photo@1": (o) =>
+    str(o.item) &&
+    str(o.topic) &&
+    str(o.file) &&
+    optInt(o.seed) &&
+    ((o.marks === undefined && o.of === undefined && o.clean === undefined) ||
+      (outOf(o.marks, o.of) && (o.of as number) >= 1 && bool(o.clean))),
   "usage@1": (o) =>
     str(o.job) &&
     str(o.model) &&
@@ -226,7 +237,7 @@ export const KEYS = {
   "intake@1": ["door", "topics"],
   "xp@1": ["amount", "reason"],
   "squad@1": ["squad", "week", "topic", "score", "of", "answers"],
-  "photo@1": ["item", "topic", "file"],
+  "photo@1": ["item", "topic", "file", "seed", "marks", "of", "clean"],
   "usage@1": ["job", "model", "input", "output", "estimated"],
   "case@1": ["day", "kind", "topic", "item", "pick", "bet", "correct", "reask"],
   "coach@1": ["topic", "item", "seed", "wrong", "caught"],

@@ -200,6 +200,33 @@ test(
 );
 
 test(
+  "a posted photo body is refused and writes nothing, not even data/",
+  withTemp((_dir, data) => {
+    const r = postEvent(
+      {
+        v: 1,
+        type: "photo",
+        item: "1MA1/R9#1",
+        topic: "1MA1/R9",
+        file: "intake/a.jpg",
+        marks: 5,
+        of: 5,
+        clean: true,
+      },
+      data,
+      topics,
+      AT,
+    );
+    expect(r).toEqual({
+      status: 400,
+      body: { error: "Refused: photos are saved by the tutor, not posted" },
+    });
+    expect(readLines(data)).toEqual([]);
+    expect(fs.existsSync(data)).toBe(false);
+  }),
+);
+
+test(
   "a posted xp body is refused and writes nothing, not even data/",
   withTemp((_dir, data) => {
     const r = postEvent(

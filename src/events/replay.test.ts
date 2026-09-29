@@ -1,6 +1,7 @@
 import { expect, setSystemTime, test } from "bun:test";
 import fs from "node:fs";
 import path from "node:path";
+import { isoWeek, localDay } from "../mcp/clock";
 import { replay, type State } from "./replay";
 import { EVENT_KEYS } from "./types";
 
@@ -53,7 +54,7 @@ test("six-week history: rungs, next-due, XP, flame, pool, calibration, tokens", 
   expect(s.tokens).toEqual({ "2026-10": 1500, "2026-11": 600 });
   expect(s.lines).toBe(33);
   expect(s.skipped).toBe(0);
-  expect(s.shape).toBe(4);
+  expect(s.shape).toBe(5);
   expect(s.coach).toEqual({ shown: 0, caught: 0, rank: 0 });
   expect(s.retests).toEqual({
     "2026-W41": { score: 4, of: 6 },
@@ -246,4 +247,36 @@ test("the hash covers exactly the lines replayed", () => {
   const edited = [...SIX_WEEKS];
   edited[0] = `${edited[0]} `;
   expect(replay(edited).hash).not.toBe(a.hash);
+});
+
+test("photo: marks and clean sheets are summed per ISO week; unmarked photos count as taken only", () => {
+  const p = (t: string, extra: string) =>
+    `{"v":1,"t":"${t}","type":"photo","item":"1MA1/R9#1","topic":"1MA1/R9","file":"intake/x.jpg"${extra}}`;
+  const a = "2026-10-13T17:00:00Z";
+  const b = "2026-10-20T17:00:00Z";
+  const s = replay([
+    p(a, `,"marks":3,"of":5,"clean":false`),
+    p("2026-10-14T17:00:00Z", `,"marks":5,"of":5,"clean":true`),
+    p("2026-10-15T17:00:00Z", ""),
+    p(b, `,"marks":1,"of":5,"clean":false`),
+  ]);
+  const wa = isoWeek(localDay(a));
+  const wb = isoWeek(localDay(b));
+  expect(wa).not.toBe(wb);
+  expect(s.photos[wa]).toEqual({
+    taken: 3,
+    marked: 2,
+    marks: 8,
+    of: 10,
+    clean: 1,
+  });
+  expect(s.photos[wb]).toEqual({
+    taken: 1,
+    marked: 1,
+    marks: 1,
+    of: 5,
+    clean: 0,
+  });
+  expect(isoWeek(localDay("2026-10-14T17:00:00Z"))).toBe(wa);
+  expect(isoWeek(localDay("2026-10-15T17:00:00Z"))).toBe(wa);
 });

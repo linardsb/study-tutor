@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { caseForDay, loadCasePack } from "./api/case";
 import { getChat, postChat } from "./api/chat";
@@ -17,6 +18,15 @@ import { isDay } from "./events/types";
 import { isoWeek, localDay, utcNow } from "./mcp/clock";
 import { runStdio } from "./mcp/server";
 import {
+  createSnaps,
+  getSnap,
+  lanAddress,
+  mintSnap,
+  postPhoto,
+  type SnapContext,
+  type Snaps,
+} from "./snap";
+import {
   checkForUpdate,
   RELEASES_FEED,
   type UpdateInfo,
@@ -31,6 +41,9 @@ export type ServerOptions = {
   topics: readonly Topic[];
   pack?: CasePack; // loaded on the first /api/case when absent (the tests' options predate it)
   update?: Promise<UpdateInfo>; // the start-up feed check; absent → no update
+  // The phone listener's address. Absent → none, so a test that mints never binds the Wi-Fi address.
+  snapHost?: () => string | null;
+  snaps?: Snaps;
 };
 
 /** The folder holding app/, content/ and data/: beside the binary when compiled, the cwd under `bun run dev`. */
@@ -307,9 +320,45 @@ async function postJobRoute(
   }
 }
 
+/** A snap route on localhost: refuseForeign, the JSON body for a POST, the pack, then the handler. */
+async function snapRoute(
+  req: Request,
+  ctx: Omit<SnapContext, "pack">,
+  pack: CasePack | undefined,
+  handler: (
+    body: unknown,
+    ctx: SnapContext,
+  ) => Promise<{ status: number; body: unknown }>,
+): Promise<Response> {
+  const refused = refuseForeign(req);
+  if (refused) return refused;
+  let body: unknown;
+  if (req.method === "POST") {
+    try {
+      body = await req.json();
+    } catch {
+      return json(400, { error: "Body is not JSON" });
+    }
+  }
+  try {
+    const loaded = pack ?? (await loadCasePack("maths", ctx.root));
+    const r = await handler(body, { ...ctx, pack: loaded });
+    return json(r.status, r.body);
+  } catch (err) {
+    console.error(`Could not open the photo link: ${(err as Error).message}`);
+    return json(500, { error: "Could not open the photo link" });
+  }
+}
+
 /** Every /api route. Exported so the key-leak test walks the same table the server serves. */
 export function apiRoutes(opts: ServerOptions) {
   const { root, dataDir, topics, pack, update } = opts;
+  const snap = {
+    root,
+    dataDir,
+    snaps: opts.snaps ?? createSnaps(),
+    snapHost: opts.snapHost ?? (() => null),
+  };
   return {
     "/api/state": { GET: (req: Request) => getState(req, dataDir) },
     "/api/case": {
@@ -390,6 +439,17 @@ export function apiRoutes(opts: ServerOptions) {
     },
     "/api/squad/join": {
       POST: (req: Request) => postJoinRoute(req, dataDir),
+    },
+    "/api/snap": {
+      GET: (req: Request) =>
+        snapRoute(req, snap, pack, async (_b, c) =>
+          getSnap(new URL(req.url).searchParams.get("token"), c),
+        ),
+      POST: (req: Request) =>
+        snapRoute(req, snap, pack, async (_b, c) => mintSnap(c)),
+    },
+    "/api/snap/photo": {
+      POST: (req: Request) => snapRoute(req, snap, pack, postPhoto),
     },
   };
 }
@@ -472,12 +532,15 @@ if (import.meta.main) {
     if (!checkOnStart(dataDir)) process.exit(1);
     // Not in --mcp mode: a pending fetch would hold the process open after stdin closes.
     const update = mcp ? undefined : checkForUpdate(VERSION, RELEASES_FEED);
+    const snaps = createSnaps();
     const server = startServer([...PORTS, 0], {
       root,
       dataDir,
       topics,
       pack,
       update,
+      snapHost: () => lanAddress(os.networkInterfaces()),
+      snaps,
     });
     const url = `http://127.0.0.1:${server.port}/`;
     if (mcp) {
@@ -493,7 +556,9 @@ if (import.meta.main) {
         { root, dataDir, subject: "maths", topics, origin: url.slice(0, -1) },
       );
       await out.end(); // a stdout pipe can be asynchronous; the last reply must reach the harness
-      server.stop(true); // nothing else holds the event loop, so the process exits 0 (plan D9)
+      server.stop(true); // no new snap can be minted from here on
+      await snaps.closeAll(); // stops the phone listener, then waits while a photo already taken is marked
+      // nothing else holds the event loop, so the process exits 0 (plan D9)
     } else {
       console.log(`Study tutor is running at ${url}`);
       openBrowser(url);

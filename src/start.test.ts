@@ -2,7 +2,9 @@ import { expect, test } from "bun:test";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { appendEvent } from "./events/append";
 import { replay } from "./events/replay";
+import { lanAddress } from "./snap";
 
 // The real entry, started the way Start.command starts the binary: cwd is the app folder, no args.
 const REPO = path.join(import.meta.dir, "..");
@@ -100,4 +102,52 @@ test(
       expect(() => JSON.parse(line)).not.toThrow();
     }
   }),
+);
+
+// Needs a private IPv4 address: with none, no phone listener is ever bound.
+test.skipIf(lanAddress(os.networkInterfaces()) === null)(
+  "--mcp: closing stdin stops a live phone listener too, and the process exits (PR #44 F3)",
+  withRoot(async (root) => {
+    appendEvent(path.join(root, "data"), {
+      v: 1,
+      type: "attempt",
+      item: "1MA1/R9/of-an-amount#1",
+      topic: "1MA1/R9/of-an-amount",
+      correct: false,
+      sure: true,
+      answer: "8",
+    });
+    const proc = Bun.spawn(["bun", SERVER, "--mcp"], {
+      cwd: root,
+      stdin: "pipe",
+      stdout: "ignore",
+      stderr: "pipe",
+      timeout: 10_000,
+    });
+    const reader = proc.stderr.getReader();
+    let err = "";
+    let url: string | undefined;
+    while (url === undefined) {
+      const { value, done } = await reader.read();
+      if (done) throw new Error(`no lessons line: ${err}`);
+      err += new TextDecoder().decode(value);
+      url = /lessons at (http:\/\/127\.0\.0\.1:\d+)/.exec(err)?.[1];
+    }
+    const mint = await fetch(`${url}/api/snap`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: "{}",
+    });
+    expect(mint.status).toBe(201);
+    const lan = ((await mint.json()) as { lan: string | null }).lan;
+    if (lan === null) throw new Error("minted with no phone link");
+    expect((await fetch(lan)).status).toBe(200);
+
+    await proc.stdin.end();
+    // Unfixed, the listener holds the process for the snap's 15 minutes; the spawn's 10 s timeout kills it.
+    expect(await proc.exited).toBe(0);
+    expect(proc.signalCode).toBeNull();
+    await expect(fetch(lan)).rejects.toThrow();
+  }),
+  15_000,
 );

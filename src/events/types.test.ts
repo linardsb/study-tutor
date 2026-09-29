@@ -71,3 +71,23 @@ test("parseEvent ignores extra keys", () => {
   const line = VALID_ATTEMPT.replace('"answer"', '"bet":2,"answer"');
   expect(parseEvent(line)).not.toBeNull();
 });
+
+const PHOTO = `{"v":1,"t":"2026-10-15T18:00:00Z","type":"photo","item":"1MA1/R9#1","topic":"1MA1/R9","file":"intake/20261015-180000-a1b2c3.jpg"`;
+test.each([
+  ["unmarked", `${PHOTO}}`, true],
+  ["marked 3/5 not clean", `${PHOTO},"marks":3,"of":5,"clean":false}`, true],
+  [
+    "marked 5/5 clean with a seed",
+    `${PHOTO},"seed":7,"marks":5,"of":5,"clean":true}`,
+    true,
+  ],
+  ["marks without of", `${PHOTO},"marks":3,"clean":false}`, false],
+  ["of without marks", `${PHOTO},"of":5,"clean":false}`, false],
+  ["marks above of", `${PHOTO},"marks":6,"of":5,"clean":false}`, false],
+  ["of zero", `${PHOTO},"marks":0,"of":0,"clean":false}`, false],
+  ["clean without marks", `${PHOTO},"clean":true}`, false],
+  ["clean as a string", `${PHOTO},"marks":3,"of":5,"clean":"yes"}`, false],
+  ["a negative seed", `${PHOTO},"seed":-1}`, false],
+])("photo: %s", (_name, line, ok) => {
+  expect(parseEvent(line) !== null).toBe(ok);
+});

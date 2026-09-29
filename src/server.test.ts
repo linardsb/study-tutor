@@ -875,6 +875,18 @@ test("chat.html holds 'This is an AI' in static markup, outside every region the
   expect(html).toMatch(/\.ai-note\s*\{[^}]*position:\s*sticky/);
 });
 
+test("snap.html holds 'This is an AI' in static markup, before the item and the result", () => {
+  const html = fs.readFileSync(path.join(root, "app", "snap.html"), "utf8");
+  const note = html.indexOf("This is an AI");
+  expect(note).toBeGreaterThan(-1);
+  for (const id of ["item", "snap-form", "result"]) {
+    const at = html.indexOf(`id="${id}"`);
+    expect({ id, found: at > -1 }).toEqual({ id, found: true });
+    expect({ id, noteFirst: note < at }).toEqual({ id, noteFirst: true });
+  }
+  expect(html).toMatch(/\.ai-note\s*\{[^}]*position:\s*sticky/);
+});
+
 test(
   "api: a feed that hangs does not hold up other routes, and /api/update ends as no update",
   withTemp(async (_dir, opts) => {

@@ -12,6 +12,7 @@ import {
   resolveInData,
   restrictToOwner,
   writeDataFile,
+  writeIntakeFile,
   writeState,
 } from "./append";
 import { replay } from "./replay";
@@ -518,5 +519,50 @@ test.skipIf(process.platform === "win32")(
     expect(() => listDataDir(data, "squad/out")).toThrow(
       /outside the data folder/,
     );
+  }),
+);
+
+test(
+  "writeIntakeFile saves the bytes under data/intake byte for byte",
+  withTemp((_dir, data) => {
+    const bytes = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 1, 2, 255]);
+    const rel = writeIntakeFile(data, "20261015-180000-a1b2c3.jpg", bytes);
+    expect(rel).toBe("intake/20261015-180000-a1b2c3.jpg");
+    expect(new Uint8Array(fs.readFileSync(path.join(data, rel)))).toEqual(
+      bytes,
+    );
+  }),
+);
+
+test.skipIf(process.platform === "win32")(
+  "writeIntakeFile writes the photo owner-only, in an owner-only intake folder",
+  withTemp((_dir, data) => {
+    const rel = writeIntakeFile(data, "a.png", new Uint8Array([1]));
+    expect(fs.statSync(path.join(data, rel)).mode & 0o777).toBe(0o600);
+    expect(fs.statSync(path.join(data, "intake")).mode & 0o777).toBe(0o700);
+  }),
+);
+
+test.each(["../a.jpg", "x/a.jpg", "a.exe", "a.jpg.exe", ".jpg"])(
+  "writeIntakeFile refuses the name %s",
+  (name) =>
+    withTemp((_dir, data) => {
+      expect(() => writeIntakeFile(data, name, new Uint8Array([1]))).toThrow(
+        /Refused/,
+      );
+    })(),
+);
+
+test(
+  "writeIntakeFile refuses data/intake symlinked out of data and writes nothing there",
+  withTemp((dir, data) => {
+    const outside = path.join(dir, "outside");
+    fs.mkdirSync(outside);
+    fs.mkdirSync(data);
+    fs.symlinkSync(outside, path.join(data, "intake"));
+    expect(() => writeIntakeFile(data, "a.jpg", new Uint8Array([1]))).toThrow(
+      /outside the data folder/,
+    );
+    expect(fs.readdirSync(outside)).toEqual([]);
   }),
 );

@@ -34,8 +34,15 @@ export type CaseRecord = {
   item: string | null;
   bets: [1 | 2 | 3, boolean][]; // (bet, correct) in answer order: the first answer, then the re-ask if there was one
 };
+export type PhotoWeek = {
+  taken: number;
+  marked: number;
+  marks: number;
+  of: number;
+  clean: number;
+};
 export type State = {
-  shape: 4; // bump when this type changes
+  shape: 5; // bump when this type changes
   lines: number; // log lines this state was built from, skipped lines included
   skipped: number; // lines replay could not read
   hash: string; // sha256 of those lines, so the check can tell a hand edit from a code change
@@ -53,6 +60,7 @@ export type State = {
   session: OpenSession | null; // the open session, or null when idle
   retests: Record<string, { score: number; of: number }>; // ISO week → summed re-test score and of
   coach: { shown: number; caught: number; rank: number }; // O2: wrong steps shown, caught, and Dan's rank from rankFor
+  photos: Record<string, PhotoWeek>; // ISO week → photo counts and summed marks (O3)
 };
 
 function topic(s: State, id: string): TopicState {
@@ -145,6 +153,22 @@ const CASES: { [K in EventKey]: (s: State, e: EventByKey[K]) => void } = {
   },
   "photo@1": (s, e) => {
     topic(s, e.topic);
+    const week = isoWeek(localDay(e.t));
+    const w = s.photos[week] ?? {
+      taken: 0,
+      marked: 0,
+      marks: 0,
+      of: 0,
+      clean: 0,
+    };
+    w.taken += 1;
+    if (e.marks !== undefined && e.of !== undefined) {
+      w.marked += 1;
+      w.marks += e.marks;
+      w.of += e.of;
+      if (e.clean) w.clean += 1;
+    }
+    s.photos[week] = w;
   },
   "usage@1": (s, e) => {
     const month = localDay(e.t).slice(0, 7);
@@ -188,7 +212,7 @@ export const dict = <V>(): Record<string, V> => Object.create(null);
 /** Pure: the same lines always give the same state. Reads no clock and no file. */
 export function replay(lines: readonly string[]): State {
   const s: State = {
-    shape: 4,
+    shape: 5,
     lines: 0,
     skipped: 0,
     hash: "",
@@ -203,6 +227,7 @@ export function replay(lines: readonly string[]): State {
     session: null,
     retests: dict(),
     coach: { shown: 0, caught: 0, rank: 0 },
+    photos: dict(),
   };
   const hash = createHash("sha256");
   // File order, never sorted by t: a PC clock change can write an earlier t after a later one.

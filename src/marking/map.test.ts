@@ -21,6 +21,15 @@ type Map = {
     lessons: Record<string, string>,
     query: string,
   ) => Action[];
+  photoStats: (
+    state: {
+      photos?: Record<
+        string,
+        { marked: number; marks: number; of: number; clean: number }
+      >;
+    },
+    next: { day: string; flame: { week: string } },
+  ) => { left: number; lastLeft: number | null; clean: number } | null;
 };
 
 // The browser file sets a global, the way case.js does; nothing in it touches document at load.
@@ -156,4 +165,51 @@ test("register: no exclamation mark and no emoji in any map string", () => {
       emoji: false,
     });
   }
+});
+
+test("photoStats: none, unmarked, one week, and the ISO week just before (PR #44 F9)", () => {
+  const w = (marks: number, of: number, clean: number, marked = 1) => ({
+    marked,
+    marks,
+    of,
+    clean,
+  });
+  const next = (day: string, week: string) => ({ day, flame: { week } });
+  const oct15 = next("2026-10-15", "2026-W42");
+  expect(map.photoStats({}, oct15)).toBeNull();
+  expect(
+    map.photoStats({ photos: { "2026-W41": w(1, 5, 0) } }, oct15),
+  ).toBeNull();
+  // stored but not marked (no model): no figure, not "0 left"
+  expect(
+    map.photoStats({ photos: { "2026-W42": w(0, 0, 0, 0) } }, oct15),
+  ).toBeNull();
+  expect(map.photoStats({ photos: { "2026-W42": w(3, 5, 1) } }, oct15)).toEqual(
+    {
+      left: 2,
+      lastLeft: null,
+      clean: 1,
+    },
+  );
+  // W40 is two weeks back: not "last week"
+  const older = { "2026-W09": w(0, 5, 0), "2026-W40": w(1, 5, 0) };
+  expect(
+    map.photoStats(
+      { photos: { ...older, "2026-W42": w(8, 10, 2), "2026-W43": w(0, 5, 0) } },
+      oct15,
+    ),
+  ).toEqual({ left: 2, lastLeft: null, clean: 2 });
+  expect(
+    map.photoStats(
+      { photos: { ...older, "2026-W41": w(2, 5, 0), "2026-W42": w(8, 10, 2) } },
+      oct15,
+    ),
+  ).toEqual({ left: 2, lastLeft: 3, clean: 2 });
+  // across the year: the week before 2027-W01 is 2026-W53
+  expect(
+    map.photoStats(
+      { photos: { "2026-W53": w(1, 5, 0), "2027-W01": w(5, 5, 1) } },
+      next("2027-01-06", "2027-W01"),
+    ),
+  ).toEqual({ left: 0, lastLeft: 4, clean: 1 });
 });
