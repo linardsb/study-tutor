@@ -30,7 +30,7 @@ empty token otherwise, which the server answers with 403 and the expired sentenc
   "/api/snap?token=T"`. Fixed: pass.
 - The other tests now use a token of the minted shape (`TOK`); `T` was never a real token.
 - Reduced claim: whether SonarCloud's taint analysis counts the shape check as a sanitiser is known only from
-  CI's rescan of the pushed commit. Result: see the PR comment for this round.
+  CI's rescan of the pushed commit. Result on `1e650ab` (check run `109367759982`, observed): **Quality Gate passed**, 6 new issues left, none at either `fetch`.
 - New failure mode of the mechanism: if `src/snap.ts` ever mints a token of another length, every link reads as
   expired. The regex comment names the source; a change of `createSnaps`'s `token` needs this line changed too.
 
@@ -53,6 +53,8 @@ empty token otherwise, which the server answers with 403 and the expired sentenc
 - `app/snap.js:94` nested template: the note is built first.
 
 ## Left, with a reason (for the PR body)
+
+The rescan of `1e650ab` lists exactly these 6 (observed, annotations of check run `109367759982`): `app/map.js:27`, `:310`, `app/snap.js:86`, `app/snap.html:41`, `src/events/append.ts:230`, `src/jobs/examiner_mark.ts:42`.
 
 - `src/jobs/examiner_mark.ts:42` regex complexity 30: it is a flat list of number words; splitting it makes the
   guard harder to read against the words it claims to cover.
