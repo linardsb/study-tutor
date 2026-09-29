@@ -10,6 +10,7 @@ import { replay } from "../events/replay";
 import type { NewEvent } from "../events/types";
 import { type Next, nextStep } from "../flow/next";
 import { endBody } from "../flow/session";
+import { addDays, isoWeek } from "../mcp/clock";
 import { doc, type El, until as settle } from "./dom";
 
 GlobalRegistrator.register({
@@ -281,6 +282,27 @@ test("examiner: a 409 shows its sentence", async () => {
 
 test("examiner: photos this week and last week show marks left on the table and clean sheets", async () => {
   const week = served.next.flame.week;
+  const lastWeek = isoWeek(addDays(served.next.day, -7));
+  const withPhotos = wire(state) as unknown as Record<string, unknown>;
+  withPhotos.photos = {
+    "2000-W01": { taken: 1, marked: 1, marks: 0, of: 9, clean: 0 },
+    [lastWeek]: { taken: 1, marked: 1, marks: 0, of: 5, clean: 0 },
+    [week]: { taken: 2, marked: 2, marks: 8, of: 10, clean: 1 },
+  };
+  served.state = { status: 200, body: withPhotos };
+  await api.reload();
+  await until(() => $$("#stats .stat").length === 5);
+  const stats = $$("#stats .stat");
+  // derived: this week 10 − 8 = 2 left; the ISO week before 5 − 0 = 5 (2000-W01's 9 is not last week)
+  expect(stats[3]?.textContent).toBe(
+    "2marks left on the table this weeklast week 5",
+  );
+  expect(stats[4]?.textContent).toBe("1clean sheets this week");
+  served.state = { status: 200, body: wire(state) };
+});
+
+test('examiner: an older week with photos is not "last week" (PR #44 F9)', async () => {
+  const week = served.next.flame.week;
   const withPhotos = wire(state) as unknown as Record<string, unknown>;
   withPhotos.photos = {
     "2000-W01": { taken: 1, marked: 1, marks: 0, of: 5, clean: 0 },
@@ -289,11 +311,21 @@ test("examiner: photos this week and last week show marks left on the table and 
   served.state = { status: 200, body: withPhotos };
   await api.reload();
   await until(() => $$("#stats .stat").length === 5);
-  const stats = $$("#stats .stat");
-  // derived: this week 10 − 8 = 2 left; the week before 5 − 0 = 5
-  expect(stats[3]?.textContent).toBe(
-    "2marks left on the table this weeklast week 5",
+  expect($$("#stats .stat")[3]?.textContent).toBe(
+    "2marks left on the table this week",
   );
-  expect(stats[4]?.textContent).toBe("1clean sheets this week");
+  served.state = { status: 200, body: wire(state) };
+});
+
+test("examiner: photos stored but none marked (no model) show no marks-left figure (PR #44 F9)", async () => {
+  const week = served.next.flame.week;
+  const withPhotos = wire(state) as unknown as Record<string, unknown>;
+  withPhotos.photos = {
+    [week]: { taken: 2, marked: 0, marks: 0, of: 0, clean: 0 },
+  };
+  served.state = { status: 200, body: withPhotos };
+  await api.reload();
+  await until(() => $$("#stats .stat").length === 3);
+  expect($("#stats").textContent).not.toContain("left on the table");
   served.state = { status: 200, body: wire(state) };
 });

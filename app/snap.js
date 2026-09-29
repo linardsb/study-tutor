@@ -10,7 +10,7 @@
       "It did not go into your record. Take a new photo from the map.",
     notSaved: "The photo was not saved. Take a new photo from the map.",
     marking: "Marking your working. This can take a minute.",
-    closed: "This link has closed. Your marks are on the map on the computer.",
+    closed: "This link has closed. Look at the map on the computer.",
     heic: "This page cannot read that type of photo. Take the photo with the camera button, or use a JPEG or PNG.",
     network:
       "The photo may not have been sent. Check your Wi-Fi and try again.",
@@ -34,7 +34,8 @@
   const SENDABLE = ["image/jpeg", "image/png", "image/webp"];
   const POLL_MS = 2000;
   /* expected: 15 failed polls in a row (about 30 s) means the snap closed. On the phone a closed snap's
-     listener is stopped, so the poll fails to connect rather than getting a 403. */
+     listener is stopped, so the poll fails to connect rather than getting a 403. A reply that is not OK
+     (a 409, a 500) counts as a failed poll too; only an OK reply resets the count. */
   const MAX_FAILED_POLLS = 15;
 
   /* A data URL of the photo, at most LONG_SIDE px on the long side, as JPEG 0.85. A file the browser
@@ -131,23 +132,41 @@
           res = await fetch(q);
           body = await res.json();
         } catch {
-          // a failed poll is tried again on the next tick, up to the bound
-          failed += 1;
-          if (failed >= MAX_FAILED_POLLS) {
-            status.textContent = TEXT.closed;
-            return;
-          }
-          continue;
+          res = null;
         }
-        failed = 0;
-        if (res.status === 403) {
+        if (res?.status === 403) {
           status.textContent = TEXT.closed;
           return;
         }
-        if (res.ok && body.state === "done") {
-          render(body.result);
+        if (res?.ok) {
+          if (body.state === "done") {
+            render(body.result);
+            return;
+          }
+          failed = 0;
+          continue;
+        }
+        // a failed poll is tried again on the next tick, up to the bound
+        failed += 1;
+        if (failed >= MAX_FAILED_POLLS) {
+          status.textContent = TEXT.closed;
           return;
         }
+      }
+    }
+
+    /* True when the snap already holds a photo: the form hides and the result shows, now or by polling. */
+    async function taken() {
+      try {
+        const res = await fetch(q);
+        const body = await res.json();
+        if (!res.ok || body.state === "open") return false;
+        form.hidden = true;
+        if (body.state === "done") render(body.result);
+        else poll();
+        return true;
+      } catch {
+        return false;
       }
     }
 
@@ -182,6 +201,8 @@
           poll();
           return;
         }
+        // A 403 after a lost 202 (saved, but the reply never arrived): the snap says so, not "expired".
+        if (res.status === 403 && (await taken())) return;
         status.textContent = body.error || TEXT.network;
         if (res.status === 403) form.hidden = true;
       } finally {

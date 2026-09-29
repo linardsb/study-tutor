@@ -36,7 +36,7 @@ export const TEXT = {
   expiredPage:
     "This link has expired. Open a new one from the map on the computer.",
   notPhoto: "That file is not a photo the tutor can read. Use a JPEG or PNG.",
-  notSaved: "Could not save the photo",
+  notSaved: "Could not save the photo.",
 } as const;
 
 type Result = { status: number; body: unknown };
@@ -190,10 +190,14 @@ export function createSnaps({
     find,
     take,
     current: () => live,
-    /** Waits for background marking, then stops every listener and timer. */
+    /**
+     * Stops every listener and timer first, so no snap takes another upload, then waits for background
+     * marking: a photo already taken is still marked and recorded.
+     */
     async closeAll(): Promise<void> {
-      await Promise.all([...known].map((s) => s.done));
-      for (const s of known) close(s);
+      const all = [...known];
+      for (const s of all) close(s);
+      await Promise.all(all.map((s) => s.done));
       known.clear();
     },
   };
@@ -420,5 +424,10 @@ export function startSnapListener(host: string, ctx: SnapContext): Listener {
       },
     },
     fetch: () => new Response("Not found", { status: 404 }),
+    // The localhost snapRoute's catch, for the phone: a throw never reaches it as Bun's error page.
+    error: (err) => {
+      console.error(`Could not open the photo link: ${err.message}`);
+      return json(500, { error: "Could not open the photo link" });
+    },
   });
 }

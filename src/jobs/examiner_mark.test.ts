@@ -44,6 +44,15 @@ const FIVE = [
 const withRow = (i: number, row: unknown) =>
   FIVE.map((r, j) => (j === i ? row : r));
 
+type Sent = {
+  messages: {
+    role: string;
+    content:
+      | string
+      | { type: string; text?: string; image_url?: { url: string } }[];
+  }[];
+};
+
 /** Runs the job with the console quiet: refusals and failures log by design. */
 async function run(
   data: string,
@@ -138,6 +147,54 @@ test(
   }),
 );
 
+test.each([
+  "The final value should be twelve, not seven.",
+  "Forty-five is not the total.",
+  "The total should be zero.",
+])("examiner_mark: a number in words is refused (shape): %s", (note) =>
+  withData(OPENAI, async (data) => {
+    const { v, calls } = await run(data, [
+      reply(withRow(1, { kind: "accuracy", mark: 0, note })),
+    ]);
+    expect(v).toEqual({ by: "fallback", value: null, reason: "shape" });
+    expect(calls.length).toBe(2);
+  })(),
+);
+
+test(
+  "examiner_mark: a number word the stem prints is allowed",
+  withData(OPENAI, async (data) => {
+    const note = "Show the cost of both of the two packs.";
+    const { v } = await run(
+      data,
+      [reply(withRow(0, { kind: "method", mark: 0, note }))],
+      { stem: "Cereal comes in two packs. Which is the better buy?" },
+    );
+    expect(v.by).toBe("model");
+  }),
+);
+
+test(
+  'examiner_mark: "one" in a note is not read as a number',
+  withData(OPENAI, async (data) => {
+    const note = "One step is missing.";
+    const { v } = await run(data, [
+      reply(withRow(0, { kind: "method", mark: 0, note })),
+    ]);
+    expect(v.by).toBe("model");
+  }),
+);
+
+test(
+  "examiner_mark: the system message allows the question's numbers only, never the pupil's (PR #44 F4b)",
+  withData(OPENAI, async (data) => {
+    const { calls } = await run(data, [reply(FIVE)]);
+    const { messages } = JSON.parse(String(calls[0]?.init.body)) as Sent;
+    expect(messages[0]?.content).not.toContain("the pupil's own words");
+    expect(messages[0]?.content).toContain("in digits or in words");
+  }),
+);
+
 test(
   "examiner_mark: a note with an exclamation mark is refused (guard)",
   withData(OPENAI, async (data) => {
@@ -174,15 +231,6 @@ test(
     expect(calls.length).toBe(0);
   }),
 );
-
-type Sent = {
-  messages: {
-    role: string;
-    content:
-      | string
-      | { type: string; text?: string; image_url?: { url: string } }[];
-  }[];
-};
 
 test(
   "examiner_mark: post-attempt prompt with the scheme, no answers, and the photo as an image part",

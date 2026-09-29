@@ -170,20 +170,35 @@
     return box;
   }
 
-  /* marks left on the table (of − marks) this week and the latest week before it, and this week's
-     clean sheets; null with no photo this week. ISO week keys (YYYY-Www) sort as strings. */
-  function photoStats(state, week) {
+  /* ISO 8601 week of a YYYY-MM-DD, as isoWeek in src/mcp/clock.ts (the page cannot import it). */
+  function isoWeek(day) {
+    const d = new Date(`${day}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7) + 3); // Thursday of this week
+    const year = d.getUTCFullYear();
+    const jan4 = new Date(Date.UTC(year, 0, 4));
+    const week =
+      1 +
+      Math.round(
+        ((d.getTime() - jan4.getTime()) / 864e5 -
+          3 +
+          ((jan4.getUTCDay() + 6) % 7)) /
+          7,
+      );
+    return `${year}-W${String(week).padStart(2, "0")}`;
+  }
+
+  /* marks left on the table (of − marks) this week and the ISO week before it, and this week's clean
+     sheets. Null with no marked photo this week: unmarked photos (no model) have no marks to leave. */
+  function photoStats(state, next) {
     const photos = state.photos ?? {};
-    const w = photos[week];
-    if (w === undefined) return null;
-    const before = Object.keys(photos)
-      .filter((k) => k < week)
-      .sort()
-      .at(-1);
-    const b = before === undefined ? undefined : photos[before];
+    const w = photos[next.flame.week];
+    if (w === undefined || w.marked === 0) return null;
+    const d = new Date(`${next.day}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() - 7);
+    const b = photos[isoWeek(d.toISOString().slice(0, 10))];
     return {
       left: w.of - w.marks,
-      lastLeft: b === undefined ? null : b.of - b.marks,
+      lastLeft: b === undefined || b.marked === 0 ? null : b.of - b.marks,
       clean: w.clean,
     };
   }
@@ -197,7 +212,7 @@
       stat(String(state.xp.total), TEXT.statXp),
       stat(TEXT.statStarted(started, topics.length), TEXT.statStartedLabel),
     );
-    const photos = photoStats(state, next.flame.week);
+    const photos = photoStats(state, next);
     if (photos === null) return;
     const left = stat(String(photos.left), TEXT.statLeft);
     if (photos.lastLeft !== null)

@@ -28,9 +28,12 @@ export function preAttemptSystem(task: string, voice = VOICE): Message {
   };
 }
 
-/** System message for a job that runs after an attempt. A separate function, so the guard line cannot be dropped from a pre-attempt prompt by a flag. */
-export function postAttemptSystem(task: string): Message {
-  return { role: "system", content: [VOICE, task, NUM, ONE].join("\n") };
+/**
+ * System message for a job that runs after an attempt. A separate function, so the guard line cannot be dropped from a pre-attempt prompt by a flag.
+ * `num` replaces the invented-number line for a job whose guard sources are narrower than NUM's list.
+ */
+export function postAttemptSystem(task: string, num = NUM): Message {
+  return { role: "system", content: [VOICE, task, num, ONE].join("\n") };
 }
 
 export type JobFailure = Failure | "shape" | "guard";

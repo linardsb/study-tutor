@@ -243,6 +243,34 @@ test(
 );
 
 test(
+  "the phone listener binds the address snapHost gives, never a wildcard (PR #44 F5)",
+  withSnap("fake", async (h) => {
+    h.attempt();
+    const { body } = await h.mint();
+    expect(h.snaps.current()?.lan?.hostname).toBe("127.0.0.1");
+    expect(new URL(String(body.lan)).hostname).toBe("127.0.0.1");
+  }),
+);
+
+test.skipIf(process.platform === "win32")(
+  "a LAN route that throws answers JSON 500, not Bun's error page (PR #44 F6)",
+  withSnap("fake", async (h) => {
+    h.attempt();
+    const { body } = await h.mint();
+    // config.json symlinked out of data/: readConfig rethrows the refusal inside getSnap
+    const file = path.join(h.data, "config.json");
+    const outside = path.join(path.dirname(h.data), "outside.json");
+    fs.renameSync(file, outside);
+    fs.symlinkSync(outside, file);
+    const r = await fetch(`${h.lanBase(body)}/api/snap?token=${tokenOf(body)}`);
+    expect(r.status).toBe(500);
+    expect(await r.json()).toEqual({
+      error: "Could not open the photo link",
+    });
+  }),
+);
+
+test(
   "single use: a second upload with the token → 403 and still one file; the status stays readable",
   withSnap("fake", async (h) => {
     h.attempt();
@@ -514,6 +542,34 @@ test(
       expect(s.state).toBe("marking");
       expect(s.result).toBeNull();
       await h.snaps.current()?.done;
+    },
+    {},
+    { delayMs: 500 },
+  ),
+);
+
+test(
+  "closeAll: while an earlier photo is marking, the live snap takes no upload, on the phone or here (PR #44 F3)",
+  withSnap(
+    "fake",
+    async (h) => {
+      h.attempt();
+      const a = (await h.mint()).body;
+      expect((await h.upload(h.lanBase(a), tokenOf(a))).status).toBe(202);
+      const b = (await h.mint()).body;
+      const local = new URL((await h.main("/")).url).origin;
+      const closing = h.snaps.closeAll(); // A is still marking (fake delay)
+      const phone = await h
+        .upload(h.lanBase(b), tokenOf(b))
+        .then((r) => r.status)
+        .catch(() => "no listener");
+      expect(phone).toBe("no listener");
+      expect((await h.upload(local, tokenOf(b))).status).toBe(403);
+      await closing;
+      expect(h.intake()).toHaveLength(1);
+      expect(
+        readLines(h.data).filter((l) => l.includes('"photo"')),
+      ).toHaveLength(1);
     },
     {},
     { delayMs: 500 },

@@ -532,6 +532,7 @@ if (import.meta.main) {
     if (!checkOnStart(dataDir)) process.exit(1);
     // Not in --mcp mode: a pending fetch would hold the process open after stdin closes.
     const update = mcp ? undefined : checkForUpdate(VERSION, RELEASES_FEED);
+    const snaps = createSnaps();
     const server = startServer([...PORTS, 0], {
       root,
       dataDir,
@@ -539,6 +540,7 @@ if (import.meta.main) {
       pack,
       update,
       snapHost: () => lanAddress(os.networkInterfaces()),
+      snaps,
     });
     const url = `http://127.0.0.1:${server.port}/`;
     if (mcp) {
@@ -554,7 +556,9 @@ if (import.meta.main) {
         { root, dataDir, subject: "maths", topics, origin: url.slice(0, -1) },
       );
       await out.end(); // a stdout pipe can be asynchronous; the last reply must reach the harness
-      server.stop(true); // nothing else holds the event loop, so the process exits 0 (plan D9)
+      server.stop(true); // no new snap can be minted from here on
+      await snaps.closeAll(); // stops the phone listener, then waits while a photo already taken is marked
+      // nothing else holds the event loop, so the process exits 0 (plan D9)
     } else {
       console.log(`Study tutor is running at ${url}`);
       openBrowser(url);

@@ -164,7 +164,7 @@ test("a poll answered 403: the closed sentence", async () => {
   await api.upload(PHOTO);
   await until(() => ($("#status").textContent ?? "").includes("closed"));
   expect($("#status").textContent).toBe(
-    "This link has closed. Your marks are on the map on the computer.",
+    "This link has closed. Look at the map on the computer.",
   );
 });
 
@@ -244,6 +244,45 @@ test("polls that cannot connect (the phone's listener stopped): the closed sente
   }
   expect(polls).toBe(bound - 1 + bound);
   expect($("#status").textContent).toBe(
-    "This link has closed. Your marks are on the map on the computer.",
+    "This link has closed. Look at the map on the computer.",
   );
+});
+
+test("polls answered with an error (500): the closed sentence after the bound, not a poll every 2 s for ever (PR #44 F7)", async () => {
+  const api = await load([view(), { status: 500, body: { error: "x" } }]);
+  const bound = (globalThis as { snap?: { MAX_FAILED_POLLS: number } }).snap
+    ?.MAX_FAILED_POLLS as number;
+  await api.upload(PHOTO);
+  await until(() => ($("#status").textContent ?? "").includes("closed"));
+  // the first GET is the page load; every poll after the upload is a 500
+  expect(calls.filter((c) => c.method === "GET")).toHaveLength(1 + bound);
+});
+
+test("a lost 202: the retry's 403 reads the snap, and a photo being marked is polled, not called expired (PR #44 F8)", async () => {
+  const api = await load(
+    [
+      view(),
+      view({ state: "marking" }),
+      view({ state: "done", result: marked({ lines: FIVE }) }),
+    ],
+    {
+      status: 403,
+      body: { error: "This link has expired. Open a new one from the map." },
+    },
+  );
+  const up = globalThis.fetch;
+  globalThis.fetch = (async (url: string, init?: RequestInit) => {
+    if (init?.method === "POST") throw new TypeError("fetch failed");
+    return up(url, init);
+  }) as typeof fetch;
+  try {
+    await api.upload(PHOTO);
+  } finally {
+    globalThis.fetch = up;
+  }
+  await api.upload(PHOTO);
+  await until(() => rows().length > 0);
+  expect($("#snap-form").hidden).toBe(true);
+  expect(rows()[0]).toBe("Method: 1 mark");
+  expect($("#status").textContent).toBe("");
 });

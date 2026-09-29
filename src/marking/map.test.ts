@@ -23,9 +23,12 @@ type Map = {
   ) => Action[];
   photoStats: (
     state: {
-      photos?: Record<string, { marks: number; of: number; clean: number }>;
+      photos?: Record<
+        string,
+        { marked: number; marks: number; of: number; clean: number }
+      >;
     },
-    week: string,
+    next: { day: string; flame: { week: string } },
   ) => { left: number; lastLeft: number | null; clean: number } | null;
 };
 
@@ -164,34 +167,49 @@ test("register: no exclamation mark and no emoji in any map string", () => {
   }
 });
 
-test("photoStats: none, one week, and the latest earlier week", () => {
-  const w = (marks: number, of: number, clean: number) => ({
+test("photoStats: none, unmarked, one week, and the ISO week just before (PR #44 F9)", () => {
+  const w = (marks: number, of: number, clean: number, marked = 1) => ({
+    marked,
     marks,
     of,
     clean,
   });
-  expect(map.photoStats({}, "2026-W42")).toBeNull();
+  const next = (day: string, week: string) => ({ day, flame: { week } });
+  const oct15 = next("2026-10-15", "2026-W42");
+  expect(map.photoStats({}, oct15)).toBeNull();
   expect(
-    map.photoStats({ photos: { "2026-W41": w(1, 5, 0) } }, "2026-W42"),
+    map.photoStats({ photos: { "2026-W41": w(1, 5, 0) } }, oct15),
   ).toBeNull();
+  // stored but not marked (no model): no figure, not "0 left"
   expect(
-    map.photoStats({ photos: { "2026-W42": w(3, 5, 1) } }, "2026-W42"),
-  ).toEqual({
-    left: 2,
-    lastLeft: null,
-    clean: 1,
-  });
+    map.photoStats({ photos: { "2026-W42": w(0, 0, 0, 0) } }, oct15),
+  ).toBeNull();
+  expect(map.photoStats({ photos: { "2026-W42": w(3, 5, 1) } }, oct15)).toEqual(
+    {
+      left: 2,
+      lastLeft: null,
+      clean: 1,
+    },
+  );
+  // W40 is two weeks back: not "last week"
+  const older = { "2026-W09": w(0, 5, 0), "2026-W40": w(1, 5, 0) };
   expect(
     map.photoStats(
-      {
-        photos: {
-          "2026-W09": w(0, 5, 0),
-          "2026-W40": w(1, 5, 0),
-          "2026-W42": w(8, 10, 2),
-          "2026-W43": w(0, 5, 0),
-        },
-      },
-      "2026-W42",
+      { photos: { ...older, "2026-W42": w(8, 10, 2), "2026-W43": w(0, 5, 0) } },
+      oct15,
     ),
-  ).toEqual({ left: 2, lastLeft: 4, clean: 2 });
+  ).toEqual({ left: 2, lastLeft: null, clean: 2 });
+  expect(
+    map.photoStats(
+      { photos: { ...older, "2026-W41": w(2, 5, 0), "2026-W42": w(8, 10, 2) } },
+      oct15,
+    ),
+  ).toEqual({ left: 2, lastLeft: 3, clean: 2 });
+  // across the year: the week before 2027-W01 is 2026-W53
+  expect(
+    map.photoStats(
+      { photos: { "2026-W53": w(1, 5, 0), "2027-W01": w(5, 5, 1) } },
+      next("2027-01-06", "2027-W01"),
+    ),
+  ).toEqual({ left: 0, lastLeft: 4, clean: 1 });
 });
