@@ -42,7 +42,7 @@ export type PhotoWeek = {
   clean: number;
 };
 export type State = {
-  shape: 6; // bump when this type changes
+  shape: 7; // bump when this type changes
   lines: number; // log lines this state was built from, skipped lines included
   skipped: number; // lines replay could not read
   hash: string; // sha256 of those lines, so the check can tell a hand edit from a code change
@@ -54,6 +54,7 @@ export type State = {
     { topic: string; t: string; answer: string; seed?: number }
   >; // by item id
   calibration: Record<string, Calibration>; // ISO week → Sure/correct pairs (D7)
+  unmarked: Record<string, { week: string; sure: boolean }>; // item id → its latest attempt, when that attempt is null and no teach-back has marked it yet (#53)
   cases: Record<string, CaseRecord>; // London day the case was for → the day's answers (O5)
   caseSeed: string | null; // topic a confident-wrong case sends back tomorrow; cleared by the next day's first answer
   tokens: Record<string, number>; // YYYY-MM → input + output
@@ -85,27 +86,39 @@ function work(s: State, t: string): void {
   s.flame[week] = days;
 }
 
-/** attempt@1 and attempt@2. A null `correct` (answered, not marked in code) is work, and says nothing about calibration or confident-wrong. */
-function attempt(
-  s: State,
-  e: EventByKey["attempt@1"] | EventByKey["attempt@2"],
-): void {
-  topic(s, e.topic);
-  work(s, e.t);
-  if (e.correct === null) return;
-  const week = isoWeek(localDay(e.t));
+/** Counts one Sure/Not sure bet and whether it was right in that week's calibration. */
+function bet(s: State, week: string, sure: boolean, correct: boolean): void {
   const c = s.calibration[week] ?? {
     sureRight: 0,
     sureWrong: 0,
     unsureRight: 0,
     unsureWrong: 0,
   };
-  if (e.sure) {
-    if (e.correct) c.sureRight++;
+  if (sure) {
+    if (correct) c.sureRight++;
     else c.sureWrong++;
-  } else if (e.correct) c.unsureRight++;
+  } else if (correct) c.unsureRight++;
   else c.unsureWrong++;
   s.calibration[week] = c;
+}
+
+/**
+ * attempt@1 and attempt@2. A null `correct` (answered, not marked in code) is work, and waits in
+ * `unmarked` for a teach-back to settle its calibration bet; it says nothing about confident-wrong.
+ */
+function attempt(
+  s: State,
+  e: EventByKey["attempt@1"] | EventByKey["attempt@2"],
+): void {
+  topic(s, e.topic);
+  work(s, e.t);
+  const week = isoWeek(localDay(e.t));
+  if (e.correct === null) {
+    s.unmarked[e.item] = { week, sure: e.sure };
+    return;
+  }
+  delete s.unmarked[e.item];
+  bet(s, week, e.sure, e.correct);
   if (e.correct) delete s.confidentWrong[e.item];
   else if (e.sure) {
     s.confidentWrong[e.item] =
@@ -145,6 +158,11 @@ const CASES: { [K in EventKey]: (s: State, e: EventByKey[K]) => void } = {
   "teachback@1": (s, e) => {
     topic(s, e.topic);
     work(s, e.t);
+    // #53: the first teach-back after a null attempt settles its bet, in the attempt's week. Full marks is right.
+    const u = e.item === undefined ? undefined : s.unmarked[e.item];
+    if (e.item === undefined || u === undefined) return;
+    bet(s, u.week, u.sure, e.marks === e.of);
+    delete s.unmarked[e.item];
   },
   "intake@1": (s, e) => {
     for (const row of e.topics) {
@@ -233,7 +251,7 @@ export const dict = <V>(): Record<string, V> => Object.create(null);
 /** Pure: the same lines always give the same state. Reads no clock and no file. */
 export function replay(lines: readonly string[]): State {
   const s: State = {
-    shape: 6,
+    shape: 7,
     lines: 0,
     skipped: 0,
     hash: "",
@@ -242,6 +260,7 @@ export function replay(lines: readonly string[]): State {
     flame: dict(),
     confidentWrong: dict(),
     calibration: dict(),
+    unmarked: dict(),
     cases: dict(),
     caseSeed: null,
     tokens: dict(),
