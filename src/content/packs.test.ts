@@ -3,6 +3,7 @@ import { expect, test } from "bun:test";
 import fs from "node:fs";
 import path from "node:path";
 import { loadPacks } from "../api/case";
+import { MAX_CODE } from "../jobs/intake_read";
 import { markAnswer } from "../marking/answer";
 import { itemsFileName } from "./pack";
 import type { ItemType } from "./types";
@@ -42,9 +43,11 @@ test("items: each subject's item files are its topics' files, and every item is 
   for (const s of new Set(subjects.values())) {
     const own = pack.topics.filter((t) => subjects.get(t.id) === s);
     const withItems = own.filter((t) => (pack.items.get(t.id) ?? []).length);
-    expect(
-      fs.readdirSync(path.join(root, "content", s, "items")).sort(),
-    ).toEqual(withItems.map((t) => itemsFileName(t.id)).sort());
+    const dir = path.join(root, "content", s, "items");
+    // A pack may ship topic rows before any items (english).
+    expect(fs.existsSync(dir) ? fs.readdirSync(dir).sort() : []).toEqual(
+      withItems.map((t) => itemsFileName(t.id)).sort(),
+    );
   }
   const seen = new Set<string>();
   for (const [topicId, items] of pack.items)
@@ -77,4 +80,9 @@ test("items: each subject's item files are its topics' files, and every item is 
         expect(item.misconceptions).toEqual([]);
       }
     }
+});
+
+test("topics: every id fits a sheet code, so intake can read it", () => {
+  for (const t of pack.topics)
+    expect(t.id.length).toBeLessThanOrEqual(MAX_CODE);
 });

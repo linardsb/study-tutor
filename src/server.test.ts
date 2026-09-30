@@ -519,7 +519,7 @@ test(
     const res = await get("/api/lessons");
     expect(res.status).toBe(200);
     const urls = (await res.json()) as Record<string, string>;
-    expect(Object.keys(urls)).toHaveLength(opts.topics.length);
+    expect(Object.keys(urls)).toHaveLength(21); // observed: the 21 v1 lessons; Year 11 rows have none yet
     const first = urls[opts.topics[0]?.id as string] as string;
     const lesson = await get(first);
     expect(lesson.status).toBe(200);
@@ -537,7 +537,7 @@ test(
     const res = await get("/api/topics");
     expect(res.status).toBe(200);
     const rows = (await res.json()) as Array<{ id: string; subject: string }>;
-    expect(rows).toHaveLength(21); // observed at 4b5125a: 21 maths topics
+    expect(rows).toHaveLength(58); // derived: 21 + 37 Year 11 rows (a3 plan)
     expect(rows.every((r) => r.subject === "maths")).toBe(true);
     expect(rows[0]).toMatchObject({
       id: topics[0]?.id,
@@ -1003,12 +1003,12 @@ const topicIds = async (get: (p: string) => Promise<Response>) =>
   );
 
 test(
-  "courses: a Foundation maths save narrows topics, lessons, next and the cold test; without a save all 22 show",
+  "courses: a Foundation maths save narrows topics, lessons, next and the cold test; without a save all 93 show",
   withPacks(
     () => root,
     async (get) => {
       const post = postJson(get);
-      expect(await topicIds(get)).toHaveLength(22); // observed: 21 maths + 1 science
+      expect(await topicIds(get)).toHaveLength(93); // derived: 58 maths + 20 science + 15 english (a3 plan)
       const lessons = async () =>
         Object.values(
           (await (await get("/api/lessons")).json()) as Record<string, string>,
@@ -1021,7 +1021,12 @@ test(
         chosen: unknown[];
       };
       expect(got.chosen).toEqual([]);
-      expect(got.courses.map((c) => c.spec)).toEqual(["1MA1", "8464"]);
+      expect(got.courses.map((c) => c.spec)).toEqual([
+        "8700",
+        "8702",
+        "1MA1",
+        "8464",
+      ]);
 
       const saved = await post("/api/courses", {
         courses: [{ spec: "1MA1", tier: "F" }],
@@ -1031,7 +1036,7 @@ test(
         chosen: [{ spec: "1MA1", tier: "F" }],
       });
       const ids = await topicIds(get);
-      expect(ids).toHaveLength(21);
+      expect(ids).toHaveLength(38); // derived: 21 + 17 Foundation Year 11 rows (a3 plan)
       expect(ids.some((id) => id.startsWith("8464/"))).toBe(false);
       expect(
         (await lessons()).some((u) => u.includes("content/science/")),
@@ -1042,7 +1047,7 @@ test(
       expect(await refused.json()).toEqual({
         error: "Pick at least one course.",
       });
-      expect(await topicIds(get)).toHaveLength(21);
+      expect(await topicIds(get)).toHaveLength(38);
 
       // Science only: maths comes first in pack order, so next and the cold test show the filter.
       await post("/api/courses", { courses: [{ spec: "8464", tier: "F" }] });
@@ -1201,11 +1206,61 @@ test(
         PROFILE_FILE,
         JSON.stringify({ weeklyTarget: 3, courses: [{ spec: "ZZZ9" }] }),
       );
-      expect(await topicIds(get)).toHaveLength(22);
+      expect(await topicIds(get)).toHaveLength(93);
       expect(
         ((await (await get("/api/courses")).json()) as { chosen: unknown })
           .chosen,
       ).toEqual([]);
+    },
+  ),
+);
+
+test(
+  "courses over the real packs: a fresh pupil skips rows with no items; English alone offers nothing; the maths tier and English mix",
+  withPacks(
+    () => root,
+    async (get, opts) => {
+      const step = async () =>
+        (
+          (await (await get("/api/next?day=2026-10-10")).json()) as {
+            step: { kind: string; topic?: string };
+          }
+        ).step;
+      const pick = async (courses: object[]) => {
+        writeDataFile(
+          opts.dataDir,
+          PROFILE_FILE,
+          JSON.stringify({ weeklyTarget: 3, courses }),
+        );
+        return (await (await get("/api/topics")).json()) as {
+          id: string;
+          tier: string;
+          subject: string;
+        }[];
+      };
+      // Pack order puts English first; without pickLesson's items guard this is 8700/P1Q1.
+      expect(await step()).toMatchObject({
+        kind: "lesson",
+        topic: "1MA1/R9/of-an-amount",
+      });
+
+      const english = await pick([{ spec: "8700" }, { spec: "8702" }]);
+      expect(english).toHaveLength(15); // derived: 10 language + 5 literature rows (a3 plan)
+      expect(english.every((t) => t.subject === "english")).toBe(true);
+      expect((await step()).kind).toBe("none");
+
+      const f = await pick([{ spec: "1MA1", tier: "F" }]);
+      expect(f).toHaveLength(38); // derived: 21 + 17 Foundation rows
+      expect(f.some((t) => t.tier === "H")).toBe(false);
+      expect(await pick([{ spec: "1MA1", tier: "H" }])).toHaveLength(58); // derived: 21 + 37
+
+      const mixed = await pick([
+        { spec: "1MA1", tier: "F" },
+        { spec: "8700" },
+        { spec: "8702" },
+      ]);
+      expect(mixed).toHaveLength(53); // derived: 38 + 15
+      expect(mixed.filter((t) => t.subject === "english")).toHaveLength(15);
     },
   ),
 );

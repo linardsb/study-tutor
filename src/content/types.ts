@@ -25,7 +25,10 @@ export type Chosen = { spec: string; tier?: Tier };
 /**
  * Topic id grammar: `<spec>/<statement>` (for example `1MA1/R4`) when one lesson sits under the
  * statement; `<spec>/<statement>/<slug>` (for example `1MA1/G17/cone`) when several do. The statement
- * is always the first two segments. School codes (Sparx U-codes) are aliases only.
+ * is always the first two segments. English Language has no content statements, so its statement is
+ * paper and question (`8700/P1Q4`); Literature uses the content number plus a text slug
+ * (`8702/3.1.1/macbeth`). A row in an untiered course carries `tier: "F"`. School codes (Sparx U-codes)
+ * are aliases only.
  */
 export interface Topic {
   id: string;

@@ -40,6 +40,8 @@
       const named = only !== null && topics.some((x) => x.id === only);
       for (const t of topics) {
         const code = t.aliases[0];
+        /* a topic with no generator yet (the Year 11 rows) has nothing to mix */
+        if (typeof window.GEN?.[code] !== "function") continue;
         const label = document.createElement("label");
         const box = document.createElement("input");
         box.type = "checkbox";

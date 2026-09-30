@@ -1,0 +1,107 @@
+[
+  {
+    "id": "8700/P1Q1",
+    "title": "Language paper 1 question 1: finding information",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8700/P1Q2",
+    "title": "Language paper 1 question 2: analysing language",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8700/P1Q3",
+    "title": "Language paper 1 question 3: analysing structure",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8700/P1Q4",
+    "title": "Language paper 1 question 4: evaluating a statement",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8700/P1Q5",
+    "title": "Language paper 1 question 5: descriptive or narrative writing",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8700/P2Q1",
+    "title": "Language paper 2 question 1: true or false statements",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8700/P2Q2",
+    "title": "Language paper 2 question 2: summarising differences",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8700/P2Q3",
+    "title": "Language paper 2 question 3: analysing language",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8700/P2Q4",
+    "title": "Language paper 2 question 4: comparing viewpoints",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8700/P2Q5",
+    "title": "Language paper 2 question 5: writing your viewpoint",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8702/3.1.1/macbeth",
+    "title": "Macbeth",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8702/3.1.2/a-christmas-carol",
+    "title": "A Christmas Carol",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8702/3.2.1/lord-of-the-flies",
+    "title": "Lord of the Flies",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8702/3.2.2/power-and-conflict",
+    "title": "Power and conflict poetry",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8702/3.2.3",
+    "title": "Unseen poetry",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  }
+]

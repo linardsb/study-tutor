@@ -5,5 +5,138 @@
     "aliases": ["4.1.1.2"],
     "prerequisites": [],
     "tier": "F"
+  },
+  {
+    "id": "8464/4.5.1",
+    "title": "Homeostasis",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8464/4.5.2",
+    "title": "The nervous system and reflexes",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8464/4.5.3",
+    "title": "Hormones, blood glucose and reproduction",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8464/4.5.3.5",
+    "title": "Treating infertility",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "H"
+  },
+  {
+    "id": "8464/4.5.3.6",
+    "title": "Negative feedback: adrenaline and thyroxine",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "H"
+  },
+  {
+    "id": "8464/4.6.1",
+    "title": "Reproduction and inheritance",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8464/4.6.2",
+    "title": "Variation, evolution and genetic engineering",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8464/4.6.3",
+    "title": "How ideas about genetics and evolution developed",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8464/4.6.4",
+    "title": "Classifying living things",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8464/5.7.1",
+    "title": "Crude oil, hydrocarbons and fuels",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8464/5.8.1",
+    "title": "Purity, formulations and chromatography",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8464/5.8.2",
+    "title": "Tests for common gases",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8464/6.4.1",
+    "title": "Atoms and isotopes",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8464/6.4.2",
+    "title": "Nuclear radiation and half-life",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8464/6.5.1",
+    "title": "Forces and their interactions",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8464/6.5.2",
+    "title": "Work done and energy transfer",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8464/6.5.3",
+    "title": "Forces and elasticity",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8464/6.5.4",
+    "title": "Forces and motion",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "F"
+  },
+  {
+    "id": "8464/6.5.5",
+    "title": "Momentum",
+    "aliases": [],
+    "prerequisites": [],
+    "tier": "H"
   }
 ]

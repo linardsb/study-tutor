@@ -42,7 +42,10 @@ function item(id = `${TOPIC}#1`, seed?: number) {
 
 test("R8: chooseWrong is always one entry of the item's bank, over every item and 1,050 rolls, and is stable", () => {
   const seen: (Item & { seed?: number })[] = [...pack.items.values()].flat();
-  for (const t of pack.topics)
+  // Topics with a generator: Year 11 rows have none yet (a3 plan).
+  for (const t of pack.topics.filter(
+    (x) => typeof pack.gens[x.aliases[0] ?? ""] === "function",
+  ))
     for (let seed = 1; seed <= SEEDS; seed += 1) {
       const rolled = findItem(pack, `${t.id}#gen`, seed);
       if (rolled === null) throw new Error(`no roll for ${t.id}`);
