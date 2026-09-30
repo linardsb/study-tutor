@@ -440,7 +440,7 @@ Run from the worktree. The steps use no model (preset `none`), so they need no k
 2. Open `http://127.0.0.1:<port>/content/science/lessons/0001-8464-4.1.1.2-animal-and-plant-cells.html` and scroll to "Try it". Six questions show, and the sixth has a text box and "Save my answer". No working is visible under it.
 3. In question 6, type two lines (Enter makes a new line and does not save). Press Save with no Sure/Not sure: the prompt appears. Pick Sure and save. "Saved…" shows, with the "Get it marked by the tutor" link.
 4. `tail -2 data/events.jsonl`: an `attempt` line with `"v":2` and `"correct":null`, then `xp` 10.
-5. Click the link. The chat opens on "Explain your answer, one point per line". Enter two lines and press "Mark my steps". With no model the reply is "No marks this time. Compare your steps with the working:" and the working. Only now does the working appear.
+5. Click the link. The chat opens on "Explain your answer, one point per line". Enter two lines and press "Mark my answer". With no model the reply is "No marks this time. Compare your steps with the working:" and the working. Only now does the working appear.
 6. `curl -s http://127.0.0.1:<port>/api/state | jq '.calibration, .confidentWrong'`: neither holds the short item.
 7. Stop the server, then `rm -rf data && mv data.bak data 2>/dev/null`.
 
@@ -512,7 +512,7 @@ Every existing test the change breaks is named with its fix: `types.test.ts:33` 
 - **Why the working stays hidden in the quiz.** For markable items, the working shows after the check because the pupil has already been marked. An open item is marked by the teach-back that comes after it. Showing the working first would let the pupil paste it into the teach-back and take full marks against a scheme it paraphrases. `chat.js` already shows the working after a verdict and after a no-verdict (`app/chat.js:76-77`, `:94-99`), so the pupil still sees it.
 - **Why a helper rather than a second reducer body.** One body means a future change to calibration applies to both versions. The early return is the only difference, and it is the line the mutation run proves.
 - **Why the fake server in the DOM test parses with `parseEvent`.** A fake that returns 201 for any body would pass a `v: 1, correct: null` post. That is exactly the bug the real route refuses, and it would leave the chat locked.
-- **New reachable path, intended.** `lastAttempt` (`src/flow/examiner.ts:11-18`) can now return the short item, so `POST /api/snap` can mint a snap for it and `examiner_mark` marks the photo against `mark_scheme`. No code changes for this, and the same `hasAttempt` gate covers it. It is a new reachable path even though no code changed.
+- **New reachable path, intended.** `lastAttempt` (`src/flow/examiner.ts:11-18`) can now return the short item, so `POST /api/snap` can mint a snap for it and `examiner_mark` marks the photo against `mark_scheme`. No code changes for this, and the same `hasAttempt` gate covers it. It is a new reachable path even though no code changed. **Retired 2026-09-30 (PR #54 L3):** `examiner_mark` scores out of 5 on method, accuracy, answer, units and sense, not against a 2-mark scheme, so `mintSnap` now passes `lastAttempt` a filter that skips items with no `answers`. A written answer never gets a snap; teach-back marks it.
 - **Rejected:** a separate `open` item page, or rendering open items in the chat panel only. Both move the answer box away from the lesson, where the issue asks for it, and the chat panel would need its own attempt writer.
 
 ## AMENDMENTS
@@ -522,3 +522,7 @@ Every existing test the change breaks is named with its fix: `types.test.ts:33` 
   - **A2 (Task 8).** The open-item loop builds its own Sure / Not sure span with the same `name` scheme; no helper was extracted from the markable loop.
   - **A3 (Level 4).** Run headless: `bun src/server.ts --mcp` serves the same routes without opening a browser, and steps 2 (page 200), 4 and 6 went over `curl`, plus a v1 `correct: null` post refused with 400. The browser steps (typing, the link click, the label on screen) are covered by `quiz-dom.test.ts` and `chat-dom.test.ts`, not by hand.
   - **A4 (Task 8 GOTCHA 4).** `no-ai-slop` then `humanizer` ran on the four strings; no change to the plan's wording.
+- **2026-09-30, PR #54 review round 1 (report `.claude/reports/pr-54-review-fixes.md`).**
+  - **A5 (Task 8, supersedes the retry behaviour).** After a failed save the open item asks `GET /api/chat` whether the attempt already landed before posting again (L2). The chain is `void`-prefixed (F1). A saved item hides "Ask the tutor" (L5).
+  - **A6 (supersedes the "New reachable path, intended" note).** `mintSnap` skips attempts whose item has no `answers`, through a filter on `lastAttempt` (L3).
+  - **A7 (Task 9b).** The teach-back button reads "Mark my answer" for written items (L5). `events.md` says the page, not the server, picks `attempt@1` or `@2` (L1). `quiz-dom.test.ts` builds a fresh quiz per case (L4).

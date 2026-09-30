@@ -140,6 +140,14 @@
       .catch(() => false);
   }
 
+  /* whether the tutor already holds an attempt for this item; false when it cannot say */
+  function attempted(item) {
+    return fetch(chatHref(item).replace("/chat.html?", "/api/chat?"))
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body) => body?.attempted === true)
+      .catch(() => false);
+  }
+
   const SURE_NOTE =
     " Press Sure only if you would bet on it. Wrong after Sure is the most useful thing that can happen here: it shows which bit you only thought you knew.";
 
@@ -469,7 +477,9 @@
       const box = q.querySelector("textarea");
       const btn = q.querySelector(".check");
       const fb = q.querySelector(".feedback");
+      const ask = q.querySelector(".ask");
       const marked = q.querySelector(".marked");
+      let lost = false;
       const name = `sure-${section.dataset.code || "q"}-${quizN}-${idx}`;
       const conf = document.createElement("span");
       conf.className = "confidence";
@@ -494,19 +504,28 @@
           return;
         }
         btn.disabled = true;
-        postAttempt(item, null, c.value === "sure", text, 2).then((saved) => {
-          if (!saved) {
-            fb.textContent = NOT_SAVED.trim();
-            btn.disabled = false;
-            return;
-          }
-          q.classList.add("done");
-          box.disabled = true;
-          for (const r of conf.querySelectorAll("input")) r.disabled = true;
-          fb.textContent =
-            "Saved. This page cannot mark a written answer. Open the tutor and explain your answer there, one point per line, to get it marked.";
-          marked.hidden = false;
-        });
+        /* after a failed post, the line may have been saved and only the reply lost: ask first, so a
+           retry cannot write a second attempt and its XP */
+        const already = lost ? attempted(item) : Promise.resolve(false);
+        void already
+          .then((saved) =>
+            saved ? true : postAttempt(item, null, c.value === "sure", text, 2),
+          )
+          .then((saved) => {
+            if (!saved) {
+              lost = true;
+              fb.textContent = NOT_SAVED.trim();
+              btn.disabled = false;
+              return;
+            }
+            q.classList.add("done");
+            box.disabled = true;
+            for (const r of conf.querySelectorAll("input")) r.disabled = true;
+            fb.textContent =
+              "Saved. This page cannot mark a written answer. Open the tutor and explain your answer there, one point per line, to get it marked.";
+            ask.hidden = true;
+            marked.hidden = false;
+          });
       });
     });
     section.appendChild(summary);

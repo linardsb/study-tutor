@@ -34,6 +34,7 @@ globalThis.fetch = (async (url: string) => {
 
 const until = async (fn: () => boolean) => expect(await settle(fn)).toBe(true);
 const label = () => doc().querySelector('label[for="teach"]')?.textContent;
+const button = () => doc().querySelector("#teach-form button")?.textContent;
 
 async function open(query: string, type: string, title: string) {
   doc().body.innerHTML = MAIN;
@@ -46,9 +47,11 @@ async function open(query: string, type: string, title: string) {
 test("a written-answer item asks for one point per line", async () => {
   await open("dom", "short", "T-short");
   expect(label()).toBe("Explain your answer, one point per line.");
+  expect(button()).toBe("Mark my answer");
 });
 
 test("a markable item keeps the markup's step-by-step label", async () => {
   await open("dom2", "cloze", "T-cloze");
   expect(label()).toBe("Explain how you did it, one step per line.");
+  expect(button()).toBe("Mark my steps");
 });

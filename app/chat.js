@@ -47,9 +47,11 @@
       $("scaffold").querySelector("p").textContent = state.scaffold;
       $("scaffold").hidden = false;
     }
-    if (WRITTEN.includes(state.type))
+    if (WRITTEN.includes(state.type)) {
       document.querySelector('label[for="teach"]').textContent =
         "Explain your answer, one point per line.";
+      $("teach-form").querySelector("button").textContent = "Mark my answer";
+    }
     $("no-model").hidden = state.model;
     $("before").hidden = state.attempted;
     $("after").hidden = !state.attempted;

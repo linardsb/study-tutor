@@ -1,4 +1,4 @@
-import { expect, mock, spyOn, test } from "bun:test";
+import { describe, expect, mock, spyOn, test } from "bun:test";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -14,9 +14,11 @@ import {
   decodeDataUrl,
   lanAddress,
   MAX_PHOTO_BYTES,
+  mintSnap,
   SNAP_TTL_MS,
   type Snaps,
   sniffImage,
+  TEXT,
 } from "./snap";
 
 const root = process.cwd();
@@ -657,3 +659,66 @@ test(
     });
   }),
 );
+
+/* PR #54 L3: examiner mode marks on a numeric rubric, so a written answer (no `answers`) is never the
+   photo's item. mintSnap is called directly on the science pack; a refusal opens no listener. */
+describe("mintSnap skips written-answer items", () => {
+  const science = loadCasePack("science");
+  const OPEN_ID = "8464/4.1.1.2#6";
+  const MARKABLE_ID = "8464/4.1.1.2#1";
+  const SCI_TOPIC = "8464/4.1.1.2";
+  const logged = (...ids: string[]) => {
+    const dir = fs.realpathSync.native(
+      fs.mkdtempSync(path.join(os.tmpdir(), "st-snap-")),
+    );
+    const data = path.join(dir, "data");
+    for (const id of ids)
+      appendEvent(data, {
+        v: 2,
+        type: "attempt",
+        item: id,
+        topic: SCI_TOPIC,
+        correct: id === OPEN_ID ? null : true,
+        sure: true,
+        answer: "x",
+      });
+    return { dir, data };
+  };
+  const mintOn = async (...ids: string[]) => {
+    const { dir, data } = logged(...ids);
+    const snaps = createSnaps({});
+    try {
+      return mintSnap({
+        root,
+        dataDir: data,
+        pack: await science,
+        snaps,
+        snapHost: () => null,
+      });
+    } finally {
+      await snaps.closeAll();
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  };
+
+  test("the last attempt is a written answer and nothing else → 409, no snap", async () => {
+    const r = await mintOn(OPEN_ID);
+    expect(r.status).toBe(409);
+    expect((r.body as { error: string }).error).toBe(TEXT.noAttempt);
+  });
+
+  test("a markable attempt before the written one → the markable item's stem", async () => {
+    const pk = await science;
+    const stem = pk.items.get(SCI_TOPIC)?.find((i) => i.id === MARKABLE_ID)
+      ?.stem as string;
+    const r = await mintOn(MARKABLE_ID, OPEN_ID);
+    expect(r.status).toBe(201);
+    expect((r.body as { stem: string }).stem).toBe(stem);
+  });
+
+  test("an item no longer in the pack still gets its own refusal, not a skip", async () => {
+    const r = await mintOn(MARKABLE_ID, "8464/4.1.1.2#99");
+    expect(r.status).toBe(409);
+    expect((r.body as { error: string }).error).toBe(TEXT.gone);
+  });
+});

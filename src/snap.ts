@@ -211,9 +211,14 @@ export type SnapContext = {
   snapHost: () => string | null;
 };
 
-/** POST /api/snap (localhost only): a snap for the last attempted item, with the phone's link and its QR code. */
+/** POST /api/snap (localhost only): a snap for the last attempted item with `answers`, with the phone's link and its QR code. */
 export function mintSnap(ctx: SnapContext): Result {
-  const ref = lastAttempt(readLines(ctx.dataDir));
+  // examiner_mark scores on a numeric rubric, so a written answer (no `answers`) is passed over. A gone
+  // item is kept, so it still gets its own refusal below.
+  const ref = lastAttempt(readLines(ctx.dataDir), (r) => {
+    const it = findItem(ctx.pack, r.id, r.seed);
+    return it === null || (it.answers ?? []).length > 0;
+  });
   if (ref === null) return { status: 409, body: { error: TEXT.noAttempt } };
   const item = findItem(ctx.pack, ref.id, ref.seed);
   if (item === null) return { status: 409, body: { error: TEXT.gone } };
