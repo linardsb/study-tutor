@@ -53,7 +53,7 @@
     "type": "cloze",
     "stem": "A recipe for 4 people uses 200 g of rice. How many grams for 6 people?",
     "hint": "Find the rice for one person: 200 ÷ 4.",
-    "answers": ["300", "300g"],
+    "answers": ["300", "300g", "300 grams"],
     "working": "Step 1, one person: 200 ÷ 4 = 50 g. Step 2, six people: 6 × 50 = 300 g. Step 3: more people, more rice.",
     "misconceptions": [
       {

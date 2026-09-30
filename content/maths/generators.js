@@ -38,12 +38,15 @@
   function tidy(n) {
     return Math.round(n * 1000) / 1000;
   }
-  /* the same answers again with each unit the stem names typed after them */
+  /* the same answers again with each unit the stem names typed after them; a squared or cubed
+     unit also in its ^2 / ^3 spelling, which the marker keeps as typed */
   function withUnit(list, units) {
     var out = list.slice();
     units.forEach(function (u) {
+      var caret = u.replace(/²/g, "^2").replace(/³/g, "^3");
       list.forEach(function (a) {
         out.push(a + u);
+        if (caret !== u) out.push(a + caret);
       });
     });
     return out;
@@ -803,6 +806,8 @@
         "y=" + m + "x+" + c,
         "y=" + m + "x + " + c,
         "y=" + c + (m > 0 ? "+" : "") + m + "x",
+        m + "x+" + c,
+        c + (m > 0 ? "+" : "") + m + "x",
       ],
       type: "text",
       working:

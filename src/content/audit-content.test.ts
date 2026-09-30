@@ -61,16 +61,16 @@ test("U176 ratio to fraction accepts the simplified and the unsimplified fractio
 });
 
 const UNITS: [RegExp, string[]][] = [
-  [/in terms of π, in cm²\./, ["cm²", "cm2"]],
-  [/in terms of π, in cm³\./, ["cm³", "cm3"]],
-  [/in cm²\./, ["cm²", "cm2"]],
-  [/in cm³\./, ["cm³", "cm3"]],
+  [/in terms of π, in cm²\./, ["cm²", "cm2", "cm^2"]],
+  [/in terms of π, in cm³\./, ["cm³", "cm3", "cm^3"]],
+  [/in cm²\./, ["cm²", "cm2", "cm^2"]],
+  [/in cm³\./, ["cm³", "cm3", "cm^3"]],
   [/in cm\./, ["cm"]],
-  [/in m²\./, ["m²", "m2"]],
-  [/in N\/m²\./, ["N/m²", "N/m2"]],
+  [/in m²\./, ["m²", "m2", "m^2"]],
+  [/in N\/m²\./, ["N/m²", "N/m2", "N/m^2"]],
   [/in N\./, ["N"]],
-  [/in g\/cm³\./, ["g/cm³", "g/cm3"]],
-  [/in m\/s²\./, ["m/s²", "m/s2"]],
+  [/in g\/cm³\./, ["g/cm³", "g/cm3", "g/cm^3"]],
+  [/in m\/s²\./, ["m/s²", "m/s2", "m/s^2"]],
   [/in metres\./, ["m", "metres"]],
   [/, in g, /, ["g"]],
 ];
@@ -108,7 +108,7 @@ test("U687 accepts a simplified ratio written with 'to'", async () => {
   }
 });
 
-test("U377 never asks for the line it gives, and accepts y = c + mx", async () => {
+test("U377 never asks for the line it gives, and accepts y = c + mx and either form without 'y ='", async () => {
   for (const q of await rolls("U377")) {
     if (q.type !== "text") continue;
     const given = /parallel to y = (-?\d+)x \+ 1 /.exec(q.stem);
@@ -119,6 +119,11 @@ test("U377 never asks for the line it gives, and accepts y = c + mx", async () =
     expect(c, q.stem).not.toBe(1);
     const flipped = `y = ${c}${m > 0 ? " + " : " - "}${Math.abs(m)}x`;
     expect(markAnswer(asItem(q), flipped).ok, flipped).toBe(true);
+    for (const bare of [
+      `${m}x + ${c}`,
+      `${c}${m > 0 ? " + " : " - "}${Math.abs(m)}x`,
+    ])
+      expect(markAnswer(asItem(q), bare).ok, bare).toBe(true);
   }
 });
 
@@ -156,6 +161,22 @@ test("items accept the equivalent forms their stems allow", async () => {
     ["maths", "1MA1-G16.json", "1MA1/G16#4", ["25π", "25*pi", "25pi cm²"]],
     ["maths", "1MA1-P8.json", "1MA1/P8#3", ["42/100"]],
     ["maths", "1MA1-R5.json", "1MA1/R5#3", ["750 g"]],
+    ["maths", "1MA1-R10.json", "1MA1/R10#3", ["300 g", "300 grams"]],
+    ["maths", "1MA1-G16.json", "1MA1/G16#1", ["30 cm^2"]],
+    ["maths", "1MA1-G16.json", "1MA1/G16#2", ["84 cm^2"]],
+    ["maths", "1MA1-G16.json", "1MA1/G16#3", ["42 cm^2"]],
+    ["maths", "1MA1-R11-pressure.json", "1MA1/R11/pressure#1", ["200 N/m^2"]],
+    ["maths", "1MA1-R11-pressure.json", "1MA1/R11/pressure#3", ["6 m^2"]],
+    ["maths", "1MA1-R11-pressure.json", "1MA1/R11/pressure#4", ["8 g/cm^3"]],
+    ["maths", "1MA1-A14.json", "1MA1/A14#2", ["80 metres"]],
+    ["maths", "1MA1-A14.json", "1MA1/A14#5", ["20 metres"]],
+    ["maths", "1MA1-G20-side.json", "1MA1/G20/side#5", ["6 metres"]],
+    [
+      "maths",
+      "1MA1-R9-increase-decrease.json",
+      "1MA1/R9/increase-decrease#2",
+      ["69 kilograms"],
+    ],
   ];
   for (const [subject, file, id, forms] of cases) {
     const item = (await items(subject, file)).find((i) => i.id === id);

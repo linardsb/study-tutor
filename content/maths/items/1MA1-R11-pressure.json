@@ -7,7 +7,7 @@
     "figure": "<svg viewBox=\"0 0 170 92\" width=\"100%\" style=\"max-width:170px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"A downward arrow of 800 newtons pressing on a base of area 4 square metres\">\n        <line x1=\"85\" y1=\"8\" x2=\"85\" y2=\"46\" stroke=\"#c8372d\" stroke-width=\"2.5\"/>\n        <polygon points=\"85,54 79,42 91,42\" fill=\"#c8372d\"/>\n        <text x=\"95\" y=\"30\" fill=\"#c8372d\">800 N</text>\n        <rect x=\"20\" y=\"56\" width=\"130\" height=\"22\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/>\n        <text x=\"85\" y=\"72\" text-anchor=\"middle\" fill=\"#1d1d1b\">area 4 m²</text>\n      </svg>",
     "scaffold": "Cover P, so F is left over A. That means 800 ÷ 4. …",
     "hint": "Do the division, then write the unit.",
-    "answers": ["200", "200 N/m2"],
+    "answers": ["200", "200 N/m2", "200 N/m^2"],
     "working": "Cover P, so F is left over A. That means 800 ÷ 4. The pressure is 200 N/m².",
     "misconceptions": [
       {
@@ -56,7 +56,7 @@
     "stem": "A force of 90 N gives a pressure of 15 N/m². Find the area.",
     "figure": "<svg viewBox=\"0 0 170 92\" width=\"100%\" style=\"max-width:170px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"A downward arrow of 90 newtons on a surface of unknown area, with a pressure of 15 newtons per square metre\">\n        <line x1=\"85\" y1=\"8\" x2=\"85\" y2=\"46\" stroke=\"#c8372d\" stroke-width=\"2.5\"/>\n        <polygon points=\"85,54 79,42 91,42\" fill=\"#c8372d\"/>\n        <text x=\"95\" y=\"30\" fill=\"#c8372d\">90 N</text>\n        <rect x=\"20\" y=\"56\" width=\"130\" height=\"22\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\" stroke-dasharray=\"5 3\"/>\n        <text x=\"85\" y=\"72\" text-anchor=\"middle\" fill=\"#1d1d1b\">area = ?</text>\n        <text x=\"85\" y=\"90\" text-anchor=\"middle\" fill=\"#2b5797\">pressure 15 N/m²</text>\n      </svg>",
     "hint": "Cover A on the triangle. What is left?",
-    "answers": ["6", "6 m2"],
+    "answers": ["6", "6 m2", "6 m^2"],
     "working": "Cover A, so F is left over P. That means 90 ÷ 15. The area is 6 m².",
     "misconceptions": [
       {
@@ -80,7 +80,7 @@
     "stem": "A metal block has a mass of 240 g and a volume of 30 cm³. Find its density, in g/cm3.",
     "figure": "<svg viewBox=\"0 0 170 92\" width=\"100%\" style=\"max-width:170px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"A cuboid block labelled mass 240 grams and volume 30 cubic centimetres\">\n        <polygon points=\"30,30 110,30 140,14 60,14\" fill=\"#efeeea\" stroke=\"#1d1d1b\"/>\n        <polygon points=\"110,30 140,14 140,58 110,74\" fill=\"#d9d7d0\" stroke=\"#1d1d1b\"/>\n        <rect x=\"30\" y=\"30\" width=\"80\" height=\"44\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\"/>\n        <text x=\"70\" y=\"58\" text-anchor=\"middle\" fill=\"#1d1d1b\">240 g</text>\n        <text x=\"85\" y=\"90\" text-anchor=\"middle\" fill=\"#2b5797\">volume 30 cm³</text>\n      </svg>",
     "hint": "This is the same triangle with different letters. Which one goes on top?",
-    "answers": ["8", "8 g/cm3"],
+    "answers": ["8", "8 g/cm3", "8 g/cm^3"],
     "working": "Density uses the density, mass and volume triangle: M on top, D beside V. Cover D and M is left over V, so 240 ÷ 30 = 8 g/cm³.",
     "misconceptions": [
       {
