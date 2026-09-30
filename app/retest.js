@@ -23,6 +23,7 @@
     check: "Check",
     correct: "Correct.",
     wrong: "Not this time.",
+    progress: (n, of) => `${n} of ${of} answered`,
     over: "Boss over.",
     row: (title, score, of) => `${title}: ${score} of ${of}.`,
     notScored: "Not scored yet.",
@@ -217,13 +218,29 @@
     });
   }
 
+  /* the "n of m answered" line and bar above the questions; the intake page has none */
+  function showProgress(done, of) {
+    const box = document.getElementById("progress");
+    if (!box) return;
+    box.hidden = false;
+    document.getElementById("progress-text").textContent = TEXT.progress(
+      done,
+      of,
+    );
+    const bar = document.getElementById("progress-bar");
+    bar.max = of;
+    bar.value = done;
+  }
+
   function renderQuestions(holder, built, onAllDone) {
     const results = [];
+    showProgress(0, built.length);
     for (const [i, { slot, item }] of built.entries()) {
       const q = buildQ(item, i + 1);
       holder.appendChild(q);
       wireCheck(q, item, (ok) => {
         results.push({ topic: slot.topic, ok });
+        showProgress(results.length, built.length);
         if (results.length === built.length) onAllDone(results);
       });
     }
@@ -256,13 +273,19 @@
       const text = row.saved
         ? resultRow(title, row, after?.topics?.[row.topic]?.rung ?? 0)
         : `${TEXT.row(title, row.score, row.of)} ${TEXT.notScored}${TEXT.notSaved}`;
-      const li = el("li");
+      /* the row's colour says pass, miss or not saved; the words say the same */
+      const li = el(
+        "li",
+        row.saved ? (row.passed ? "pass" : "miss") : "unsaved",
+      );
       li.appendChild(el("span", "row", text));
       list.appendChild(li);
     }
     holder.appendChild(list);
-    const p = el("p");
-    p.appendChild(mapLink(query, TEXT.backToMap));
+    const p = el("p", "actions");
+    const back = mapLink(query, TEXT.backToMap);
+    back.className = "button";
+    p.appendChild(back);
     holder.appendChild(p);
   }
 

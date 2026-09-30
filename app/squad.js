@@ -12,11 +12,13 @@
 (() => {
   const PARENT_SLOTS = 3; // the same value as src/flow/squad.ts
   const TEXT = {
+    joinTitle: "Join your squad",
     joinIntro:
-      "Join your squad. Everyone in it types the same squad name. Use letters, numbers and dashes, and pick a name no one else in the squad uses.",
+      "Everyone in the squad types the same squad name. Use letters, numbers and dashes. For your own name, pick one no one else in the squad uses.",
     squadLabel: "Squad name ",
     pupilLabel: "Your name ",
     join: "Join",
+    week: "This week",
     notLoaded:
       "The squad page did not load. Check the tutor window is still open.",
     noQuestions: "This week's questions could not be built. Tell a parent.",
@@ -206,7 +208,8 @@
 
   function renderJoin(ids) {
     const form = el("form");
-    form.appendChild(el("p", "", TEXT.joinIntro));
+    form.appendChild(el("h2", "", TEXT.joinTitle));
+    form.appendChild(el("p", "note", TEXT.joinIntro));
     const field = (text, name) => {
       const label = el("label", "", text);
       const input = el("input");
@@ -222,7 +225,9 @@
     const pupil = field(TEXT.pupilLabel, "pupil");
     const btn = el("button", "", TEXT.join);
     btn.type = "submit";
-    form.appendChild(btn);
+    const row = el("div", "actions");
+    row.appendChild(btn);
+    form.appendChild(row);
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       btn.disabled = true;
@@ -246,12 +251,20 @@
   }
 
   function renderWeek(holder, view) {
-    holder.appendChild(el("p", "", daysText(view.daysLeft)));
-    if (view.total.rounds > 0)
+    holder.appendChild(el("h2", "", TEXT.week));
+    holder.appendChild(el("p", "days", daysText(view.daysLeft)));
+    if (view.total.rounds > 0) {
       holder.appendChild(el("p", "total", totalText(view.total)));
+      /* the pooled total as a bar; no text, so the sentence above stays the only figure */
+      const bar = el("div", "meter");
+      const fill = el("span");
+      fill.style.width = `${Math.round((100 * view.total.score) / Math.max(1, view.total.of))}%`;
+      bar.appendChild(fill);
+      holder.appendChild(bar);
+    }
     if (view.mine && view.members.length === 0)
       holder.appendChild(el("p", "note", TEXT.solo));
-    holder.appendChild(el("p", "", TEXT.folder));
+    holder.appendChild(el("p", "folder-label", TEXT.folder));
     holder.appendChild(el("p", "folder", view.folder ?? ""));
     if (view.unreadable > 0)
       holder.appendChild(el("p", "note", TEXT.unreadable(view.unreadable)));
@@ -290,7 +303,7 @@
   }
 
   function renderRound(ids, view, items) {
-    ids.round.appendChild(el("p", "", TEXT.roundIntro(view.round.title)));
+    ids.round.appendChild(el("p", "intro", TEXT.roundIntro(view.round.title)));
     renderQuestions(ids.round, items, true, (results) =>
       save(ids, roundBody(view.week, results)),
     );
@@ -301,13 +314,19 @@
     const li = el("li");
     li.appendChild(el("b", "", name));
     li.appendChild(el("span", "answer", ` ${a.answer} `));
-    li.appendChild(el("span", "mark", a.correct ? TEXT.right : TEXT.notYet));
+    li.appendChild(
+      el(
+        "span",
+        a.correct ? "mark right" : "mark not-yet",
+        a.correct ? TEXT.right : TEXT.notYet,
+      ),
+    );
     li.appendChild(el("p", "working", a.working || TEXT.noWorking));
     return li;
   }
 
   function renderCompare(holder, view, items) {
-    holder.appendChild(el("p", "", TEXT.done));
+    holder.appendChild(el("p", "done-line", TEXT.done));
     holder.appendChild(el("h2", "", TEXT.compare));
     const members = memberOrder(view.members);
     const counted = members.filter((m) => m.comparable && m.answers);
@@ -315,7 +334,7 @@
       const block = el("div", "q");
       block.appendChild(el("p", "stem", `${k + 1}. ${item.stem}`));
       block.appendChild(el("p", "working", `${TEXT.worked}${item.working}`));
-      const list = el("ul");
+      const list = el("ul", "people");
       list.appendChild(personRow(TEXT.you, view.mine.answers[k]));
       for (const m of counted) {
         const a = m.answers[k];
@@ -370,8 +389,8 @@
 
   function renderShare(holder, view) {
     holder.appendChild(el("h2", "", TEXT.share));
-    holder.appendChild(el("p", "", TEXT.shareIntro));
-    const a = el("a", "", TEXT.saveFile);
+    holder.appendChild(el("p", "note", TEXT.shareIntro));
+    const a = el("a", "button", TEXT.saveFile);
     a.download = `${view.profile.pupil}.json`;
     a.href = URL.createObjectURL(
       new Blob([`${JSON.stringify(view.mine, null, 2)}\n`], {

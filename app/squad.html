@@ -6,21 +6,27 @@
 <title>Squad</title>
 <link rel="stylesheet" href="/style.css">
 </head>
-<body>
-<main class="lesson practice">
+<body class="app">
+<header class="topbar"><div class="inner">
+  <a class="brand" href="/">Study tutor</a>
+  <nav class="topnav" aria-label="Main">
+    <a href="/">Lessons</a><a href="/map.html">Map</a><a href="/practice.html">Practice</a><a href="/case.html">Today's case</a><a href="/squad.html" aria-current="page">Squad</a><a href="/coach.html">Coach Dan</a>
+  </nav>
+</div></header>
+<main class="lesson practice squad-page">
   <header>
     <p class="crumb"><a href="/map.html">Map</a> · squad · Maths</p>
     <h1>Squad</h1>
     <p class="aim">The same five questions as your squad this week. Do yours, then compare working.</p>
   </header>
 
-  <section id="join"></section>
-  <section id="week"></section>
+  <section id="join" class="panel join"></section>
+  <section id="week" class="panel week"></section>
   <section id="round" class="quiz"></section>
-  <section id="compare"></section>
-  <section id="parent" class="quiz"></section>
-  <section id="share"></section>
-  <p class="note" id="status"></p>
+  <section id="compare" class="compare"></section>
+  <section id="parent" class="quiz panel parent"></section>
+  <section id="share" class="panel"></section>
+  <p class="note" id="status" role="status"></p>
 
   <footer>
     <p>The total belongs to the whole squad. Names are in alphabetical order.</p>

@@ -6,20 +6,29 @@
 <title>Weekly digest</title>
 <link rel="stylesheet" href="/style.css">
 </head>
-<body>
-<main class="lesson">
+<body class="app">
+<header class="topbar"><div class="inner">
+  <a class="brand" href="/">Study tutor</a>
+  <nav class="topnav" aria-label="Main">
+    <a href="/">Lessons</a><a href="/map.html">Map</a><a href="/practice.html">Practice</a><a href="/case.html">Today's case</a><a href="/squad.html">Squad</a><a href="/coach.html">Coach Dan</a>
+  </nav>
+</div></header>
+<main class="lesson digest">
   <header>
     <p class="crumb"><a href="/">Home</a> · weekly digest</p>
     <h1>Weekly digest</h1>
     <p class="aim">What the tutor recorded this week and last week. The pupil and the parent see the same page.</p>
   </header>
 
-  <section id="now"></section>
-  <section id="last"></section>
+  <div class="weeks">
+    <section id="now" class="panel week"></section>
+    <section id="last" class="panel week"></section>
+  </div>
   <p class="note" id="status"></p>
 
   <footer>
     <p>Each week is also saved as a file in the tutor's data folder.</p>
+    <p class="links"><a href="/setup.html">Settings</a> · <a href="/map.html">Your map</a></p>
   </footer>
 </main>
 <script src="/parent.js"></script>

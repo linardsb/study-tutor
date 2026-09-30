@@ -6,7 +6,13 @@
 <title>Practice: fresh questions</title>
 <link rel="stylesheet" href="/style.css">
 </head>
-<body>
+<body class="app">
+<header class="topbar"><div class="inner">
+  <a class="brand" href="/">Study tutor</a>
+  <nav class="topnav" aria-label="Main">
+    <a href="/">Lessons</a><a href="/map.html">Map</a><a href="/practice.html" aria-current="page">Practice</a><a href="/case.html">Today's case</a><a href="/squad.html">Squad</a><a href="/coach.html">Coach Dan</a>
+  </nav>
+</div></header>
 <main class="lesson practice">
   <header>
     <p class="crumb"><a href="/">Lessons</a> · practice · Maths · Foundation</p>
@@ -14,24 +20,26 @@
     <p class="aim">Fresh numbers every time. Tick the topics you want, then press Mixed 6.</p>
   </header>
 
-  <section id="pick">
-    <h2>Topics</h2>
-    <p>The questions do not say which topic they came from. That is the point: you pick the method.</p>
-    <div class="picker"></div>
+  <section id="pick" class="panel">
+    <div class="pick-head">
+      <h2>Topics</h2>
+      <p class="note" id="count"></p>
+    </div>
+    <p class="note">The questions do not say which topic they came from. That is the point: you pick the method.</p>
     <div class="controls">
       <button type="button" id="mix">Mixed 6</button>
       <button type="button" class="ghost" id="all">Tick all</button>
       <button type="button" class="ghost" id="none">Untick all</button>
     </div>
     <p class="note" id="status"></p>
+    <div class="picker"></div>
   </section>
 
   <section id="set"></section>
 
   <section id="what-next">
     <h2>After a set</h2>
-    <p>Anything you got wrong is the next session.</p>
-    <p><a href="/">Lessons</a></p>
+    <p>Anything you got wrong is the next session. <a href="/">Back to the lessons</a></p>
   </section>
 </main>
 <script src="/content/maths/generators.js"></script>

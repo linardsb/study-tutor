@@ -9,6 +9,8 @@
   const model = document.getElementById("model");
   const key = document.getElementById("key");
   const keyNote = document.getElementById("key-note");
+  const keyField = document.getElementById("key-field");
+  const keyHint = document.getElementById("key-hint");
   const cap = document.getElementById("cap");
   const weekly = document.getElementById("weeklyTarget");
   const squadFolder = document.getElementById("squadFolder");
@@ -18,6 +20,56 @@
 
   let presets = [];
   let current = null;
+
+  /* how to get each provider's key: [site, link, the path on the site]; plain text, nothing fetched */
+  const KEY_FROM = {
+    openai: [
+      "platform.openai.com",
+      "https://platform.openai.com/api-keys",
+      "API keys › Create new secret key",
+    ],
+    anthropic: [
+      "platform.claude.com",
+      "https://platform.claude.com/settings/keys",
+      "API keys › Create key",
+    ],
+    openrouter: [
+      "openrouter.ai",
+      "https://openrouter.ai/keys",
+      "Keys › Create key",
+    ],
+    groq: [
+      "console.groq.com",
+      "https://console.groq.com/keys",
+      "API keys › Create API key",
+    ],
+    mistral: [
+      "console.mistral.ai",
+      "https://console.mistral.ai/api-keys",
+      "API keys › Create new key",
+    ],
+    deepseek: [
+      "platform.deepseek.com",
+      "https://platform.deepseek.com/api_keys",
+      "API keys › Create new API key",
+    ],
+  };
+
+  /* the line under the key field: where the key comes from, or that none is needed */
+  function keyPath(id, needsKey) {
+    const from = KEY_FROM[id];
+    if (from) {
+      const [site, href, path] = from;
+      const a = document.createElement("a");
+      a.href = href;
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.textContent = site;
+      return ["Get a key: ", a, ` › ${path}`];
+    }
+    if (needsKey === false && id !== "custom") return ["No key needed."];
+    return ["Get a key from your provider's website."];
+  }
 
   function host(url) {
     try {
@@ -34,6 +86,10 @@
     key.placeholder = same ? "Saved. Leave empty to keep it." : "";
     keyNote.textContent =
       preset.value === "anthropic" ? "Use a key made for one workspace." : "";
+    /* "Other" says needsKey false but many such services still want one, so its field stays */
+    const p = presets.find((x) => x.id === preset.value);
+    keyField.hidden = p?.needsKey === false && preset.value !== "custom";
+    keyHint.replaceChildren(...keyPath(preset.value, p?.needsKey));
   }
 
   function showFields() {

@@ -6,32 +6,31 @@
 <title>Coach Dan</title>
 <link rel="stylesheet" href="/style.css">
 <style>
-  .ai-note { position: sticky; top: 0; z-index: 1; margin: 0 0 1rem; padding: 0.5rem 0.75rem; background: var(--grey-bg); border: 1px solid var(--line); }
-  #coach label { display: block; margin: 1rem 0 0.25rem; font-weight: 600; }
-  #coach input[type="text"] { font: inherit; padding: 0.4rem; width: 100%; box-sizing: border-box; }
-  #coach .sure label { display: inline; margin: 0 1rem 0 0.25rem; font-weight: 400; }
-  #coach button { margin-top: 0.5rem; font: inherit; padding: 0.4rem 1rem; }
-  #coach [hidden] { display: none; }
-  #log li { margin: 0.5rem 0; }
-  #log .working { white-space: pre-wrap; }
-  #topics li { margin: 0.25rem 0; }
+  .app .ai-note { position: sticky; top: var(--bar, 4.25rem); z-index: 5; }
 </style>
 </head>
-<body>
-<main class="lesson">
-  <p class="ai-note" role="note">This is an AI. It can be wrong. It will not give you the answer before you have tried.</p>
+<body class="app">
+<header class="topbar"><div class="inner">
+  <a class="brand" href="/">Study tutor</a>
+  <nav class="topnav" aria-label="Main">
+    <a href="/">Lessons</a><a href="/map.html">Map</a><a href="/practice.html">Practice</a><a href="/case.html">Today's case</a><a href="/squad.html">Squad</a><a href="/coach.html" aria-current="page">Coach Dan</a>
+  </nav>
+</div></header>
+<main class="lesson coach-page">
   <header>
     <p class="crumb"><a href="/">Lessons</a> · coach Dan</p>
     <h1 id="title">Coach Dan</h1>
   </header>
+  <p class="ai-note ai-line" role="note">This is an AI. It can be wrong. It will not give you the answer before you have tried.</p>
 
   <section id="pick" hidden>
     <p class="aim">Dan is in your class and gets things wrong. Pick a topic you have tried, spot his mistake and put it right.</p>
-    <ul id="topics"></ul>
-    <p id="rank"></p>
+    <p id="rank" class="rank"></p>
+    <h2>Topics you have tried</h2>
+    <ul id="topics" class="rows"></ul>
   </section>
 
-  <section id="item" hidden>
+  <section id="item" class="panel question-card" hidden>
     <p class="stem" id="stem">Loading the question.</p>
     <div class="figure" id="figure" hidden></div>
     <div class="working faded" id="scaffold" hidden><p></p></div>
@@ -39,19 +38,21 @@
 
   <div id="coach">
     <p class="note" id="no-model" hidden>No model is set up, so Dan's working is the built-in line.</p>
-    <ol id="log"></ol>
+    <ol id="log" class="bubbles" aria-live="polite"></ol>
 
-    <form id="correct-form" hidden>
+    <form id="correct-form" class="panel answer-card" hidden>
       <label for="answer">Dan has gone wrong somewhere. What should the answer be?</label>
       <input type="text" id="answer" autocomplete="off">
-      <div class="sure">
-        <input type="radio" name="sure" id="sure" value="sure" checked><label for="sure">Sure</label>
-        <input type="radio" name="sure" id="notsure" value="notsure"><label for="notsure">Not sure</label>
+      <div class="answer-row">
+        <div class="sure segmented" role="radiogroup" aria-label="How sure are you?">
+          <label><input type="radio" name="sure" id="sure" value="sure" checked>Sure</label>
+          <label><input type="radio" name="sure" id="notsure" value="notsure">Not sure</label>
+        </div>
+        <button type="submit">Check</button>
       </div>
-      <button type="submit">Check</button>
     </form>
 
-    <p id="after" hidden><button type="button" id="another">Another question</button> <a href="/coach.html">All topics</a></p>
+    <p id="after" class="actions" hidden><button type="button" id="another">Another question</button> <a href="/coach.html" class="button secondary">All topics</a></p>
   </div>
 </main>
 <script src="/coach.js"></script>

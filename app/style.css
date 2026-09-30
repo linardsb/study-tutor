@@ -736,20 +736,6 @@ details.another .caption {
   gap: 0.6rem;
   margin: 1rem 0 0.4rem;
 }
-.practice .controls button {
-  font: inherit;
-  font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
-  padding: 0.45rem 0.9rem;
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: #fff;
-  border-radius: 3px;
-  cursor: pointer;
-}
-.practice .controls button.ghost {
-  background: none;
-  color: var(--accent);
-}
 .practice .note {
   color: var(--muted);
   font-size: 0.9rem;
@@ -800,4 +786,1847 @@ ul.prompts li.link {
   display: block;
   width: 14rem;
   height: 14rem;
+}
+
+/* ==== App shell: every page in app/ has <body class="app">. Lessons in content/ do not, so they keep
+   the look above. One top bar, one type scale, one set of controls. System fonts only. ==== */
+
+.app {
+  --ui:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  --accent-ink: #ffffff;
+  --accent-soft: #e8eef8;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(29, 29, 27, 0.06), 0 2px 8px rgba(29, 29, 27, 0.04);
+  --focus: 0 0 0 3px rgba(43, 87, 151, 0.35);
+  font-family: var(--ui);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+@media (prefers-color-scheme: dark) {
+  .app {
+    --ink: #ecebe6;
+    --muted: #a7a6a0;
+    --line: #3a3a37;
+    --paper: #171716;
+    --card: #222220;
+    --accent: #7ea6e0;
+    --accent-ink: #10131a;
+    --accent-soft: #24303f;
+    --red: #ef7a70;
+    --amber: #e8b04f;
+    --green: #5cc08a;
+    --red-bg: #3a2320;
+    --amber-bg: #3a2f1c;
+    --green-bg: #1d3327;
+    --grey-bg: #2a2a28;
+    --shadow: none;
+    --focus: 0 0 0 3px rgba(126, 166, 224, 0.45);
+    color-scheme: dark;
+  }
+}
+
+/* a class that sets display must never beat the hidden attribute the page scripts toggle */
+.app [hidden] {
+  /* biome-ignore lint/complexity/noImportantStyles: hidden must win over any class that sets display */
+  display: none !important;
+}
+
+.app main {
+  max-width: 52rem;
+  padding: 1.5rem 1.25rem 4rem;
+}
+.app h1 {
+  font-size: 1.9rem;
+  letter-spacing: -0.01em;
+}
+.app h2 {
+  font-size: 1.2rem;
+  margin-top: 1.75rem;
+}
+.app h3 {
+  font-size: 1.02rem;
+  margin-top: 1.25rem;
+}
+.app .aim {
+  border-left: 0;
+  padding-left: 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+  max-width: 40rem;
+}
+.app .crumb {
+  display: none; /* the top bar does this job */
+}
+.app .note,
+.app .caption {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.app footer {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* top bar */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar .inner {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 0.6rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.topbar .brand {
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.topnav {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-left: auto;
+}
+.topnav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.92rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.topnav a:hover {
+  color: var(--ink);
+  background: var(--grey-bg);
+}
+.topnav a[aria-current="page"] {
+  color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+@media (max-width: 600px) {
+  .topbar .inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+    padding: 0.5rem 1rem;
+  }
+  .topnav {
+    margin-left: -0.5rem;
+    mask-image: linear-gradient(to right, #000 85%, transparent);
+  }
+}
+
+/* controls */
+.app button,
+.app .button {
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--accent-ink);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    filter 0.12s,
+    background 0.12s;
+}
+.app button:hover:not(:disabled),
+.app .button:hover {
+  filter: brightness(1.08);
+}
+.app button.ghost,
+.app button.secondary,
+.app .button.secondary {
+  background: var(--card);
+  color: var(--accent);
+  border-color: var(--line);
+}
+.app button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.app button:focus-visible,
+.app a:focus-visible,
+.app input:focus-visible,
+.app select:focus-visible,
+.app textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+.app label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin: 1rem 0 0.35rem;
+}
+.app input[type="text"],
+.app input[type="number"],
+.app input[type="password"],
+.app input:not([type]),
+.app select,
+.app textarea {
+  font: inherit;
+  width: 100%;
+  max-width: 36rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink);
+}
+.app textarea {
+  min-height: 5.5rem;
+  resize: vertical;
+  display: block;
+}
+.app input[type="file"] {
+  font: inherit;
+  font-size: 0.92rem;
+}
+.app input[type="radio"],
+.app input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 1.05rem;
+  height: 1.05rem;
+  margin: 0;
+}
+/* a label that wraps a radio or checkbox sits inline */
+.app label:has(> input[type="radio"]),
+.app label:has(> input[type="checkbox"]) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
+  margin: 0;
+  cursor: pointer;
+}
+.app .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 1.25rem 0 0.5rem;
+}
+
+/* surfaces */
+.app .panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow);
+  padding: 1.1rem 1.25rem;
+  margin: 1rem 0;
+}
+.app .panel > h2:first-child,
+.app .panel > h3:first-child {
+  margin-top: 0;
+}
+.app .ai-line {
+  display: inline-block;
+  font-size: 0.85rem;
+  color: var(--muted);
+  background: var(--grey-bg);
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  margin: 0 0 0.75rem;
+}
+.app .update {
+  border-left: 0;
+  border-radius: var(--radius);
+  padding: 0.65rem 0.9rem;
+}
+
+/* a choice between a few ways in: big tappable cards, the open one marked with aria-pressed */
+.app .choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+.app .choices button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.2rem;
+  text-align: left;
+  min-height: 5.5rem;
+  padding: 0.9rem 1rem;
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow);
+}
+.app .choices button small {
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+.app .choices button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+/* a small segmented set of options, for example Know it / Shaky / Not yet */
+.app .segmented {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--card);
+}
+.app .segmented button,
+.app .segmented label {
+  min-height: 2.2rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.88rem;
+  padding: 0.35rem 0.8rem;
+}
+.app .segmented > * + * {
+  border-left: 1px solid var(--line);
+}
+.app .segmented button[aria-pressed="true"],
+.app .segmented label:has(input:checked) {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+.app .segmented label input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* a list of rows: title on the left, controls on the right, stacked on a phone */
+.app .rows {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 4px);
+  background: var(--card);
+  overflow: hidden;
+}
+.app .rows > li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: 0.7rem 1rem;
+  margin: 0;
+}
+.app .rows > li + li {
+  border-top: 1px solid var(--line);
+}
+.app .rows > li .title {
+  flex: 1 1 14rem;
+  font-weight: 600;
+}
+
+/* quiz blocks built by quiz.js (and the intake cold test), when they sit on an app page: the answer
+   label stacks above its box, Sure / Not sure reads as a segmented pair, Check sits beside it */
+.app .quiz .q {
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow);
+  padding: 1rem 1.1rem;
+}
+.app .quiz .stem {
+  font-weight: 600;
+}
+.app .quiz .q > label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  margin: 0.75rem 0 0.6rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.app .quiz .q > label input {
+  width: 100%;
+  max-width: 16rem;
+  color: var(--ink);
+}
+.app .quiz .confidence {
+  display: inline-flex;
+  vertical-align: middle;
+  margin: 0 0.6rem 0 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--card);
+}
+.app .quiz .confidence label {
+  position: relative;
+  margin: 0;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+.app .quiz .confidence label + label {
+  border-left: 1px solid var(--line);
+}
+.app .quiz .confidence label:has(input:checked) {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+.app .quiz .confidence input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.app .quiz .confidence label:has(input:focus-visible) {
+  box-shadow: var(--focus);
+}
+.app .quiz button.check {
+  vertical-align: middle;
+  min-height: 2.35rem;
+  padding: 0.4rem 1.1rem;
+  border-radius: var(--radius);
+  font-family: var(--ui);
+}
+
+@media (max-width: 600px) {
+  .app main {
+    padding: 1rem 1rem 3rem;
+  }
+  .app h1 {
+    font-size: 1.6rem;
+  }
+  .app .rows > li .title {
+    flex-basis: 100%;
+  }
+  .app .panel {
+    padding: 0.9rem 0.85rem;
+  }
+  .app .panel .quiz .q {
+    padding: 0.85rem 0.8rem;
+  }
+}
+
+/* ==== Pages: home, map, parent ==== */
+
+/* ==== Pages: home (index.html), map (map.html), weekly digest (parent.html). Scoped under .app;
+   loaded after style.css. Colours only from the tokens, so dark mode follows. ==== */
+
+/* footer links on these pages: accent, like every other link */
+.app footer a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ---- home ---- */
+.app .tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.75rem;
+  margin: 1.5rem 0 0.5rem;
+}
+.app .tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.1rem;
+  min-height: 6rem;
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow);
+  text-decoration: none;
+  transition:
+    border-color 0.12s,
+    transform 0.12s;
+}
+.app .tile b {
+  font-size: 1.05rem;
+}
+.app .tile b::after {
+  content: " \2192";
+  color: var(--accent);
+}
+.app .tile small {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.app .tile:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.app .tile.lead {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.app .tile.lead b::after {
+  color: inherit;
+}
+.app .tile.lead small {
+  color: inherit;
+  opacity: 0.85;
+}
+
+.app .lesson-list > li {
+  padding: 0;
+}
+.app .lesson-list a {
+  display: flex;
+  align-items: baseline;
+  gap: 0.9rem;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  color: var(--ink);
+  text-decoration: none;
+}
+.app .lesson-list a:hover {
+  background: var(--grey-bg);
+}
+.app .lesson-list a::after {
+  content: "\203A";
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 1.2rem;
+  line-height: 1;
+}
+.app .lesson-list .code {
+  flex: 0 0 3.2rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+.app .lesson-list .title {
+  flex: 1 1 auto;
+  font-weight: 600;
+}
+
+/* ---- map ---- */
+.app .progress .stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.75rem;
+  margin: 1.25rem 0 1rem;
+}
+.app .progress .stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  padding: 0.85rem 1rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow);
+}
+.app .progress .stat b {
+  font-family: inherit;
+  font-size: 1.35rem;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+.app .progress .stat span {
+  font-size: 0.85rem;
+}
+
+.app .progress .today {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 1rem 0 1.5rem;
+  padding: 1.25rem;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-left-width: 1px;
+}
+.app .progress .today > p:first-child {
+  flex-basis: 100%;
+  margin: 0 0 0.35rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+.app .progress .today > .note {
+  flex-basis: 100%;
+  margin: 0.25rem 0 0;
+}
+.app .progress .today button {
+  margin: 0;
+}
+/* an "Open it" or "Start the boss" link is the primary action, so it looks like the buttons */
+.app .progress .today > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+.app .progress .today > a:hover {
+  filter: brightness(1.08);
+}
+/* after an "Open it" link, "Done with it" is the second choice */
+.app .progress .today > a ~ button {
+  background: var(--card);
+  color: var(--accent);
+  border-color: var(--line);
+}
+
+.app .examiner > p {
+  margin: 0 0 0.9rem;
+  color: var(--muted);
+}
+.app .examiner #snap:empty {
+  display: none;
+}
+.app .examiner #snap {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+.app .examiner .qr {
+  display: inline-block;
+  padding: 0.75rem;
+  background: #ffffff; /* a QR code needs a light ground to scan, in dark mode too */
+  border-radius: var(--radius);
+}
+.app .examiner .qr svg {
+  width: 12rem;
+  height: 12rem;
+}
+
+.app .key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.app .key li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.app .key li::before {
+  content: "";
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 3px;
+  background: var(--line);
+}
+.app .key li.g::before {
+  background: var(--green);
+}
+.app .key li.a::before {
+  background: var(--amber);
+}
+.app .key li.r::before {
+  background: var(--red);
+}
+
+.app .cards {
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.75rem;
+}
+.app .card {
+  position: relative;
+  padding: 0.85rem 1rem 0.85rem 1.15rem;
+  font-family: inherit;
+  font-size: 0.88rem;
+  color: var(--muted);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 2px);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+/* the R/A/G colour is a stripe on the left and a light tint; grey means not rated yet */
+.app .card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: var(--line);
+}
+.app .card.r {
+  background: var(--red-bg);
+  border-color: color-mix(in srgb, var(--red) 35%, var(--line));
+}
+.app .card.r::before {
+  background: var(--red);
+}
+.app .card.a {
+  background: var(--amber-bg);
+  border-color: color-mix(in srgb, var(--amber) 35%, var(--line));
+}
+.app .card.a::before {
+  background: var(--amber);
+}
+.app .card.g {
+  background: var(--green-bg);
+  border-color: color-mix(in srgb, var(--green) 35%, var(--line));
+}
+.app .card.g::before {
+  background: var(--green);
+}
+.app .card.o {
+  background: var(--card);
+}
+.app .card .code {
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+}
+.app .card .topic {
+  margin: 0.1rem 0 0.6rem;
+  color: var(--ink);
+  font-size: 0.98rem;
+  line-height: 1.3;
+}
+.app .card .rung,
+.app .card .meta {
+  font-size: 0.8rem;
+}
+.app .card a.meta {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+.app .card a.meta:hover {
+  text-decoration: underline;
+}
+.app .ladder {
+  gap: 4px;
+  margin: 0 0 0.5rem;
+}
+.app .ladder i {
+  height: 0.5rem;
+  border-radius: 999px;
+  border: 0;
+  background: color-mix(in srgb, var(--ink) 12%, transparent);
+}
+.app .ladder i.on {
+  background: var(--accent);
+}
+
+/* ---- weekly digest ---- */
+.app .weeks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0 0.5rem;
+}
+.app .week {
+  margin: 0;
+}
+.app .week:empty {
+  display: none;
+}
+.app .week h2 {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.app .week h3 {
+  margin: 0.2rem 0 0.75rem;
+  font-size: 1.1rem;
+}
+.app .week ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.app .week li {
+  padding: 0.6rem 0;
+  margin: 0;
+  border-top: 1px solid var(--line);
+}
+.app #now {
+  border-color: var(--accent);
+}
+
+@media (max-width: 600px) {
+  .app .progress .stats {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  .app .progress .stat:first-child {
+    grid-column: 1 / -1;
+  }
+  .app .progress .stat {
+    padding: 0.7rem 0.85rem;
+  }
+  .app .cards {
+    gap: 0.5rem;
+  }
+  .app .card {
+    padding: 0.7rem 0.9rem 0.7rem 1.05rem;
+  }
+  .app .card .topic {
+    margin-bottom: 0.45rem;
+  }
+  .app .tiles {
+    gap: 0.5rem;
+  }
+  .app .tile {
+    min-height: 0;
+    padding: 0.85rem 1rem;
+  }
+}
+
+/* home: the getting-started list */
+.app .steps ol {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+}
+.app .steps li {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.8rem 0;
+  margin: 0;
+}
+.app .steps li + li {
+  border-top: 1px solid var(--line);
+}
+.app .steps li > div {
+  flex: 1;
+}
+.app .steps li b {
+  display: block;
+}
+.app .steps li small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.app .steps .mark {
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+}
+.app .steps li.done .mark {
+  border-color: var(--green);
+  background: var(--green);
+  position: relative;
+}
+.app .steps li.done .mark::after {
+  content: "";
+  position: absolute;
+  left: 0.45rem;
+  top: 0.2rem;
+  width: 0.35rem;
+  height: 0.7rem;
+  border: solid var(--card);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.app .steps li.done b {
+  color: var(--muted);
+}
+@media (max-width: 600px) {
+  .app .steps li {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .app .steps li > div {
+    flex: 1 1 calc(100% - 2.5rem);
+  }
+  .app .steps li .button {
+    margin-left: 2.5rem;
+  }
+}
+
+/* ==== Pages: setup, practice, retest ==== */
+
+/* ==== Pages B: settings, practice and the boss (retest). Loaded after style.css on those three
+   pages only. Everything sits under .app and uses the shell tokens, so dark mode follows. ==== */
+
+/* the shell's field list has no url type; the settings Address field is one */
+.app input[type="url"] {
+  font: inherit;
+  width: 100%;
+  max-width: 36rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink);
+}
+
+/* ---- settings ---- */
+.app .settings .panel > h2 + .note {
+  margin: 0.25rem 0 0;
+}
+.app .settings .panel > :last-child {
+  margin-bottom: 0;
+}
+.app .settings .panel .note {
+  max-width: 36rem;
+}
+.app .settings #key-note:empty {
+  display: none;
+}
+.app .settings .key-path {
+  margin: 0.5rem 0 0;
+}
+.app .settings .key-path a {
+  color: var(--accent);
+  font-weight: 600;
+}
+.app .settings #usage:not(:empty) {
+  display: inline-block;
+  margin: 0.25rem 0 0;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  background: var(--grey-bg);
+  font-size: 0.9rem;
+}
+.app .settings .save-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin: 1.25rem 0 0;
+}
+.app .settings .save-bar .actions {
+  margin: 0;
+}
+.app .settings .save-bar button {
+  min-width: 8rem;
+}
+.app .settings #error {
+  margin: 0;
+  color: var(--red);
+  font-weight: 600;
+}
+.app .settings #error:empty {
+  display: none;
+}
+.app .settings #saved {
+  margin: 0;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  background: var(--green-bg);
+  color: var(--green);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.app .settings #saved a {
+  color: inherit;
+}
+
+/* ---- practice ---- */
+.app .practice .pick-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+}
+.app .practice .pick-head h2 {
+  margin: 0;
+}
+.app .practice .pick-head .note {
+  margin: 0;
+}
+.app .practice #pick > .note {
+  margin: 0.35rem 0 0;
+}
+.app .practice .picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 0.5rem;
+  margin: 1rem 0 0;
+}
+/* each topic is a tappable row; the ticked ones carry the accent */
+.app .practice .picker label:has(> input) {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.9rem;
+  margin: 0;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.3;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+}
+.app .practice .picker label:has(> input):hover {
+  border-color: var(--accent);
+}
+.app .practice .picker label:has(> input:checked) {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.app .practice .picker label:has(> input:focus-visible) {
+  box-shadow: var(--focus);
+}
+.app .practice .picker input {
+  flex: none;
+}
+.app .practice .picker .code {
+  margin-left: auto;
+  padding-left: 0.5rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+/* the start buttons sit above the list, so Start is in view without scrolling 20 rows */
+.app .practice .controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 1rem 0 0;
+}
+.app .practice .controls #mix {
+  min-width: 8rem;
+}
+.app .practice #status:empty {
+  display: none;
+}
+.app .practice #status {
+  margin: 0.6rem 0 0;
+}
+/* scrollIntoView lands the set below the sticky top bar, which is taller on a phone */
+.app #set > section {
+  scroll-margin-top: 4.5rem;
+}
+.app .practice #what-next {
+  margin-top: 2rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+}
+.app .practice #what-next h2 {
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+/* ---- the boss ---- */
+.app #intro:empty {
+  display: none;
+}
+.app #intro p {
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+}
+.app #intro p:last-child {
+  margin-bottom: 0;
+}
+.app #intro button {
+  min-width: 8rem;
+}
+.app #intro a {
+  font-weight: 600;
+  color: var(--accent);
+}
+.app .boss-progress {
+  margin: 1.25rem 0 1rem;
+}
+.app .boss-progress p {
+  margin: 0 0 0.35rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.app .boss-progress progress {
+  display: block;
+  width: 100%;
+  height: 0.45rem;
+  border: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--grey-bg);
+  appearance: none;
+}
+.app .boss-progress progress::-webkit-progress-bar {
+  background: var(--grey-bg);
+}
+.app .boss-progress progress::-webkit-progress-value {
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.2s;
+}
+.app .boss-progress progress::-moz-progress-bar {
+  background: var(--accent);
+  border-radius: 999px;
+}
+.app .result h2 {
+  margin: 0 0 0.75rem;
+}
+.app .result ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.app .result ol li {
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--grey-bg);
+}
+.app .result ol li.pass {
+  border-left-color: var(--green);
+  background: var(--green-bg);
+}
+.app .result ol li.miss {
+  border-left-color: var(--amber);
+  background: var(--amber-bg);
+}
+.app .result ol li.unsaved {
+  border-left-color: var(--red);
+  background: var(--red-bg);
+}
+.app .result .row {
+  font-family: var(--ui);
+  font-weight: 500;
+}
+.app .result .actions {
+  margin-bottom: 0;
+}
+
+@media (max-width: 600px) {
+  .app .practice .picker {
+    grid-template-columns: 1fr;
+  }
+  .app .practice .controls #mix {
+    flex: 1 1 100%;
+  }
+  .app .practice .controls button.ghost {
+    flex: 1 1 0;
+  }
+  .app .settings .save-bar button {
+    width: 100%;
+  }
+  .app .settings .save-bar .actions {
+    flex: 1 1 100%;
+  }
+  .app #set > section {
+    scroll-margin-top: 6.5rem;
+  }
+}
+
+/* ==== Pages: chat, coach, case ==== */
+
+/* ==== Pages: chat, coach, case. Scoped under .app; the tokens come from style.css. ==== */
+
+.app {
+  --bar: 4.25rem; /* the sticky top bar's height, so a sticky note sits just under it */
+}
+@media (max-width: 600px) {
+  .app {
+    --bar: 5.8rem;
+  }
+}
+
+/* the "This is an AI" pill stays in view under the top bar */
+.app :is(.chat-page, .coach-page) .ai-note {
+  margin: 0 0 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 0 4px var(--card);
+}
+.app .coach-page .ai-note {
+  box-shadow: 0 0 0 4px var(--paper);
+}
+
+/* the question an item page is about */
+.app .question-card .stem {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin: 0;
+}
+.app .question-card .figure {
+  margin: 0.75rem 0 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.app :is(.chat-page, .coach-page) .working {
+  color: var(--muted);
+}
+.app :is(.chat-page, .coach-page) .working.faded {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0.75rem;
+  background: var(--grey-bg);
+  border-radius: var(--radius);
+}
+.app :is(.chat-page, .coach-page) .faded > p {
+  margin: 0;
+}
+
+/* message bubbles: the pupil on the right, the tutor and Dan on the left */
+.app .bubbles {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.app .bubbles:empty {
+  display: none;
+}
+.app .bubbles > li {
+  max-width: min(36rem, 88%);
+  margin: 0;
+  padding: 0.6rem 0.85rem;
+  border-radius: calc(var(--radius) + 6px);
+  background: var(--grey-bg);
+  color: var(--ink);
+  border-bottom-left-radius: 4px;
+  align-self: flex-start;
+  overflow-wrap: anywhere;
+}
+.app .bubbles > li.you {
+  align-self: flex-end;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-bottom-left-radius: calc(var(--radius) + 6px);
+  border-bottom-right-radius: 4px;
+}
+.app :is(.chat-page, .coach-page) .bubbles p {
+  margin: 0;
+}
+.app :is(.chat-page, .coach-page) .bubbles p + p {
+  margin-top: 0.4rem;
+}
+.app :is(.chat-page, .coach-page) .bubbles p.working {
+  white-space: pre-wrap;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.7rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+.app .bubbles .note {
+  font-size: 0.88rem;
+}
+.app .bubbles a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ---- chat ---- */
+.app .chat-panel {
+  padding-bottom: 0;
+}
+.app .chat-panel .question-card {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+.app #chat > .note {
+  margin: 0.75rem 0 0;
+}
+.app .chat-panel .bubbles {
+  max-height: min(30rem, 60vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.25rem 0.25rem 0.25rem 0;
+}
+.app .composer {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem -1.25rem 0;
+  padding: 0.85rem 1.25rem 1rem;
+  background: var(--card);
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 calc(var(--radius) + 4px) calc(var(--radius) + 4px);
+}
+.app .composer form {
+  display: grid;
+  grid-template-columns: 1fr 9.5rem;
+  align-items: end;
+  gap: 0.35rem 0.6rem;
+}
+.app .composer label {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.9rem;
+}
+.app .composer textarea {
+  max-width: none;
+  min-height: 2.75rem;
+}
+.app .composer #teach {
+  min-height: 6rem;
+}
+.app .composer button {
+  padding-inline: 0.75rem;
+}
+
+/* ---- coach ---- */
+.app .coach-page .rank {
+  display: inline-block;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  margin: 0.25rem 0 0;
+}
+.app .coach-page .rows a {
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+  flex: 1;
+}
+.app .coach-page .rows a::after {
+  content: "\203A";
+  float: right;
+  color: var(--muted);
+  font-weight: 400;
+}
+.app .coach-page .segmented label:has(input:focus-visible) {
+  box-shadow: var(--focus);
+}
+.app .coach-page .rows > li:has(a):hover {
+  background: var(--grey-bg);
+}
+/* Dan's working is a card of its own, not a bubble */
+.app .bubbles > li.dan {
+  max-width: none;
+  align-self: stretch;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--amber);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow);
+  padding: 0.85rem 1.1rem;
+}
+.app .bubbles > li.dan p {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.95rem;
+}
+.app .answer-card label[for="answer"] {
+  margin-top: 0;
+}
+.app .answer-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+}
+.app .answer-card input[type="text"] {
+  max-width: none;
+  font-size: 1.1rem;
+}
+
+/* ---- case ---- */
+.app .case-page .eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.app #case .q {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--accent);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow);
+  padding: 1.25rem 1.35rem;
+  margin: 1rem 0;
+}
+.app #case .q.right {
+  border-top-color: var(--green);
+  border-left: 1px solid var(--line);
+}
+.app #case .q.wrong {
+  border-top-color: var(--red);
+  border-left: 1px solid var(--line);
+}
+.app #case .q h2 {
+  margin-top: 0;
+}
+.app #case .stem {
+  font-size: 1.05rem;
+  margin: 0 0 0.6rem;
+}
+.app #case .working.faded {
+  border-bottom: 0;
+  margin: 0 0 0.9rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--grey-bg);
+  border-radius: var(--radius);
+}
+.app #case .kai {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+.app #case .kai b {
+  font-size: 1.15rem;
+  margin-left: 0.25rem;
+}
+.app #case .instances {
+  list-style: none;
+  counter-reset: inst;
+  padding: 0;
+  margin: 0 0 1rem;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+.app #case .instances li {
+  padding: 0.6rem 1rem;
+}
+.app #case .instances li + li {
+  border-top: 1px dashed var(--line);
+}
+.app #case .instances b {
+  display: block;
+}
+.app #case .ask {
+  font-weight: 700;
+  margin: 1.25rem 0 0.6rem;
+}
+/* the options are big tappable rows; the picked one is marked */
+.app #case .options {
+  display: grid;
+  gap: 0.5rem;
+}
+.app #case .options label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  font-weight: 400;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.app #case .options label:hover {
+  border-color: var(--accent);
+}
+.app #case .options label:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.app #case .options input[type="radio"] {
+  width: 1.05rem;
+  flex: none;
+  margin: 0.15rem 0 0;
+  border: 0;
+  padding: 0;
+}
+/* how sure, then Check, on one row; stacked on a phone */
+.app #case .case-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+.app #case .confidence {
+  display: flex;
+  flex-wrap: wrap;
+  font-family: inherit;
+  font-size: 0.9rem;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  background: none;
+}
+.app #case .confidence > span {
+  flex-basis: 100%;
+  font-weight: 600;
+  font-size: 0.92rem;
+  margin-bottom: 0.35rem;
+}
+.app #case .confidence label {
+  position: relative;
+  margin: 0;
+  padding: 0.4rem 0.85rem;
+  min-height: 2.4rem;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--muted);
+  font-weight: 500;
+  cursor: pointer;
+}
+.app #case .confidence label + label {
+  border-left: 0;
+}
+.app #case .confidence label:nth-child(2) {
+  border-radius: var(--radius) 0 0 var(--radius);
+}
+.app #case .confidence label:last-child {
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.app #case .confidence label:has(input:checked) {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+.app #case .confidence input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.app #case .confidence label:has(input:focus-visible) {
+  box-shadow: var(--focus);
+}
+.app #case .q.done .options label {
+  cursor: default;
+}
+.app .case-page .quiz button.check {
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.5rem 1.5rem;
+  border-radius: var(--radius);
+  color: var(--accent-ink);
+  min-height: 2.5rem;
+}
+.app #case .feedback {
+  margin: 1rem 0 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius);
+  background: var(--grey-bg);
+}
+.app #case .q.right .feedback {
+  background: var(--green-bg);
+}
+.app #case .q.wrong .feedback {
+  background: var(--red-bg);
+}
+.app #case .q .working:not(.faded) {
+  border-top: 0;
+  margin-top: 0.6rem;
+  padding: 0.6rem 0.9rem;
+  border-left: 3px solid var(--line);
+}
+.app #case .calibration {
+  margin: 0.75rem 0 0;
+}
+.app #case > .note {
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .app .composer {
+    margin-inline: -0.85rem;
+    padding-inline: 0.85rem;
+  }
+  .app .composer form {
+    grid-template-columns: 1fr 7.5rem;
+  }
+  .app #case .q {
+    padding: 1rem;
+  }
+  .app #case .case-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .app #case .confidence label {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+    padding-inline: 0.5rem;
+  }
+  .app .answer-row button {
+    flex: 1;
+  }
+}
+
+/* ==== Pages: squad ==== */
+
+/* ==== Squad page (app/squad.html). Snap's rules live inline in snap.html: the phone's LAN route
+   serves only snap.html, snap.js and style.css. ==== */
+
+/* the page fills its sections after load; an empty one shows nothing */
+.app .squad-page section:empty {
+  display: none;
+}
+.app .squad-page .panel > form > h2:first-child {
+  margin-top: 0;
+}
+
+/* join */
+.app .squad-page .join label input {
+  display: block;
+  margin-top: 0.35rem;
+  font-weight: 400;
+}
+.app .squad-page .join .actions {
+  margin-bottom: 0;
+}
+
+/* this week: days left, the pooled total and a bar, then the folder */
+.app .squad-page .week .days {
+  display: inline-block;
+  margin: 0 0 0.75rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.app .squad-page .week .total {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0.25rem 0 0.5rem;
+}
+.app .squad-page .meter {
+  height: 0.6rem;
+  border-radius: 999px;
+  background: var(--grey-bg);
+  overflow: hidden;
+  margin: 0 0 1rem;
+}
+.app .squad-page .meter span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--green);
+}
+.app .squad-page .week .folder-label {
+  margin: 1rem 0 0.35rem;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+.app .squad-page .week .folder {
+  margin: 0 0 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  background: var(--grey-bg);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.app .squad-page .week .note {
+  margin: 0.5rem 0 0;
+}
+
+/* the round and the parent round: one card per question */
+.app .squad-page .quiz .q {
+  padding: 1rem 1.1rem;
+  margin: 0 0 0.9rem;
+}
+.app .squad-page .quiz .stem {
+  font-size: 1.05rem;
+  margin: 0 0 0.75rem;
+}
+.app .squad-page .quiz .q label {
+  display: block;
+  margin: 0 0 0.75rem;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.app .squad-page .quiz .q input,
+.app .squad-page .quiz .q textarea {
+  display: block;
+  width: 100%;
+  max-width: 24rem;
+  margin-top: 0.35rem;
+  font-weight: 400;
+  font-size: 1rem;
+  min-height: 0;
+}
+.app .squad-page .quiz .q textarea {
+  max-width: 36rem;
+  min-height: 4rem;
+}
+.app .squad-page .quiz .q input:disabled,
+.app .squad-page .quiz .q textarea:disabled {
+  background: var(--grey-bg);
+  color: var(--muted);
+}
+.app .squad-page .quiz button.check {
+  font-family: var(--ui);
+  min-height: 2.5rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius);
+  color: var(--accent-ink);
+}
+.app .squad-page .quiz .q.right,
+.app .squad-page .quiz .q.wrong {
+  border-left-width: 4px;
+}
+/* a checked question: the button goes, the result shows as a pill */
+.app .squad-page .quiz .q.done .check {
+  display: none;
+}
+.app .squad-page .quiz .q.done .feedback {
+  display: inline-block;
+  margin: 0;
+  padding: 0.15rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+.app .squad-page .quiz .q.right .feedback {
+  background: var(--green-bg);
+}
+.app .squad-page .quiz .q.wrong .feedback {
+  background: var(--red-bg);
+}
+.app .squad-page #round > .intro,
+.app .squad-page .parent > p:not(.result) {
+  color: var(--muted);
+}
+.app .squad-page #round > button {
+  margin-top: 0.5rem;
+}
+.app .squad-page .parent .q {
+  box-shadow: none;
+}
+.app .squad-page .parent .result {
+  font-weight: 700;
+  margin: 0.5rem 0 0;
+}
+
+/* compare: a card per question, one row per person */
+.app .squad-page .done-line {
+  margin: 1.5rem 0 0;
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--radius);
+  background: var(--green-bg);
+  color: var(--ink);
+  font-weight: 600;
+}
+.app .squad-page .compare > .note {
+  margin: 0.5rem 0;
+}
+.app .squad-page .compare .q {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow);
+  padding: 1rem 1.1rem;
+  margin: 0 0 0.9rem;
+}
+.app .squad-page .compare .stem {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+}
+.app .squad-page .compare .q > .working {
+  margin: 0 0 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  background: var(--grey-bg);
+  font-size: 0.92rem;
+}
+.app .squad-page .people {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.app .squad-page .people li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  padding: 0.6rem 0.85rem;
+  margin: 0;
+}
+.app .squad-page .people li + li {
+  border-top: 1px solid var(--line);
+}
+.app .squad-page .people b {
+  min-width: 4.5rem;
+}
+.app .squad-page .people .answer {
+  flex: 1 1 auto;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.app .squad-page .people .mark {
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+}
+.app .squad-page .people .mark.right {
+  background: var(--green-bg);
+  color: var(--green);
+}
+.app .squad-page .people .mark.not-yet {
+  background: var(--amber-bg);
+  color: var(--ink);
+}
+.app .squad-page .compare .people .working {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* share */
+.app .squad-page #share .button {
+  margin-top: 0.25rem;
 }

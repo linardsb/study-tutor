@@ -120,6 +120,9 @@
         ...resultLines(result).map((line) => {
           const p = document.createElement("p");
           p.textContent = line;
+          if (result?.marked && line === TEXT.total(result.marks, result.of))
+            p.className = "total";
+          else if (line === TEXT.clean) p.className = "clean";
           return p;
         }),
       );
@@ -220,6 +223,16 @@
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       upload($("photo").files[0]);
+    });
+    /* the chosen photo shows under the camera button before it is sent */
+    const preview = $("preview");
+    $("photo").addEventListener("change", () => {
+      const file = $("photo").files[0];
+      if (preview.src.startsWith("blob:")) URL.revokeObjectURL(preview.src);
+      preview.hidden = !file;
+      if (file) preview.src = URL.createObjectURL(file);
+      else preview.removeAttribute("src");
+      send.classList.toggle("secondary", !file);
     });
     const drop = $("drop");
     drop.addEventListener("dragover", (e) => {

@@ -6,7 +6,13 @@
 <title>Your map</title>
 <link rel="stylesheet" href="/style.css">
 </head>
-<body>
+<body class="app">
+<header class="topbar"><div class="inner">
+  <a class="brand" href="/">Study tutor</a>
+  <nav class="topnav" aria-label="Main">
+    <a href="/">Lessons</a><a href="/map.html" aria-current="page">Map</a><a href="/practice.html">Practice</a><a href="/case.html">Today's case</a><a href="/squad.html">Squad</a><a href="/coach.html">Coach Dan</a>
+  </nav>
+</div></header>
 <main class="lesson practice progress">
   <header>
     <p class="crumb"><a href="/">Lessons</a> · map · Maths</p>
@@ -15,17 +21,20 @@
   </header>
 
   <div class="stats" id="stats"></div>
-  <div class="today" id="today" hidden></div>
+  <div class="today panel" id="today" hidden></div>
 
-  <section class="examiner" id="examiner">
+  <section class="examiner panel" id="examiner">
     <h2>Examiner</h2>
     <p>Photograph the working for your last question. The tutor marks it line by line, the way an examiner would, and never writes the answer.</p>
-    <button type="button" id="snap-open">Mark my written working</button>
+    <button type="button" id="snap-open" class="secondary">Mark my written working</button>
     <div id="snap"></div>
   </section>
 
   <section id="topics">
     <h2>Topics</h2>
+    <ul class="key" aria-label="Colours: how you rated each topic in Start here">
+      <li class="g">I can do this</li><li class="a">Shaky</li><li class="r">Lost</li><li class="o">Not rated yet</li>
+    </ul>
     <div class="cards" id="cards"></div>
   </section>
 
@@ -33,9 +42,10 @@
 
   <footer>
     <p>Practice never costs a bar. A cold re-test can. Secure topics still get re-tested every 60 days. Nothing here is a prediction.</p>
-    <p><a href="/practice.html">Practice</a> · <a href="/case.html">Today's case</a></p>
+    <p class="links"><a href="/practice.html">Practice</a> · <a href="/case.html">Today's case</a></p>
   </footer>
 </main>
 <script src="/map.js"></script>
+<script src="/update.js" defer></script>
 </body>
 </html>

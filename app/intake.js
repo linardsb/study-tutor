@@ -190,7 +190,7 @@
   /* ---- the confirm list, shared by every door ---- */
 
   function ragRadios(row, i) {
-    const span = el("span", "confidence");
+    const span = el("span", "confidence segmented");
     for (const [rag, key] of RAGS) {
       const label = el("label");
       const input = el("input");
@@ -236,7 +236,7 @@
     holder.hidden = page.rows.length === 0;
     if (page.rows.length === 0) return;
     holder.appendChild(el("h2", "", TEXT.confirmHead));
-    const list = el("ol");
+    const list = el("ol", "rows");
     page.rows.forEach((row, i) => {
       list.appendChild(confirmItem(row, i));
     });
@@ -244,7 +244,7 @@
     btn.type = "button";
     btn.id = "save";
     btn.addEventListener("click", () => save(btn));
-    const p = el("p");
+    const p = el("p", "actions");
     p.appendChild(btn);
     holder.append(list, p);
   }
@@ -390,7 +390,7 @@
     btn.type = "button";
     btn.id = "match";
     btn.addEventListener("click", () => match(btn));
-    const p = el("p");
+    const p = el("p", "actions");
     p.appendChild(btn);
     holder.appendChild(p);
   }
@@ -424,13 +424,15 @@
     }
     if (lead) holder.appendChild(el("p", "note", lead));
     holder.appendChild(el("h3", "", TEXT.checklistHead));
-    const list = el("ul");
+    const list = el("ul", "rows");
     for (const t of topics) {
       const li = el("li");
       li.dataset.topic = t.id;
       li.appendChild(el("span", "title", t.title));
+      const levels = el("span", "segmented");
       for (const [rag, key] of LEVELS)
-        li.append(" ", levelButton(t, rag, key, pickLevel));
+        levels.appendChild(levelButton(t, rag, key, pickLevel));
+      li.appendChild(levels);
       list.appendChild(li);
     }
     holder.appendChild(list);
@@ -641,6 +643,8 @@
 
   function openDoor(door) {
     for (const d of Object.keys(OPEN)) byId(d).hidden = d !== door;
+    for (const b of byId("doors").querySelectorAll("button"))
+      b.setAttribute("aria-pressed", String(b.dataset.door === door));
     page.rows = [];
     renderConfirm();
     say("");

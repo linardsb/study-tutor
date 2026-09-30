@@ -5,24 +5,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mark my working</title>
 <link rel="stylesheet" href="/style.css">
+<!-- inline, not ui-d.css: the phone's LAN route serves only snap.html, snap.js and style.css -->
 <style>
-  .ai-note { position: sticky; top: 0; z-index: 1; margin: 0 0 1rem; padding: 0.5rem 0.75rem; background: var(--grey-bg); border: 1px solid var(--line); }
-  #snap-form label { display: block; margin: 1rem 0 0.25rem; font-weight: 600; }
-  #snap-form button { margin-top: 0.5rem; font: inherit; padding: 0.4rem 1rem; }
-  #drop { margin-top: 1rem; padding: 1.5rem; border: 2px dashed var(--line); text-align: center; }
-  #drop.over { background: var(--grey-bg); }
+  .ai-note { position: sticky; top: 0; z-index: 1; margin: 0 -1rem 1rem; padding: 0.55rem 1rem; background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; text-align: center; }
+  .app main.snap-page { max-width: 30rem; padding-top: 0; }
+  .snap-page h1 { margin: 0.5rem 0 1rem; }
+  .snap-page #item { margin-top: 0; }
+  .snap-page #item:has(#stem:empty):has(#figure[hidden]) { display: none; }
+  .app .snap-page #title { display: block; margin: 0 0 0.35rem; color: var(--accent); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+  .app .snap-page #title:empty { display: none; }
+  .snap-page .stem { margin: 0; font-size: 1.15rem; font-weight: 600; line-height: 1.45; }
+  .snap-page .figure { margin-top: 0.75rem; overflow-x: auto; }
+  .snap-page .figure svg { max-width: 100%; height: auto; }
+  .snap-page #no-model { margin: 0 0 1rem; padding: 0.6rem 0.85rem; border-radius: var(--radius); background: var(--amber-bg); color: var(--ink); }
+  .snap-page #snap-form { margin: 0; }
+  /* the whole label is the camera button; the file input under it stays in the page but out of sight */
+  .app .snap-page #snap-form .shoot { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.25rem; min-height: 8rem; margin: 0; padding: 1.25rem; border: 2px dashed var(--accent); border-radius: calc(var(--radius) + 6px); background: var(--accent-soft); color: var(--accent); font-size: 1.2rem; font-weight: 700; text-align: center; cursor: pointer; }
+  .snap-page .shoot small { color: var(--muted); font-size: 0.88rem; font-weight: 400; }
+  .snap-page .shoot:has(+ #photo:focus-visible) { box-shadow: var(--focus); }
+  .snap-page #photo { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+  .snap-page #preview { display: block; width: 100%; max-height: 22rem; object-fit: contain; margin: 0.9rem 0 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--grey-bg); }
+  .snap-page #drop { margin-top: 0.75rem; padding: 1rem; border: 1px dashed var(--line); border-radius: var(--radius); color: var(--muted); font-size: 0.9rem; text-align: center; }
+  .snap-page #drop.over { background: var(--grey-bg); border-color: var(--accent); }
+  @media (hover: none) { .snap-page #drop { display: none; } }
+  .app .snap-page #send { width: 100%; min-height: 3.25rem; margin-top: 0.9rem; font-size: 1.05rem; }
+  .snap-page #status:not(:empty) { margin: 1rem 0; padding: 0.75rem 0.9rem; border-radius: var(--radius); background: var(--grey-bg); color: var(--ink); font-size: 0.95rem; }
+  .snap-page #result:empty { display: none; }
+  .snap-page #result { margin: 1rem 0; padding: 0; overflow: hidden; background: var(--card); border: 1px solid var(--line); border-radius: calc(var(--radius) + 4px); box-shadow: var(--shadow); }
+  .snap-page #result { display: flex; flex-direction: column; }
+  .snap-page #result p { margin: 0; padding: 0.7rem 1rem; border-top: 1px solid var(--line); }
+  .snap-page #result:not(:has(.total)) p:first-child { border-top: 0; }
+  /* the total reads first, above the line-by-line marks */
+  .snap-page #result p.total { order: -1; border-top: 0; font-size: 1.2rem; font-weight: 700; background: var(--grey-bg); }
+  .snap-page #result p.clean { color: var(--green); font-weight: 700; background: var(--green-bg); }
   [hidden] { display: none; }
-  #result p { margin: 0.4rem 0; }
 </style>
 </head>
-<body>
-<main class="lesson">
+<body class="app">
+<main class="lesson snap-page">
   <p class="ai-note" role="note">This is an AI. It can be wrong. It marks your working and never writes the answer.</p>
   <header>
     <h1>Mark my working</h1>
   </header>
 
-  <section id="item">
+  <section id="item" class="panel">
     <p class="crumb" id="title"></p>
     <p class="stem" id="stem">Loading the question.</p>
     <div class="figure" id="figure" hidden></div>
@@ -31,10 +57,11 @@
   <p class="note" id="no-model" hidden>No model is set up, so your photo will be stored but not marked.</p>
 
   <form id="snap-form" hidden>
-    <label for="photo">Photo of your working</label>
+    <label for="photo" class="shoot">Take a photo<small>Get the whole page in, flat and in good light.</small></label>
     <input type="file" id="photo" accept="image/*" capture="environment">
+    <img id="preview" alt="Your working, as it will be sent" hidden>
     <div id="drop">Or drop a photo here</div>
-    <button type="submit" id="send">Send</button>
+    <button type="submit" id="send" class="secondary">Send</button>
   </form>
 
   <div id="result"></div>
