@@ -6,6 +6,7 @@ Source of truth: architecture D5. One pack per subject under `content/<subject>/
 
 ```
 content/maths/
+  courses.json       [{ spec: "1MA1", board: "Edexcel", title: "GCSE Mathematics", tiers: ["F", "H"] }]   tiers: [] is untiered
   topics.json        [{ id: "1MA1/R9" or "1MA1/G17/cone", title, aliases: ["U349"], prerequisites: ["1MA1/N12"], tier: "F", concept?: { rule, distractors[] } }]
                      a concept topic gives O5 an invent-the-rule case
   items/<topic>.json [{ id, topic, type, stem, figure?, scaffold?, hint?, params?, answers?, working?, mark_scheme?, marks?, misconceptions: [{ answer, message }] }]
@@ -28,7 +29,9 @@ The canon rules, one text box for every type:
 - `sequence`: lower case, "then" and "and" dropped, letters only. "B, D, A, C", "b then d then a then c" and "BDAC" are the same.
 - `label`: split on commas, semicolons or new lines, each part a `vocab` answer, in order. Every slot and the count must match.
 
-An empty canon is never right. `loadPacks` (`src/api/case.ts`) merges every `content/<subject>/` with a `topics.json`; a subject may ship no `generators.js`, and a topic id, alias or generator code seen in two subjects is refused at start-up.
+An empty canon is never right. `loadPacks` (`src/api/case.ts`) merges every `content/<subject>/` with a `topics.json`; a subject may ship no `generators.js`, and a topic id, alias, generator code or course spec seen in two subjects is refused at start-up. Start-up also refuses a topic whose spec prefix (`id.split("/")[0]`) is not a course in its own pack's `courses.json`, and a topic in a tiered course whose `tier` that course does not list.
+
+The pupil's courses (`profile.json` `courses`, set at intake through `POST /api/courses`) narrow every route that offers topics (`filterPack` in `src/content/profile.ts`): a topic stays when its spec is chosen and the course is untiered, the pupil picked Higher (Higher includes Foundation), or the topic is `F`. Routes that render saved work (chat, snap, squad, a saved case, `/api/event`) use the full pack. Nothing chosen, or only stale specs, leaves the pack whole.
 
 `misconceptions` are per item and are the only source for O2's scripted wrong steps and O5's planted mistakes. An item with none cannot appear in O2 or O5. A rule case comes from a topic's `concept` block and three generator rolls; it needs no item.
 

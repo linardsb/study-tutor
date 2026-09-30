@@ -5,6 +5,7 @@ import { caseForDay, loadPacks } from "./api/case";
 import { getChat, postChat } from "./api/chat";
 import { getCoach, postCoach } from "./api/coach";
 import { getConfig, getUsage, postConfig } from "./api/config";
+import { getCourses, saveCourses } from "./api/courses";
 import { getDigest } from "./api/digest";
 import { postEvent } from "./api/event";
 import { diagnosticForDay, postInterview, postSheet } from "./api/intake";
@@ -13,8 +14,9 @@ import { nextForDay } from "./api/next";
 import { getSquad, joinSquad, postSquad } from "./api/squad";
 import { currentState } from "./api/state";
 import { topicRows } from "./api/topics";
-import { restrictConfigOnStart } from "./config";
-import type { CasePack, Topic } from "./content/types";
+import { readProfile, restrictConfigOnStart } from "./config";
+import { chosenOf, filterPack } from "./content/profile";
+import type { CasePack, Course, Topic } from "./content/types";
 import { refusalLines, replayCheck } from "./events/check";
 import { isDay } from "./events/types";
 import { isoWeek, localDay, utcNow } from "./mcp/clock";
@@ -43,6 +45,8 @@ export type ServerOptions = {
   topics: readonly Topic[];
   pack?: CasePack; // loaded on the first /api/case when absent (the tests' options predate it)
   subjects?: ReadonlyMap<string, string>; // topic id → subject; loaded with the pack when absent
+  // Every pack's courses. Absent with an injected pack → none, so no profile narrows it (the tests' packs).
+  courses?: readonly Course[];
   update?: Promise<UpdateInfo>; // the start-up feed check; absent → no update
   // The phone listener's address. Absent → none, so a test that mints never binds the Wi-Fi address.
   snapHost?: () => string | null;
@@ -145,12 +149,11 @@ function getState(req: Request, dataDir: string): Response {
  * A read route for one London day: today, or `?day=YYYY-MM-DD` (read-only; a manual check can reach
  * any day). The clock is read once here and the day passed down, so everything under `build` stays pure.
  */
-async function dayRoute(
+async function dayRoute<P>(
   req: Request,
-  root: string,
-  pack: CasePack | undefined,
+  load: () => Promise<P>,
   failed: string,
-  build: (pack: CasePack, day: string) => unknown,
+  build: (pack: P, day: string) => unknown,
 ): Promise<Response> {
   const refused = refuseForeign(req);
   if (refused) return refused;
@@ -158,8 +161,7 @@ async function dayRoute(
   if (asked !== null && !isDay(asked))
     return json(400, { error: "day must be YYYY-MM-DD" });
   try {
-    const loaded = pack ?? (await loadPacks(root)).pack;
-    return json(200, build(loaded, asked ?? localDay(utcNow())));
+    return json(200, build(await load(), asked ?? localDay(utcNow())));
   } catch (err) {
     console.error(`${failed}: ${(err as Error).message}`);
     return json(500, { error: failed });
@@ -268,6 +270,28 @@ async function postSquadRoute(
   }
 }
 
+async function postCoursesRoute(
+  req: Request,
+  dataDir: string,
+  courses: readonly Course[],
+): Promise<Response> {
+  const refused = refuseForeign(req);
+  if (refused) return refused;
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return json(400, { error: "Body is not JSON" });
+  }
+  try {
+    const r = saveCourses(body, dataDir, courses);
+    return json(r.status, r.body);
+  } catch (err) {
+    console.error(`Could not save the courses: ${(err as Error).message}`);
+    return json(500, { error: "Could not save the courses" });
+  }
+}
+
 async function postJoinRoute(req: Request, dataDir: string): Promise<Response> {
   const refused = refuseForeign(req);
   if (refused) return refused;
@@ -311,8 +335,7 @@ async function getChatRoute(
 async function postJobRoute(
   req: Request,
   server: IdleControl,
-  root: string,
-  pack: CasePack | undefined,
+  load: () => Promise<CasePack>,
   failed: string,
   handler: (
     body: unknown,
@@ -332,7 +355,7 @@ async function postJobRoute(
     return json(400, { error: "Body is not JSON" });
   }
   try {
-    const r = await handler(body, pack ?? (await loadPacks(root)).pack);
+    const r = await handler(body, await load());
     return json(r.status, r.body);
   } catch (err) {
     console.error(`${failed}: ${(err as Error).message}`);
@@ -374,7 +397,21 @@ async function snapRoute(
 export function apiRoutes(opts: ServerOptions) {
   const { root, dataDir, topics, pack, subjects, update } = opts;
   const packs = async () =>
-    pack && subjects ? { pack, subjects } : await loadPacks(root);
+    pack && subjects
+      ? { pack, subjects, courses: opts.courses ?? [] }
+      : await loadPacks(root);
+  // A route that offers topics takes the pupil's courses (offer); one that renders saved work takes all (full).
+  // The profile is read per request, so a course save applies on the next one.
+  const narrow = (p: CasePack, courses: readonly Course[]) =>
+    filterPack(p, chosenOf(readProfile(dataDir).courses, courses), courses);
+  const both = async () => {
+    const l = pack
+      ? { pack, courses: opts.courses ?? [] }
+      : await loadPacks(root);
+    return { full: l.pack, offer: narrow(l.pack, l.courses) };
+  };
+  const scoped = async () => (await both()).offer;
+  const full = async () => pack ?? (await loadPacks(root)).pack;
   const snap = {
     root,
     dataDir,
@@ -385,18 +422,14 @@ export function apiRoutes(opts: ServerOptions) {
     "/api/state": { GET: (req: Request) => getState(req, dataDir) },
     "/api/case": {
       GET: (req: Request) =>
-        dayRoute(req, root, pack, "Could not build today's case", (p, day) =>
-          caseForDay(dataDir, p, day),
+        dayRoute(req, both, "Could not build today's case", (b, day) =>
+          caseForDay(dataDir, b.full, day, b.offer),
         ),
     },
     "/api/next": {
       GET: (req: Request) =>
-        dayRoute(
-          req,
-          root,
-          pack,
-          "Could not work out the next step",
-          (p, day) => nextForDay(dataDir, p, day),
+        dayRoute(req, scoped, "Could not work out the next step", (p, day) =>
+          nextForDay(dataDir, p, day),
         ),
     },
     "/api/lessons": {
@@ -404,7 +437,11 @@ export function apiRoutes(opts: ServerOptions) {
         const loaded = await packs();
         return readRoute(req, "the lesson list", () => ({
           status: 200,
-          body: lessonUrls(root, loaded.subjects, loaded.pack.topics),
+          body: lessonUrls(
+            root,
+            loaded.subjects,
+            narrow(loaded.pack, loaded.courses).topics,
+          ),
         }));
       },
     },
@@ -413,7 +450,7 @@ export function apiRoutes(opts: ServerOptions) {
         const loaded = await packs();
         return readRoute(req, "the topic list", () => ({
           status: 200,
-          body: topicRows(loaded.pack, loaded.subjects),
+          body: topicRows(narrow(loaded.pack, loaded.courses), loaded.subjects),
         }));
       },
     },
@@ -425,6 +462,16 @@ export function apiRoutes(opts: ServerOptions) {
         readRoute(req, "the settings", () => getConfig(dataDir)),
       POST: (req: Request) => postConfigRoute(req, dataDir),
     },
+    "/api/courses": {
+      GET: async (req: Request) => {
+        const loaded = await packs();
+        return readRoute(req, "the courses", () =>
+          getCourses(dataDir, loaded.courses),
+        );
+      },
+      POST: async (req: Request) =>
+        postCoursesRoute(req, dataDir, (await packs()).courses),
+    },
     "/api/usage": {
       GET: (req: Request) =>
         readRoute(req, "the token count", () => getUsage(dataDir)),
@@ -433,34 +480,24 @@ export function apiRoutes(opts: ServerOptions) {
     "/api/chat": {
       GET: (req: Request) => getChatRoute(req, root, dataDir, pack),
       POST: (req: Request, server: IdleControl) =>
-        postJobRoute(
-          req,
-          server,
-          root,
-          pack,
-          "Could not answer the chat",
-          (b, p) => postChat(b, dataDir, p, { dataDir }),
+        postJobRoute(req, server, full, "Could not answer the chat", (b, p) =>
+          postChat(b, dataDir, p, { dataDir }),
         ),
     },
     "/api/coach": {
       GET: (req: Request) =>
-        dayRoute(req, root, pack, "Could not open the coach", (p, day) =>
+        dayRoute(req, scoped, "Could not open the coach", (p, day) =>
           getCoach(dataDir, p, day, new URL(req.url).searchParams),
         ),
       POST: (req: Request, server: IdleControl) =>
-        postJobRoute(req, server, root, pack, "Could not answer Dan", (b, p) =>
+        postJobRoute(req, server, scoped, "Could not answer Dan", (b, p) =>
           postCoach(b, dataDir, p, { dataDir }),
         ),
     },
     "/api/intake/sheet": {
       POST: (req: Request, server: IdleControl) =>
-        postJobRoute(
-          req,
-          server,
-          root,
-          pack,
-          "Could not read the sheet",
-          (b, p) => postSheet(b, p, { dataDir }),
+        postJobRoute(req, server, scoped, "Could not read the sheet", (b, p) =>
+          postSheet(b, p, { dataDir }),
         ),
     },
     "/api/intake/interview": {
@@ -468,15 +505,14 @@ export function apiRoutes(opts: ServerOptions) {
         postJobRoute(
           req,
           server,
-          root,
-          pack,
+          scoped,
           "Could not read your answers",
           (b, p) => postInterview(b, p, { dataDir }),
         ),
     },
     "/api/intake/diagnostic": {
       GET: (req: Request) =>
-        dayRoute(req, root, pack, "Could not build the cold test", (p, day) =>
+        dayRoute(req, scoped, "Could not build the cold test", (p, day) =>
           diagnosticForDay(dataDir, p, day),
         ),
     },
@@ -486,8 +522,7 @@ export function apiRoutes(opts: ServerOptions) {
       GET: (req: Request) =>
         dayRoute(
           req,
-          root,
-          pack,
+          full,
           "Could not read the squad",
           (p, day) =>
             getSquad(
@@ -587,7 +622,7 @@ if (import.meta.main) {
       );
     }
     const dataDir = path.join(root, "data");
-    const { pack, subjects } = await loadPacks(root);
+    const { pack, subjects, courses } = await loadPacks(root);
     const topics = pack.topics;
     // Before the check: a refused start still leaves the key owner-only.
     restrictConfigOnStart(dataDir);
@@ -601,6 +636,7 @@ if (import.meta.main) {
       topics,
       pack,
       subjects,
+      courses,
       update,
       snapHost: () => lanAddress(os.networkInterfaces()),
       snaps,
@@ -616,7 +652,14 @@ if (import.meta.main) {
           out.write(`${line}\n`);
           out.flush();
         },
-        { root, dataDir, subjects, topics, origin: url.slice(0, -1) },
+        {
+          root,
+          dataDir,
+          subjects,
+          topics,
+          courses,
+          origin: url.slice(0, -1),
+        },
       );
       await out.end(); // a stdout pipe can be asynchronous; the last reply must reach the harness
       server.stop(true); // no new snap can be minted from here on

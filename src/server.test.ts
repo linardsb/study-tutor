@@ -3,9 +3,9 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { startFakeProvider } from "../scripts/fake-provider";
-import { loadCasePack } from "./api/case";
+import { loadCasePack, loadPacks } from "./api/case";
 import { loadTopics } from "./content/pack";
-import { appendEvent } from "./events/append";
+import { appendEvent, PROFILE_FILE, writeDataFile } from "./events/append";
 import { findItem } from "./flow/chat";
 import { chooseWrong } from "./flow/coach";
 import { addDays, isoWeek, localDay } from "./mcp/clock";
@@ -965,4 +965,253 @@ test(
       feed.stop(true);
     }
   }),
+);
+
+/** A server over the packs under `packRoot`, with courses, and an empty data/ in a temp dir. */
+function withPacks(
+  packRoot: () => string,
+  fn: (
+    get: (p: string, init?: RequestInit) => Promise<Response>,
+    opts: ServerOptions,
+  ) => Promise<void>,
+) {
+  return withTemp(async (_dir, base) => {
+    const l = await loadPacks(packRoot());
+    const opts: ServerOptions = {
+      root: packRoot(),
+      dataDir: base.dataDir,
+      topics: l.pack.topics,
+      pack: l.pack,
+      subjects: l.subjects,
+      courses: l.courses,
+    };
+    const server = startServer([0], opts);
+    try {
+      await fn(
+        (p, init) => fetch(`http://127.0.0.1:${server.port}${p}`, init),
+        opts,
+      );
+    } finally {
+      server.stop(true);
+    }
+  });
+}
+
+const topicIds = async (get: (p: string) => Promise<Response>) =>
+  ((await (await get("/api/topics")).json()) as { id: string }[]).map(
+    (t) => t.id,
+  );
+
+test(
+  "courses: a Foundation maths save narrows topics, lessons, next and the cold test; without a save all 22 show",
+  withPacks(
+    () => root,
+    async (get) => {
+      const post = postJson(get);
+      expect(await topicIds(get)).toHaveLength(22); // observed: 21 maths + 1 science
+      const lessons = async () =>
+        Object.values(
+          (await (await get("/api/lessons")).json()) as Record<string, string>,
+        );
+      expect(
+        (await lessons()).some((u) => u.includes("content/science/")),
+      ).toBe(true);
+      const got = (await (await get("/api/courses")).json()) as {
+        courses: { spec: string }[];
+        chosen: unknown[];
+      };
+      expect(got.chosen).toEqual([]);
+      expect(got.courses.map((c) => c.spec)).toEqual(["1MA1", "8464"]);
+
+      const saved = await post("/api/courses", {
+        courses: [{ spec: "1MA1", tier: "F" }],
+      });
+      expect(saved.status).toBe(200);
+      expect(await saved.json()).toEqual({
+        chosen: [{ spec: "1MA1", tier: "F" }],
+      });
+      const ids = await topicIds(get);
+      expect(ids).toHaveLength(21);
+      expect(ids.some((id) => id.startsWith("8464/"))).toBe(false);
+      expect(
+        (await lessons()).some((u) => u.includes("content/science/")),
+      ).toBe(false);
+      expect(await (await get("/api/next")).text()).not.toContain("8464/");
+      const cold = (await (await get("/api/intake/diagnostic")).json()) as {
+        slots: { topic: string }[];
+      };
+      expect(cold.slots.some((s) => s.topic.startsWith("8464/"))).toBe(false);
+
+      const refused = await post("/api/courses", { courses: [] });
+      expect(refused.status).toBe(400);
+      expect(await refused.json()).toEqual({
+        error: "Pick at least one course.",
+      });
+      expect(await topicIds(get)).toHaveLength(21);
+    },
+  ),
+);
+
+test(
+  "courses: a case saved today on a dropped course still renders from the full pack",
+  withPacks(
+    () => root,
+    async (get, opts) => {
+      appendEvent(
+        opts.dataDir,
+        {
+          v: 1,
+          type: "case",
+          day: "2026-10-06",
+          kind: "mistake",
+          topic: "8464/4.1.1.2",
+          item: "8464/4.1.1.2#1",
+          pick: "cytoplasm",
+          bet: 2,
+          correct: false,
+          reask: false,
+        },
+        () => "2026-10-06T07:12:00Z",
+      );
+      await postJson(get)("/api/courses", {
+        courses: [{ spec: "1MA1", tier: "F" }],
+      });
+      const r = (await (await get("/api/case?day=2026-10-06")).json()) as {
+        case: unknown;
+        source: { topic: string };
+      };
+      expect(r.case).not.toBeNull();
+      expect(r.source.topic).toBe("8464/4.1.1.2");
+    },
+  ),
+);
+
+test(
+  "courses: the coach offers and accepts only the chosen courses' topics",
+  withPacks(
+    () => root,
+    async (get) => {
+      await postJson(get)("/api/courses", {
+        courses: [{ spec: "8464", tier: "F" }],
+      });
+      const c = (await (await get("/api/coach")).json()) as {
+        topics: unknown;
+      };
+      expect(JSON.stringify(c.topics)).not.toContain("1MA1/");
+      expect(await (await get("/api/coach?topic=1MA1/R4")).json()).toEqual({
+        ready: false,
+        reason: "no-topic",
+      });
+    },
+  ),
+);
+
+test(
+  "courses: a stale spec in profile.json is dropped, leaving every topic",
+  withPacks(
+    () => root,
+    async (get, opts) => {
+      writeDataFile(
+        opts.dataDir,
+        PROFILE_FILE,
+        JSON.stringify({ weeklyTarget: 3, courses: [{ spec: "ZZZ9" }] }),
+      );
+      expect(await topicIds(get)).toHaveLength(22);
+      expect(
+        ((await (await get("/api/courses")).json()) as { chosen: unknown })
+          .chosen,
+      ).toEqual([]);
+    },
+  ),
+);
+
+/** content/aa (AA1, F and H), bb (BB1, H only; its topic needs AA1/X2), cc (CC1, untiered, no items). */
+function tierFixture(): string {
+  const dir = fs.realpathSync.native(
+    fs.mkdtempSync(path.join(os.tmpdir(), "st-tiers-")),
+  );
+  const subject = (
+    name: string,
+    course: object,
+    topics: { id: string; tier: string; prerequisites?: string[] }[],
+    withItems = true,
+  ) => {
+    const d = path.join(dir, "content", name);
+    fs.mkdirSync(path.join(d, "items"), { recursive: true });
+    fs.writeFileSync(path.join(d, "courses.json"), JSON.stringify([course]));
+    fs.writeFileSync(
+      path.join(d, "topics.json"),
+      JSON.stringify(
+        topics.map((t) => ({
+          title: t.id,
+          aliases: [t.id.replace("/", "")],
+          prerequisites: [],
+          ...t,
+        })),
+      ),
+    );
+    if (withItems)
+      for (const t of topics)
+        fs.writeFileSync(
+          path.join(d, "items", `${t.id.replace("/", "-")}.json`),
+          JSON.stringify([
+            {
+              id: `${t.id}#1`,
+              topic: t.id,
+              type: "vocab",
+              stem: "Which part of a cell holds the genetic material?",
+              answers: ["nucleus"],
+              misconceptions: [
+                { answer: "cytoplasm", message: "That is the jelly." },
+              ],
+            },
+          ]),
+        );
+  };
+  const course = (spec: string, tiers: string[]) => ({
+    spec,
+    board: "B",
+    title: spec,
+    tiers,
+  });
+  subject("aa", course("AA1", ["F", "H"]), [
+    { id: "AA1/X1", tier: "F" },
+    { id: "AA1/X2", tier: "H" },
+  ]);
+  subject("bb", course("BB1", ["H"]), [
+    { id: "BB1/X1", tier: "H", prerequisites: ["AA1/X2"] },
+  ]);
+  subject("cc", course("CC1", []), [{ id: "CC1/X1", tier: "F" }], false);
+  return dir;
+}
+
+let tiers = "";
+test(
+  "courses: Higher keeps Foundation topics, Foundation drops Higher ones, a dropped prerequisite counts as met, and nothing to offer gives none",
+  withPacks(
+    () => {
+      tiers ||= tierFixture();
+      return tiers;
+    },
+    async (get) => {
+      const post = postJson(get);
+      const save = async (courses: object[]) =>
+        expect((await post("/api/courses", { courses })).status).toBe(200);
+      const next = async () =>
+        ((await (await get("/api/next")).json()) as { step: unknown }).step;
+
+      await save([{ spec: "AA1", tier: "H" }]);
+      expect(await topicIds(get)).toEqual(["AA1/X1", "AA1/X2"]);
+      await save([{ spec: "AA1", tier: "F" }]);
+      expect(await topicIds(get)).toEqual(["AA1/X1"]);
+      expect(JSON.stringify(await next())).not.toContain("AA1/X2");
+      await save([{ spec: "BB1", tier: "H" }]);
+      expect(await topicIds(get)).toEqual(["BB1/X1"]);
+      expect(await next()).toMatchObject({ kind: "lesson", topic: "BB1/X1" });
+      await save([{ spec: "CC1" }]);
+      expect(await topicIds(get)).toEqual(["CC1/X1"]);
+      expect(await next()).toEqual({ kind: "none" });
+      fs.rmSync(tiers, { recursive: true, force: true });
+    },
+  ),
 );

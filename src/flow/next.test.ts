@@ -126,3 +126,10 @@ test("deterministic: two calls give the same step", () => {
   set(s, ids[1] as string, 1, DAY);
   expect(nextStep(s, DAY, pack, 3)).toEqual(nextStep(s, DAY, pack, 3) as never);
 });
+
+test("a new topic with no items is skipped for a lesson; the next one is picked", () => {
+  const items = new Map(pack.items);
+  items.set(first, []);
+  const n = nextStep(replay([]), DAY, { ...pack, items }, 3);
+  expect(n.step.kind === "lesson" && n.step.topic).toBe(ids[1] as string);
+});

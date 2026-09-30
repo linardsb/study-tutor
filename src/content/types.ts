@@ -11,6 +11,17 @@ export type ItemType =
 
 export type Tier = "F" | "H";
 
+/** One exam-board specification a pack teaches, from content/<subject>/courses.json. `tiers: []` means untiered. */
+export interface Course {
+  spec: string;
+  board: string;
+  title: string;
+  tiers: Tier[];
+}
+
+/** A course the pupil takes, from profile.json; `tier` only on a tiered course. */
+export type Chosen = { spec: string; tier?: Tier };
+
 /**
  * Topic id grammar: `<spec>/<statement>` (for example `1MA1/R4`) when one lesson sits under the
  * statement; `<spec>/<statement>/<slug>` (for example `1MA1/G17/cone`) when several do. The statement

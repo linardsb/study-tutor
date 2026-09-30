@@ -58,6 +58,12 @@
     notSure: "Not sure",
     check: "Check",
     answerFirst: "Write an answer first, even a guess.",
+    foundation: "Foundation",
+    higher: "Higher",
+    coursesLine: "Courses: ",
+    changeCourses: "Change courses",
+    coursesSaved: "Courses saved.",
+    coursesNotSaved: "Could not save the courses.",
     sureFirst: "Pick Sure or Not sure first.",
     correct: "Correct.",
     wrong: "Not this time.",
@@ -170,13 +176,14 @@
   };
 
   /* what the page holds between clicks: the open door, the confirm rows, whether a model is set up,
-     the /api/topics rows once fetched, whether this cold test is already saved */
+     the /api/topics rows once fetched, whether this cold test is already saved, the /api/courses reply */
   const page = {
     door: null,
     rows: [],
     model: false,
     topics: null,
     coldSaved: false,
+    courses: null,
   };
 
   function topicsOnce() {
@@ -651,6 +658,116 @@
     return OPEN[door]();
   }
 
+  /* ---- the pupil's courses: asked before the doors until one is saved ---- */
+
+  const TIERS = [
+    ["F", "foundation"],
+    ["H", "higher"],
+  ];
+
+  function renderCourses(c) {
+    const list = byId("course-list");
+    list.replaceChildren();
+    for (const course of c.courses) {
+      const saved = c.chosen.find((x) => x.spec === course.spec);
+      const row = el("p");
+      const label = el("label");
+      const box = el("input");
+      box.type = "checkbox";
+      box.dataset.spec = course.spec;
+      box.checked = Boolean(saved);
+      label.append(box, ` ${course.board} ${course.title}`);
+      row.append(label);
+      if (course.tiers.length > 0) {
+        const span = el("span", "segmented");
+        for (const [tier, key] of TIERS) {
+          if (!course.tiers.includes(tier)) continue;
+          const l = el("label");
+          const radio = el("input");
+          radio.type = "radio";
+          radio.name = `tier-${course.spec}`;
+          radio.value = tier;
+          radio.checked = saved?.tier === tier;
+          l.append(radio, ` ${TEXT[key]}`);
+          span.append(l);
+        }
+        row.append(" ", span);
+      }
+      list.append(row);
+    }
+  }
+
+  function courseName(course, tier) {
+    const name = `${course.board} ${course.title}`;
+    if (tier === "F") return `${name}, ${TEXT.foundation}`;
+    if (tier === "H") return `${name}, ${TEXT.higher}`;
+    return name;
+  }
+
+  function showCourses(c) {
+    const none = c.chosen.length === 0;
+    byId("courses").hidden = !none;
+    byId("doors").hidden = none;
+    const line = byId("courses-line");
+    line.hidden = none;
+    line.replaceChildren();
+    if (none) return;
+    const names = c.chosen.map((x) =>
+      courseName(
+        c.courses.find((k) => k.spec === x.spec) ?? {
+          board: "",
+          title: x.spec,
+        },
+        x.tier,
+      ),
+    );
+    const change = el("button", "", TEXT.changeCourses);
+    change.type = "button";
+    change.onclick = () => {
+      renderCourses(c);
+      byId("courses").hidden = false;
+    };
+    line.append(`${TEXT.coursesLine}${names.join("; ")} `, change);
+  }
+
+  async function saveCourses() {
+    const courses = [];
+    for (const box of byId("course-list").querySelectorAll(
+      "input[type=checkbox]",
+    )) {
+      if (!box.checked) continue;
+      const tier = byId("course-list").querySelector(
+        `input[name="tier-${box.dataset.spec}"]:checked`,
+      );
+      courses.push(
+        tier
+          ? { spec: box.dataset.spec, tier: tier.value }
+          : { spec: box.dataset.spec },
+      );
+    }
+    let res;
+    let reply;
+    try {
+      res = await fetch("/api/courses", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ courses }),
+      });
+      reply = await res.json();
+    } catch {
+      say(TEXT.coursesNotSaved);
+      return;
+    }
+    if (!res.ok) {
+      say(reply?.error ?? TEXT.coursesNotSaved);
+      return;
+    }
+    page.topics = null; // the topic list the doors match against has changed
+    page.courses.chosen = reply.chosen;
+    showCourses(page.courses);
+    say(TEXT.coursesSaved);
+  }
+
   async function load() {
     try {
       const c = await getJson("/api/config");
@@ -658,6 +775,18 @@
     } catch {
       page.model = false;
     }
+    try {
+      page.courses = await getJson("/api/courses");
+      renderCourses(page.courses);
+      showCourses(page.courses);
+    } catch {
+      // No courses route: the page as it was, doors first.
+      page.courses = null;
+      byId("doors").hidden = false;
+      byId("courses").hidden = true;
+      byId("courses-line").hidden = true;
+    }
+    byId("courses-save").onclick = () => saveCourses();
     for (const b of byId("doors").querySelectorAll("button"))
       b.onclick = () => openDoor(b.dataset.door);
     byId("sheet-read").onclick = () => readText();
@@ -681,6 +810,7 @@
     confirmRows,
     tickable,
     openDoor,
+    showCourses,
     page,
   });
 })();
