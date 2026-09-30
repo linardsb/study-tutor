@@ -16,6 +16,7 @@ import { topicRows } from "./api/topics";
 import { restrictConfigOnStart } from "./config";
 import type { CasePack, Topic } from "./content/types";
 import {
+  createDataFile,
   ensureDataDir,
   readDataJson,
   removeDataFile,
@@ -63,6 +64,10 @@ export function appRoot(): string {
   return compiled ? path.dirname(process.execPath) : process.cwd();
 }
 
+// A Windows device base name (L9); staticPath strips the extension and trailing spaces first.
+const DEVICE =
+  /^(con|prn|aux|nul|conin\$|conout\$|com[0-9\u00b9\u00b2\u00b3]|lpt[0-9\u00b9\u00b2\u00b3])$/i;
+
 /**
  * The file under `root/folder` that the URL path `rel` names, or null when it names none. The URL is
  * split on `/` and joined segment by segment: a `..` or a `\` in a segment is refused outright, and
@@ -70,8 +75,10 @@ export function appRoot(): string {
  * reads a leading `//` as a UNC root, which turned `/../data/x` into `root/data/x` (PR #26 F1).
  * `p` is the platform's `path` and is a parameter so the tests can run the Windows rules on any OS.
  * Windows reads more into a name than POSIX does: it strips a trailing dot or space (`.. ` is `..`),
- * opens a device for CON or NUL.json, a drive for `C:` and a stream for `x:$DATA`. Those segments are
- * refused on every OS; no file in app/ or content/ is named like one.
+ * opens a drive for `C:`, a stream for `x:$DATA`, and a device for a segment whose base name (up to
+ * the first dot, trailing spaces dropped, any case) is CON, PRN, AUX, NUL, CONIN$, CONOUT$, COM or
+ * LPT with 0-9 or a superscript 1-3: `NUL.json`, `con .txt`, `COM¹`. Those segments are refused on
+ * every OS; no file in app/ or content/ is named like one.
  */
 export function staticPath(
   root: string,
@@ -87,7 +94,7 @@ export function staticPath(
         s.includes("\\") ||
         s.includes(":") ||
         /[. ]$/.test(s) ||
-        /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$/i.test(s),
+        DEVICE.test(s.split(".")[0]?.replace(/ +$/, "") ?? ""),
     )
   )
     return null;
@@ -586,7 +593,7 @@ export function startServer(ports: readonly number[], opts: ServerOptions) {
 /**
  * `data/server.lock`: which run serves this data folder. `dir` is the folder's realpath, because an
  * update copies data/ into the new version's folder and a copied lock would otherwise point at the
- * old folder's live server. `pid` is for a person reading the file; the probe decides.
+ * old folder's live server. `pid` marks a crashed copy at once; otherwise the probe decides.
  */
 export const LOCK_FILE = "server.lock";
 type Lock = { id: string; pid: number; port: number; dir: string };
@@ -598,7 +605,7 @@ const isLock = (x: unknown): x is Lock =>
   Number.isInteger((x as Lock).port) &&
   typeof (x as Lock).dir === "string";
 
-/** Records this run as the one serving `dataDir`; a lock already there is stale by now and is replaced. */
+/** Records the port this run bound once takeLock has given it the lock; replaces the port-0 lock. */
 export function claimLock(dataDir: string, port: number, id: string): void {
   ensureDataDir(dataDir); // so its realpath exists
   const lock: Lock = {
@@ -616,32 +623,88 @@ export function releaseLock(dataDir: string, id: string): void {
   if (isLock(lock) && lock.id === id) removeDataFile(dataDir, LOCK_FILE);
 }
 
-/**
- * A second start on the same data/ opens the running copy in the browser instead of serving it twice
- * (M8). The running copy is the lock's, but only when the lock names this folder and the server on
- * its port answers /api/instance with the lock's id: another folder's tutor on 4731 answers another
- * id (or 404, before 0.1.2), and nothing answers for a copy that crashed. The URL it opened, or null.
- */
-export async function deferToRunning(
-  dataDir: string,
-  open: (url: string) => void = openBrowser,
-  timeoutMs = 1000,
-): Promise<string | null> {
-  const lock = readDataJson(dataDir, LOCK_FILE);
-  if (!isLock(lock) || lock.dir !== fs.realpathSync.native(dataDir))
-    return null;
-  const url = `http://127.0.0.1:${lock.port}/`;
+/** Whether `pid` has exited. Only ESRCH counts: EPERM is another account's live process. Windows: expected, not observed. */
+function pidGone(pid: unknown): boolean {
+  if (!Number.isInteger(pid) || (pid as number) <= 0) return false;
   try {
-    const res = await fetch(`${url}api/instance`, {
-      signal: AbortSignal.timeout(timeoutMs),
+    process.kill(pid as number, 0);
+    return false;
+  } catch (err) {
+    return (err as { code?: string }).code === "ESRCH";
+  }
+}
+
+/** The id the server on `port` answers at /api/instance: undefined for no answer in time, null for one without an id. */
+async function probeInstance(
+  port: number,
+  timeoutMs: number,
+): Promise<string | null | undefined> {
+  try {
+    const res = await fetch(`http://127.0.0.1:${port}/api/instance`, {
+      signal: AbortSignal.timeout(Math.max(1, Math.ceil(timeoutMs))),
     });
     const body = res.ok ? ((await res.json()) as { id?: unknown }) : null;
-    if (body?.id !== lock.id) return null;
+    return typeof body?.id === "string" ? body.id : null;
   } catch {
-    return null; // nothing listening, or no answer in time
+    return undefined; // nothing listening yet, or no answer in time
   }
-  open(url);
-  return url;
+}
+
+const LOCK_POLL_MS = 200;
+
+/**
+ * One copy per data folder (M8), claimed before the server binds. The lock is created exclusively
+ * (O_EXCL) with port 0, so of two starts at once exactly one holds it; that one binds and then
+ * records its port with claimLock. A start that finds a lock waits up to `waitMs` for the copy it
+ * names to answer /api/instance with the lock's id (one probe may take the whole wait, so a slow copy
+ * still counts), then opens it in the browser and returns its URL. The lock is stale, and replaced,
+ * at once when it names another folder (an update copies data/), a pid that has exited, or a server
+ * that answers another id (or 404, before 0.1.2); and after the wait when it stays unreadable (a start
+ * that crashed mid-write), stays at port 0, or nothing answers. The wait restarts whenever the lock
+ * changes. Null when this run now holds the lock.
+ */
+export async function takeLock(
+  dataDir: string,
+  id: string,
+  open: (url: string) => void = openBrowser,
+  waitMs = 5000,
+): Promise<string | null> {
+  ensureDataDir(dataDir); // so its realpath exists
+  const dir = fs.realpathSync.native(dataDir);
+  const mine = `${JSON.stringify({ id, pid: process.pid, port: 0, dir })}\n`;
+  let seen: string | undefined;
+  let deadline = 0;
+  for (;;) {
+    if (createDataFile(dataDir, LOCK_FILE, mine)) return null;
+    const lock = readDataJson(dataDir, LOCK_FILE);
+    const now = performance.now();
+    const key = JSON.stringify(lock);
+    if (key !== seen) {
+      seen = key;
+      deadline = now + waitMs;
+    }
+    let stale = now >= deadline;
+    if (!stale && isLock(lock)) {
+      if (lock.dir !== dir || pidGone(lock.pid)) stale = true;
+      else if (lock.port > 0) {
+        const answer = await probeInstance(lock.port, deadline - now);
+        if (answer === lock.id) {
+          const url = `http://127.0.0.1:${lock.port}/`;
+          open(url);
+          return url;
+        }
+        if (answer !== undefined) stale = true;
+      }
+    }
+    if (stale) {
+      // Only the lock judged stale: another start may have replaced it meanwhile.
+      if (JSON.stringify(readDataJson(dataDir, LOCK_FILE)) === seen)
+        removeDataFile(dataDir, LOCK_FILE);
+      seen = undefined;
+      continue;
+    }
+    await Bun.sleep(LOCK_POLL_MS);
+  }
 }
 
 /** Best effort: the URL is already on the console, so a missing opener is not an error. */
@@ -694,23 +757,36 @@ if (import.meta.main) {
       );
     }
     const dataDir = path.join(root, "data");
-    // Before anything writes: a second double-click opens the running copy and leaves data/ alone.
+    // Reads content/ only, so before the lock: the claim-to-bind window a second start waits out stays short.
+    const { pack, subjects } = await loadPacks(root);
+    const topics = pack.topics;
+    const instance = crypto.randomUUID();
+    // Before anything else writes: a second double-click opens the running copy and leaves data/ alone.
     // Not in --mcp mode: the harness needs its own stdio session, and the tools write through
-    // appendEvent, which is safe beside another process (O_APPEND, one write per line).
-    const running = mcp ? null : await deferToRunning(dataDir);
+    // appendEvent, which is safe beside another process (O_APPEND, one write per line). --mcp claims
+    // no lock either: its server ends when the harness closes stdin, and a double-click meanwhile
+    // should get a copy of its own rather than one that is about to stop.
+    const running = mcp ? null : await takeLock(dataDir, instance);
     if (running !== null) {
       console.log(`Study tutor is already running at ${running}`);
       process.exit(0);
     }
-    const { pack, subjects } = await loadPacks(root);
-    const topics = pack.topics;
+    // Every exit from here on, a refused replay check and Ctrl+C included, gives the lock back. A crash
+    // leaves it, and the next start finds its pid gone.
+    if (!mcp)
+      process.on("exit", () => {
+        try {
+          releaseLock(dataDir, instance);
+        } catch {
+          // the lock stays; the next start finds it stale
+        }
+      });
     // Before the check: a refused start still leaves the key owner-only.
     restrictConfigOnStart(dataDir);
     if (!checkOnStart(dataDir)) process.exit(1);
     // Not in --mcp mode: a pending fetch would hold the process open after stdin closes.
     const update = mcp ? undefined : checkForUpdate(VERSION, RELEASES_FEED);
     const snaps = createSnaps();
-    const instance = crypto.randomUUID();
     const server = startServer([...PORTS, 0], {
       root,
       dataDir,
@@ -740,19 +816,10 @@ if (import.meta.main) {
       await snaps.closeAll(); // stops the phone listener, then waits while a photo already taken is marked
       // nothing else holds the event loop, so the process exits 0 (plan D9)
     } else {
-      // --mcp claims no lock: its server ends when the harness closes stdin, and a double-click
-      // meanwhile should get a copy of its own rather than one that is about to stop.
       claimLock(dataDir, server.port ?? 0, instance);
-      // Ctrl+C, a kill, or closing the console window (SIGHUP on Windows). A crash leaves the lock,
-      // which the next start finds stale.
+      // Ctrl+C, a kill, or closing the console window (SIGHUP on Windows); the exit handler releases the lock.
       for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"] as const)
-        process.on(signal, () => {
-          try {
-            releaseLock(dataDir, instance);
-          } finally {
-            process.exit(0);
-          }
-        });
+        process.on(signal, () => process.exit(0));
       console.log(`Study tutor is running at ${url}`);
       openBrowser(url);
     }

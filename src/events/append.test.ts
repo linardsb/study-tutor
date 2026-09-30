@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import {
   appendEvent,
+  createDataFile,
   ensureDataDir,
   listDataDir,
   makeDataDir,
@@ -692,5 +693,26 @@ test.skipIf(process.platform === "win32")(
     expect(fs.existsSync(path.join(dir, "outside"))).toBe(true);
     removeDataFile(data, "missing.lock");
     removeDataFile(path.join(dir, "no-data"), "x.lock");
+  }),
+);
+
+test.skipIf(process.platform === "win32")(
+  "createDataFile makes a file only when nothing is there (O_EXCL), owner-only, and refuses paths out of data/",
+  withTemp((dir, data) => {
+    expect(createDataFile(data, "x.lock", "first\n")).toBe(true);
+    expect(fs.readFileSync(path.join(data, "x.lock"), "utf8")).toBe("first\n");
+    expect(fs.statSync(path.join(data, "x.lock")).mode & 0o777).toBe(0o600);
+    // A second create loses and leaves the first file as it was.
+    expect(createDataFile(data, "x.lock", "second\n")).toBe(false);
+    expect(fs.readFileSync(path.join(data, "x.lock"), "utf8")).toBe("first\n");
+    fs.writeFileSync(path.join(dir, "outside"), "keep");
+    expect(() => createDataFile(data, "../y.lock", "z")).toThrow("Refused");
+    fs.symlinkSync(path.join(dir, "outside"), path.join(data, "out.lock"));
+    expect(() => createDataFile(data, "out.lock", "z")).toThrow("Refused");
+    fs.symlinkSync(path.join(dir, "nowhere"), path.join(data, "dangling.lock"));
+    expect(() => createDataFile(data, "dangling.lock", "z")).toThrow("Refused");
+    expect(fs.readFileSync(path.join(dir, "outside"), "utf8")).toBe("keep");
+    expect(fs.existsSync(path.join(dir, "nowhere"))).toBe(false);
+    expect(fs.existsSync(path.join(dir, "y.lock"))).toBe(false);
   }),
 );

@@ -213,6 +213,35 @@ export function writeDataFile(
   fs.rmSync(tmp);
 }
 
+/**
+ * Creates one file under data/ only when nothing is at `rel` yet (O_EXCL, so of two processes racing
+ * exactly one wins), owner-only, fsynced; false when something is already there. Not atomic like
+ * writeDataFile: a reader can see the file empty or partial until the write lands. Refuses paths that
+ * leave data/, symlinks included.
+ */
+export function createDataFile(
+  dataDir: string,
+  rel: string,
+  data: string,
+): boolean {
+  ensureDataDir(dataDir);
+  const file = resolveInData(dataDir, rel);
+  let fd: number;
+  try {
+    fd = fs.openSync(file, WRITE, OWNER_ONLY);
+  } catch (err) {
+    if ((err as { code?: string }).code === "EEXIST") return false;
+    throw err;
+  }
+  try {
+    fs.writeFileSync(fd, data);
+    fs.fsyncSync(fd);
+  } finally {
+    fs.closeSync(fd);
+  }
+  return true;
+}
+
 /** Removes one file under data/, refusing paths that leave it; a missing file or data/ is a no-op. */
 export function removeDataFile(dataDir: string, rel: string): void {
   let root: string;
