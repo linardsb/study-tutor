@@ -1036,11 +1036,6 @@ test(
       expect(
         (await lessons()).some((u) => u.includes("content/science/")),
       ).toBe(false);
-      expect(await (await get("/api/next")).text()).not.toContain("8464/");
-      const cold = (await (await get("/api/intake/diagnostic")).json()) as {
-        slots: { topic: string }[];
-      };
-      expect(cold.slots.some((s) => s.topic.startsWith("8464/"))).toBe(false);
 
       const refused = await post("/api/courses", { courses: [] });
       expect(refused.status).toBe(400);
@@ -1048,6 +1043,17 @@ test(
         error: "Pick at least one course.",
       });
       expect(await topicIds(get)).toHaveLength(21);
+
+      // Science only: maths comes first in pack order, so next and the cold test show the filter.
+      await post("/api/courses", { courses: [{ spec: "8464", tier: "F" }] });
+      expect(
+        ((await (await get("/api/next")).json()) as { step: unknown }).step,
+      ).toMatchObject({ kind: "lesson", topic: "8464/4.1.1.2" });
+      const cold = (await (await get("/api/intake/diagnostic")).json()) as {
+        slots: { topic: string }[];
+      };
+      expect(cold.slots.length).toBeGreaterThan(0);
+      expect(cold.slots.every((s) => s.topic.startsWith("8464/"))).toBe(true);
     },
   ),
 );
@@ -1090,20 +1096,99 @@ test(
   "courses: the coach offers and accepts only the chosen courses' topics",
   withPacks(
     () => root,
-    async (get) => {
+    async (get, opts) => {
+      appendEvent(opts.dataDir, {
+        v: 1,
+        type: "attempt",
+        item: "1MA1/R9/of-an-amount#1",
+        topic: "1MA1/R9/of-an-amount",
+        correct: true,
+        sure: true,
+        answer: "9",
+      });
+      const coachTopics = async () =>
+        JSON.stringify(
+          ((await (await get("/api/coach")).json()) as { topics: unknown })
+            .topics,
+        );
+      expect(await coachTopics()).toContain("1MA1/R9/of-an-amount");
       await postJson(get)("/api/courses", {
         courses: [{ spec: "8464", tier: "F" }],
       });
-      const c = (await (await get("/api/coach")).json()) as {
-        topics: unknown;
-      };
-      expect(JSON.stringify(c.topics)).not.toContain("1MA1/");
+      expect(await coachTopics()).not.toContain("1MA1/");
       expect(await (await get("/api/coach?topic=1MA1/R4")).json()).toEqual({
         ready: false,
         reason: "no-topic",
       });
     },
   ),
+);
+
+test(
+  "courses: coach POST still marks a question offered before its course was dropped",
+  withPacks(
+    () => root,
+    async (get, opts) => {
+      const post = postJson(get);
+      await post("/api/config", { preset: "none", weeklyTarget: 3 });
+      const topic = "1MA1/R9/of-an-amount";
+      appendEvent(opts.dataDir, {
+        v: 1,
+        type: "attempt",
+        item: `${topic}#1`,
+        topic,
+        correct: true,
+        sure: true,
+        answer: "9",
+      });
+      const q = (await (
+        await get(`/api/coach?${new URLSearchParams({ topic })}`)
+      ).json()) as { item: string; seed: number };
+      const item = findItem(pack, q.item, q.seed);
+      if (item === null) throw new Error("no item");
+      await post("/api/courses", { courses: [{ spec: "8464", tier: "F" }] });
+      const marked = await post("/api/coach", {
+        step: "correct",
+        item: q.item,
+        seed: q.seed,
+        answer: item.answers?.[0],
+        sure: true,
+      });
+      expect(marked.status).toBe(200);
+      expect(await marked.json()).toMatchObject({ saved: true });
+    },
+  ),
+);
+
+test(
+  "courses: a pack that fails to load answers 500 with an error body on GET and POST",
+  withTemp(async (dir, base) => {
+    fs.mkdirSync(path.join(dir, "content", "x"), { recursive: true });
+    fs.writeFileSync(path.join(dir, "content", "x", "topics.json"), "[]");
+    fs.writeFileSync(path.join(dir, "content", "x", "courses.json"), "{");
+    const server = startServer([0], {
+      root: dir,
+      dataDir: base.dataDir,
+      topics: [],
+    });
+    try {
+      const url = `http://127.0.0.1:${server.port}/api/courses`;
+      const got = await fetch(url);
+      expect(got.status).toBe(500);
+      expect(await got.json()).toEqual({ error: "Could not read the courses" });
+      const saved = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ courses: [{ spec: "1MA1" }] }),
+      });
+      expect(saved.status).toBe(500);
+      expect(await saved.json()).toEqual({
+        error: "Could not save the courses",
+      });
+    } finally {
+      server.stop(true);
+    }
+  }),
 );
 
 test(
@@ -1186,32 +1271,45 @@ function tierFixture(): string {
 }
 
 let tiers = "";
-test(
-  "courses: Higher keeps Foundation topics, Foundation drops Higher ones, a dropped prerequisite counts as met, and nothing to offer gives none",
-  withPacks(
-    () => {
-      tiers ||= tierFixture();
-      return tiers;
-    },
-    async (get) => {
-      const post = postJson(get);
-      const save = async (courses: object[]) =>
-        expect((await post("/api/courses", { courses })).status).toBe(200);
-      const next = async () =>
-        ((await (await get("/api/next")).json()) as { step: unknown }).step;
+test("courses: Higher keeps Foundation topics, Foundation drops Higher ones, a dropped prerequisite counts as met, and nothing to offer gives none", async () => {
+  try {
+    await withPacks(
+      () => {
+        tiers ||= tierFixture();
+        return tiers;
+      },
+      async (get) => {
+        const post = postJson(get);
+        const save = async (courses: object[]) =>
+          expect((await post("/api/courses", { courses })).status).toBe(200);
+        const next = async () =>
+          ((await (await get("/api/next")).json()) as { step: unknown }).step;
 
-      await save([{ spec: "AA1", tier: "H" }]);
-      expect(await topicIds(get)).toEqual(["AA1/X1", "AA1/X2"]);
-      await save([{ spec: "AA1", tier: "F" }]);
-      expect(await topicIds(get)).toEqual(["AA1/X1"]);
-      expect(JSON.stringify(await next())).not.toContain("AA1/X2");
-      await save([{ spec: "BB1", tier: "H" }]);
-      expect(await topicIds(get)).toEqual(["BB1/X1"]);
-      expect(await next()).toMatchObject({ kind: "lesson", topic: "BB1/X1" });
-      await save([{ spec: "CC1" }]);
-      expect(await topicIds(get)).toEqual(["CC1/X1"]);
-      expect(await next()).toEqual({ kind: "none" });
-      fs.rmSync(tiers, { recursive: true, force: true });
-    },
-  ),
-);
+        await save([{ spec: "AA1", tier: "H" }]);
+        expect(await topicIds(get)).toEqual(["AA1/X1", "AA1/X2"]);
+        await save([{ spec: "AA1", tier: "F" }]);
+        expect(await topicIds(get)).toEqual(["AA1/X1"]);
+        // A red mark puts AA1/X2 ahead of AA1/X1, so only the filter keeps it out of next.
+        expect(
+          (
+            await post("/api/event", {
+              v: 1,
+              type: "intake",
+              door: "interview",
+              topics: [{ topic: "AA1/X2", rag: "R" }],
+            })
+          ).status,
+        ).toBe(201);
+        expect(await next()).toMatchObject({ kind: "lesson", topic: "AA1/X1" });
+        await save([{ spec: "BB1", tier: "H" }]);
+        expect(await topicIds(get)).toEqual(["BB1/X1"]);
+        expect(await next()).toMatchObject({ kind: "lesson", topic: "BB1/X1" });
+        await save([{ spec: "CC1" }]);
+        expect(await topicIds(get)).toEqual(["CC1/X1"]);
+        expect(await next()).toEqual({ kind: "none" });
+      },
+    )();
+  } finally {
+    if (tiers) fs.rmSync(tiers, { recursive: true, force: true });
+  }
+});

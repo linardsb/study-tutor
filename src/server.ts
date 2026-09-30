@@ -213,15 +213,17 @@ async function getUpdate(
 }
 
 /** A read route: refuseForeign, then the handler, with a thrown read as a plain 500. */
-function readRoute(
+async function readRoute(
   req: Request,
   what: string,
-  handler: () => { status: number; body: unknown },
-): Response {
+  handler: () =>
+    | { status: number; body: unknown }
+    | Promise<{ status: number; body: unknown }>,
+): Promise<Response> {
   const refused = refuseForeign(req);
   if (refused) return refused;
   try {
-    const r = handler();
+    const r = await handler();
     return json(r.status, r.body);
   } catch (err) {
     console.error(`Could not read ${what}: ${(err as Error).message}`);
@@ -273,7 +275,7 @@ async function postSquadRoute(
 async function postCoursesRoute(
   req: Request,
   dataDir: string,
-  courses: readonly Course[],
+  courses: () => Promise<readonly Course[]>,
 ): Promise<Response> {
   const refused = refuseForeign(req);
   if (refused) return refused;
@@ -284,7 +286,7 @@ async function postCoursesRoute(
     return json(400, { error: "Body is not JSON" });
   }
   try {
-    const r = saveCourses(body, dataDir, courses);
+    const r = saveCourses(body, dataDir, await courses());
     return json(r.status, r.body);
   } catch (err) {
     console.error(`Could not save the courses: ${(err as Error).message}`);
@@ -463,14 +465,12 @@ export function apiRoutes(opts: ServerOptions) {
       POST: (req: Request) => postConfigRoute(req, dataDir),
     },
     "/api/courses": {
-      GET: async (req: Request) => {
-        const loaded = await packs();
-        return readRoute(req, "the courses", () =>
-          getCourses(dataDir, loaded.courses),
-        );
-      },
-      POST: async (req: Request) =>
-        postCoursesRoute(req, dataDir, (await packs()).courses),
+      GET: (req: Request) =>
+        readRoute(req, "the courses", async () =>
+          getCourses(dataDir, (await packs()).courses),
+        ),
+      POST: (req: Request) =>
+        postCoursesRoute(req, dataDir, async () => (await packs()).courses),
     },
     "/api/usage": {
       GET: (req: Request) =>
@@ -490,7 +490,8 @@ export function apiRoutes(opts: ServerOptions) {
           getCoach(dataDir, p, day, new URL(req.url).searchParams),
         ),
       POST: (req: Request, server: IdleControl) =>
-        postJobRoute(req, server, scoped, "Could not answer Dan", (b, p) =>
+        // full: it answers a question GET already offered, so a course dropped mid-question still marks (D-Q4 amended)
+        postJobRoute(req, server, full, "Could not answer Dan", (b, p) =>
           postCoach(b, dataDir, p, { dataDir }),
         ),
     },

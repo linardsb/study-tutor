@@ -178,7 +178,7 @@
   /* what the page holds between clicks: the open door, the confirm rows, whether a model is set up,
      the /api/topics rows once fetched, whether this cold test is already saved, the /api/courses reply */
   const page = {
-    door: null,
+    door: "",
     rows: [],
     model: false,
     topics: null,
@@ -479,11 +479,11 @@
 
   function showMatch(reply) {
     if (reply.by === "none") {
-      renderChecklist(reply.reason === "failed" ? TEXT.matchFailed : "");
+      void renderChecklist(reply.reason === "failed" ? TEXT.matchFailed : "");
       return;
     }
     if (reply.rows.length === 0) {
-      renderChecklist(TEXT.noMatch);
+      void renderChecklist(TEXT.noMatch);
       return;
     }
     confirmRows("interview", reply.rows, "model");
@@ -494,7 +494,7 @@
     byId("ai-line").hidden = !page.model;
     renderAnswers();
     byId("checklist").replaceChildren();
-    if (!page.model) renderChecklist("");
+    if (!page.model) void renderChecklist("");
   }
 
   /* ---- cold test ---- */
@@ -777,10 +777,12 @@
     }
     try {
       page.courses = await getJson("/api/courses");
+      // No course to pick would leave the panel empty and the doors hidden.
+      if (page.courses.courses.length === 0) throw new Error("no courses");
       renderCourses(page.courses);
       showCourses(page.courses);
     } catch {
-      // No courses route: the page as it was, doors first.
+      // No courses route, or no courses: the page as it was, doors first.
       page.courses = null;
       byId("doors").hidden = false;
       byId("courses").hidden = true;
@@ -792,7 +794,7 @@
     byId("sheet-read").onclick = () => readText();
     byId("sheet-file").onchange = (e) => {
       const file = e.target.files?.[0];
-      if (file) readPhoto(file);
+      if (file) void readPhoto(file);
     };
   }
 

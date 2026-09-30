@@ -572,3 +572,11 @@ test("A2: saved courses → the doors show with a line naming them; no route →
   expect($("#courses-line").hidden).toBe(true);
   expect($("#doors").hidden).toBe(false);
 });
+
+test("A2: a courses reply with no course to pick → the page as before, doors first", async () => {
+  served.courses = { courses: [], chosen: [] };
+  await fresh("none");
+  expect($("#courses").hidden).toBe(true);
+  expect($("#courses-line").hidden).toBe(true);
+  expect($("#doors").hidden).toBe(false);
+});
