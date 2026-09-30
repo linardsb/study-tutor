@@ -11,7 +11,7 @@ Triage (the user's call, 2026-09-30): fix all six, L3 included. Nothing deferred
 - Failure mode of the fix: none at run time. `void` changes no behaviour; a throw inside `.then` was an unhandled rejection before and still is. The L2 chain is the only new promise chain in new code, and it is the one carrying `void`.
 - Closing command: `gh pr checks 54` after each push (no local SonarCloud).
   - At `6a24f1f` (observed 2026-09-30): still **fail**, "C Reliability Rating on New Code". The `quiz.js:497` annotation was gone; the two left of the same rule were `app/quiz.js:426` (the markable item's `postAttempt(...).then`) and `app/chat.js:165` (`load();`). The review blamed both to earlier commits, but Sonar counts them as new in this PR, so the gate cannot go green without them.
-  - Third commit: both `void`-prefixed. Neither can reject into anything (`postAttempt` resolves on every path; `load()` is the page's start-up chain); behaviour unchanged. Verdict on that head: see the PR's checks.
+  - At `4aea089`, both `void`-prefixed (neither rejects; behaviour unchanged): SonarCloud Code Analysis **pass** (observed 2026-09-30, `gh pr checks 54`).
 
 **L1 (Low) server does not enforce v1 for markable items** (`.claude/references/events.md:21`)
 - Fix: reworded. The page picks the version; `/api/event` accepts `null` on any `attempt@2` whether or not the item has `answers`. No code change (the option the user took from the review's two).
