@@ -118,10 +118,12 @@
 
   const NOT_SAVED = " Not saved. Check the tutor window is still open.";
 
-  /* one attempt per item; the promise resolves to whether the tutor accepted it */
-  function postAttempt(item, ok, sure, typed) {
+  /* one attempt per item; the promise resolves to whether the tutor accepted it, or null when no
+     reply came (the line may still have been saved). v 2 with ok null: a written answer, saved for
+     the tutor to mark */
+  function postAttempt(item, ok, sure, typed, v = 1) {
     const body = {
-      v: 1,
+      v,
       type: "attempt",
       item: item.id,
       topic: item.topic,
@@ -136,6 +138,14 @@
       body: JSON.stringify(body),
     })
       .then((res) => res.ok)
+      .catch(() => null);
+  }
+
+  /* whether the tutor already holds an attempt for this item; false when it cannot say */
+  function attempted(item) {
+    return fetch(chatHref(item).replace("/chat.html?", "/api/chat?"))
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body) => body?.attempted === true)
       .catch(() => false);
   }
 
@@ -211,6 +221,53 @@
     return q;
   }
 
+  /* a written-answer item (no answers, a mark scheme): a text box that saves the answer for the
+     tutor to mark. No working here: the teach-back shows it after marking */
+  function buildOpen(item, number) {
+    const q = document.createElement("div");
+    q.className = "q open";
+    const stem = document.createElement("p");
+    stem.className = "stem";
+    stem.textContent = `${number}. ${item.stem}`;
+    q.appendChild(stem);
+    if (item.figure) {
+      const figure = document.createElement("div");
+      figure.className = "figure";
+      figure.innerHTML = item.figure;
+      q.appendChild(figure);
+    }
+    const label = document.createElement("label");
+    label.textContent = "Your answer ";
+    const box = document.createElement("textarea");
+    box.rows = 4;
+    label.appendChild(box);
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "check";
+    btn.textContent = "Save my answer";
+    const fb = document.createElement("p");
+    fb.className = "feedback";
+    fb.hidden = true;
+    q.append(label, btn, fb);
+    const ask = document.createElement("p");
+    ask.className = "ask";
+    const link = document.createElement("a");
+    link.target = "tutor";
+    link.href = chatHref(item);
+    link.textContent = "Ask the tutor";
+    ask.appendChild(link);
+    const marked = document.createElement("p");
+    marked.className = "marked";
+    marked.hidden = true;
+    const markLink = document.createElement("a");
+    markLink.target = "tutor";
+    markLink.href = chatHref(item);
+    markLink.textContent = "Get it marked by the tutor";
+    marked.appendChild(markLink);
+    q.append(ask, marked);
+    return q;
+  }
+
   /* a whole quiz of fresh items. picks is [{ code, topic }] in play order; the caller does the
      round robin. Every item is seeded so it can be rebuilt from its event. */
   function buildQuiz(gens, picks, label) {
@@ -259,11 +316,18 @@
   let quizCount = 0;
 
   function initQuiz(section, all) {
-    /* a short or extended item has no answers to check here: it is never asked in the quiz */
     const items = (all || []).filter(
       (i) => Array.isArray(i.answers) && i.answers.length > 0,
     );
-    if (!section || section.dataset.inited || !items.length) return;
+    /* a short or extended item has no answers to check here: it is saved for the tutor to mark */
+    const open = (all || []).filter(
+      (i) =>
+        !(Array.isArray(i.answers) && i.answers.length > 0) &&
+        typeof i.mark_scheme === "string" &&
+        i.mark_scheme !== "",
+    );
+    if (!section || section.dataset.inited || (!items.length && !open.length))
+      return;
     section.dataset.inited = "1";
     /* a lesson quiz and its fresh set share a data-code; the count keeps their radio groups apart */
     const quizN = ++quizCount;
@@ -359,7 +423,7 @@
         /* the record is the first check: the bet, not the hinted second try */
         if (!posted) {
           posted = true;
-          postAttempt(item, ok, sureAtFirst, input.value.trim()).then(
+          void postAttempt(item, ok, sureAtFirst, input.value.trim()).then(
             (saved) => {
               if (!saved) fb.textContent += NOT_SAVED;
             },
@@ -404,6 +468,66 @@
           e.preventDefault();
           check();
         }
+      });
+    });
+
+    open.forEach((item, i) => {
+      const idx = items.length + i;
+      const q = buildOpen(item, idx + 1);
+      section.appendChild(q);
+      const box = q.querySelector("textarea");
+      const btn = q.querySelector(".check");
+      const fb = q.querySelector(".feedback");
+      const ask = q.querySelector(".ask");
+      const marked = q.querySelector(".marked");
+      let lost = false;
+      const name = `sure-${section.dataset.code || "q"}-${quizN}-${idx}`;
+      const conf = document.createElement("span");
+      conf.className = "confidence";
+      conf.innerHTML =
+        `<label><input type="radio" name="${name}" value="sure"> Sure</label> ` +
+        `<label><input type="radio" name="${name}" value="notsure"> Not sure</label>`;
+      btn.parentNode.insertBefore(conf, btn);
+
+      /* no Enter handler: Enter in the box is a new line. A lost post stays retryable, because
+         the tutor will not mark an answer it has no attempt for */
+      btn.addEventListener("click", () => {
+        if (q.classList.contains("done") || btn.disabled) return;
+        const text = box.value.trim();
+        const c = conf.querySelector("input:checked");
+        fb.hidden = false;
+        if (text === "") {
+          fb.textContent = "Write an answer first, even a guess.";
+          return;
+        }
+        if (!c) {
+          fb.textContent = "Sure or not sure first";
+          return;
+        }
+        btn.disabled = true;
+        /* after a post with no reply, the line may have been saved and only the reply lost: ask first,
+           so a retry cannot write a second attempt and its XP. A refusal saved nothing, so its retry
+           posts straight away: an attempt from an earlier visit must not pass for today's */
+        const already = lost ? attempted(item) : Promise.resolve(false);
+        void already
+          .then((saved) =>
+            saved ? true : postAttempt(item, null, c.value === "sure", text, 2),
+          )
+          .then((saved) => {
+            if (!saved) {
+              lost = saved === null;
+              fb.textContent = NOT_SAVED.trim();
+              btn.disabled = false;
+              return;
+            }
+            q.classList.add("done");
+            box.disabled = true;
+            for (const r of conf.querySelectorAll("input")) r.disabled = true;
+            fb.textContent =
+              "Saved. This page cannot mark a written answer. Open the tutor and explain your answer there, one point per line, to get it marked.";
+            ask.hidden = true;
+            marked.hidden = false;
+          });
       });
     });
     section.appendChild(summary);

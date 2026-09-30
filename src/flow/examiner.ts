@@ -8,12 +8,17 @@ import type { JobDeps } from "../jobs/define";
 import { type ExamLine, examinerMark, score } from "../jobs/examiner_mark";
 import { type ItemRef, jobItem } from "../jobs/view";
 
-/** The item of the last attempt in the log, in file order, or null. */
-export function lastAttempt(log: readonly string[]): ItemRef | null {
+/** The item of the last attempt in the log that `keep` accepts, in file order, or null. */
+export function lastAttempt(
+  log: readonly string[],
+  keep: (ref: ItemRef) => boolean = () => true,
+): ItemRef | null {
   for (let i = log.length - 1; i >= 0; i -= 1) {
     const e = parseEvent(log[i] as string);
     if (e?.type !== "attempt") continue;
-    return e.seed === undefined ? { id: e.item } : { id: e.item, seed: e.seed };
+    const ref =
+      e.seed === undefined ? { id: e.item } : { id: e.item, seed: e.seed };
+    if (keep(ref)) return ref;
   }
   return null;
 }

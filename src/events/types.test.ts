@@ -30,7 +30,7 @@ test.each([
   ["not json", "not json"],
   ["an array", "[]"],
   ["null", "null"],
-  ["an unknown version", VALID_ATTEMPT.replace('"v":1', '"v":2')],
+  ["an unknown version", VALID_ATTEMPT.replace('"v":1', '"v":3')],
   ["an unknown type", VALID_ATTEMPT.replace('"attempt"', '"login"')],
   ["a missing field", VALID_ATTEMPT.replace(',"sure":true', "")],
   [
@@ -65,6 +65,25 @@ test.each([
   ],
 ])("parseEvent refuses %s", (_name, line) => {
   expect(parseEvent(line)).toBeNull();
+});
+
+const A2 = VALID_ATTEMPT.replace('"v":1', '"v":2');
+test.each([
+  ["v2 correct null", A2.replace('"correct":false', '"correct":null'), true],
+  ["v2 correct false", A2, true],
+  [
+    "v2 correct as a string",
+    A2.replace('"correct":false', '"correct":"null"'),
+    false,
+  ],
+  ["v2 with correct missing", A2.replace('"correct":false,', ""), false],
+  [
+    "v1 correct null",
+    VALID_ATTEMPT.replace('"correct":false', '"correct":null'),
+    false,
+  ],
+])("attempt@2 shapes: %s parses = %p", (_name, line, ok) => {
+  expect(parseEvent(line) !== null).toBe(ok);
 });
 
 test("parseEvent ignores extra keys", () => {

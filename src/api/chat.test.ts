@@ -10,8 +10,9 @@ import {
   OPENAI,
   withData,
 } from "../jobs/__fixtures__/provider";
-import { loadCasePack } from "./case";
+import { loadCasePack, loadPacks } from "./case";
 import { getChat, postChat } from "./chat";
+import { postEvent } from "./event";
 
 const pack = await loadCasePack("maths");
 const ID = "1MA1/R9/of-an-amount#1";
@@ -117,6 +118,7 @@ test(
       item: ID,
       topic: TOPIC,
       title: "Percentage of an amount",
+      type: "cloze",
       attempted: false,
       model: false,
     });
@@ -257,5 +259,101 @@ test(
     );
     expect((r.body as { saved: boolean }).saved).toBe(false);
     expect(events(data).filter((e) => e.type === "teachback")).toHaveLength(1);
+  }),
+);
+
+test(
+  "a short item: teach-back refused until an attempt@2 lands; the mark scheme reaches the provider only after it (#49 guard)",
+  withData(OPENAI, async (data) => {
+    const { pack: all } = await loadPacks();
+    const ID6 = "8464/4.1.1.2#6";
+    const SCHEME = "photosynthesis needs light";
+    const WORKING = "only useful for photosynthesis";
+    const q = new URLSearchParams({ item: ID6 });
+    type Body = { status: number; body: Record<string, unknown> };
+
+    const before = getChat(data, all, q) as Body;
+    expect(before.status).toBe(200);
+    expect(before.body).toMatchObject({ type: "short", attempted: false });
+
+    const early = mockFetch(chatReply('{"text":"x"}'));
+    expect(
+      await postChat(
+        { job: "teachback_mark", item: ID6, text: "x" },
+        data,
+        all,
+        {
+          dataDir: data,
+          fetch: early.f,
+          now: NOW,
+        },
+      ),
+    ).toEqual({ status: 409, body: { error: "Try the question first." } });
+    expect(early.calls.length).toBe(0);
+
+    const guess = mockFetch(
+      chatReply('{"text":"Think about where the cell is."}'),
+    );
+    const g = await postChat(
+      { job: "guess_first", item: ID6, text: "no light" },
+      data,
+      all,
+      { dataDir: data, fetch: guess.f, now: NOW },
+    );
+    expect(g.status).toBe(200);
+    expect(guess.calls.length).toBe(1);
+    const pre = String(guess.calls[0]?.init?.body);
+    expect(pre).not.toContain(SCHEME);
+    expect(pre).not.toContain(WORKING);
+
+    const posted = postEvent(
+      {
+        v: 2,
+        type: "attempt",
+        item: ID6,
+        topic: "8464/4.1.1.2",
+        correct: null,
+        sure: true,
+        answer: "no light underground",
+      },
+      data,
+      all.topics,
+      NOW,
+    );
+    expect(posted.status).toBe(201);
+
+    const after = getChat(data, all, q) as Body;
+    expect(after.body.attempted).toBe(true);
+    for (const body of [before.body, after.body])
+      for (const k of ANSWER_KEYS) expect(Object.keys(body)).not.toContain(k);
+
+    const mark = mockFetch(
+      chatReply(
+        '{"lines":[{"mark":1,"note":"Right place."},{"mark":1,"note":"Right reason."}]}',
+      ),
+    );
+    const r = await postChat(
+      {
+        job: "teachback_mark",
+        item: ID6,
+        text: "They are underground\nNo light for photosynthesis",
+      },
+      data,
+      all,
+      { dataDir: data, fetch: mark.f, now: NOW },
+    );
+    expect(r.status).toBe(200);
+    expect(r.body).toMatchObject({
+      kind: "marks",
+      score: 2,
+      of: 2,
+      saved: true,
+    });
+    expect(String(mark.calls[0]?.init?.body)).toContain(SCHEME);
+    expect(
+      events(data)
+        .slice(-2)
+        .map((e) => e.type),
+    ).toEqual(["teachback", "xp"]);
   }),
 );

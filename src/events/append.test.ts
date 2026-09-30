@@ -44,6 +44,31 @@ function withTemp(fn: (dir: string, data: string) => void | Promise<void>) {
 }
 
 test(
+  "append keeps correct: null on attempt@2 and drops a stray field",
+  withTemp((_dir, data) => {
+    appendEvent(
+      data,
+      {
+        v: 2,
+        type: "attempt",
+        item: "8464/4.1.1.2#6",
+        topic: "8464/4.1.1.2",
+        correct: null,
+        sure: false,
+        answer: "x",
+        bogus: 1,
+      } as NewEvent,
+      AT,
+    );
+    const [line] = readLines(data);
+    expect(line).toContain('"correct":null');
+    expect(line).not.toContain("bogus");
+    const e = parseEvent(line as string);
+    expect(e?.type === "attempt" && e.correct).toBeNull();
+  }),
+);
+
+test(
   "append writes one stamped line per event",
   withTemp((_dir, data) => {
     const first = appendEvent(data, ATTEMPT, AT);

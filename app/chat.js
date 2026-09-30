@@ -8,6 +8,8 @@
   const $ = (id) => document.getElementById(id);
   const log = $("log");
   let topic = "";
+  /* the job-marked item types in src/content/types.ts: a written answer is explained point by point */
+  const WRITTEN = ["short", "extended", "practical-method"];
 
   /* one log entry; `lines` are shown as separate paragraphs */
   function say(cls, ...lines) {
@@ -44,6 +46,11 @@
     if (state.scaffold) {
       $("scaffold").querySelector("p").textContent = state.scaffold;
       $("scaffold").hidden = false;
+    }
+    if (WRITTEN.includes(state.type)) {
+      document.querySelector('label[for="teach"]').textContent =
+        "Explain your answer, one point per line.";
+      $("teach-form").querySelector("button").textContent = "Mark my answer";
     }
     $("no-model").hidden = state.model;
     $("before").hidden = state.attempted;
@@ -155,5 +162,5 @@
       send(job, $(box));
     });
 
-  load();
+  void load();
 })();
