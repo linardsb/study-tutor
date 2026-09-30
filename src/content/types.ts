@@ -46,6 +46,8 @@ export interface Item {
   answers?: string[];
   working?: string;
   mark_scheme?: string;
+  /** The mark scheme's total, one mark per point. Required with `mark_scheme`; a teach-back is scored out of it. */
+  marks?: number;
   misconceptions: Misconception[];
 }
 

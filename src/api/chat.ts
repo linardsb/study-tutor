@@ -121,11 +121,12 @@ export async function postChat(
       postEvent(reply.record, dataDir, pack.topics, now);
   if (saved !== null && saved.status !== 201)
     console.error(`Could not save a teach-back: ${saved.body.error}`);
-  const { kind, marks, score, of } = reply;
+  const { kind, per, marks, score, of } = reply;
   return {
     status: 200,
     body: {
       kind,
+      per,
       marks,
       score,
       of,

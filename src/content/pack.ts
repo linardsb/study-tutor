@@ -87,7 +87,9 @@ export async function loadItems(
         typeof i?.id === "string" &&
         i.topic === topicId &&
         typeof i.stem === "string" &&
-        Array.isArray(i.misconceptions),
+        Array.isArray(i.misconceptions) &&
+        (i.mark_scheme === undefined ||
+          (Number.isInteger(i.marks) && i.marks > 0)),
     );
   if (!shaped) throw new Error(`${file}: not a list of items`);
   return rows as Item[];

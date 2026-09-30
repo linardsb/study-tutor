@@ -11,7 +11,11 @@ import {
   withData,
 } from "./__fixtures__/provider";
 import { PRE_ATTEMPT_GUARD } from "./define";
-import { type TeachbackInput, teachbackMark } from "./teachback_mark";
+import {
+  type LineMark,
+  type TeachbackInput,
+  teachbackMark,
+} from "./teachback_mark";
 import { jobItem } from "./view";
 
 const LINES = ["Find 10% of 45", "10% is 4.5", "Double it"];
@@ -160,6 +164,89 @@ test(
       expect(messages[1]?.content).toContain(`Mark scheme: ${WORKING}`);
       // 9 is in the scheme and not in the pupil's lines, so the note is refused.
       expect(v).toEqual({ by: "fallback", value: null, reason: "guard" });
+    } finally {
+      quiet.mockRestore();
+    }
+  }),
+);
+
+// #52: an item with a mark scheme and its total is marked per scheme point, whatever the line count.
+const POINTS = { mark_scheme: "1 mark: A. 1 mark: B.", marks: 2 };
+const two: LineMark[] = [
+  { mark: 1, note: "" },
+  { mark: 0, note: "Say why that matters." },
+];
+
+test(
+  "teachback_mark: a 2-mark scheme and 3 pupil lines → 2 entries, and the prompt asks for 2",
+  withData(OPENAI, async (data) => {
+    const { f, calls } = mockFetch(marks(two));
+    const v = await teachbackMark.run(input(LINES, POINTS), {
+      dataDir: data,
+      fetch: f,
+      now: NOW,
+    });
+    expect(v).toEqual({ by: "model", value: { lines: two } });
+    const { messages } = JSON.parse(String(calls[0]?.init.body)) as {
+      messages: { content: string }[];
+    };
+    expect(messages[0]?.content).toContain(
+      "exactly 2 entries, one per scheme point",
+    );
+    expect(messages[1]?.content).toContain(
+      "Mark scheme: 1 mark: A. 1 mark: B.",
+    );
+  }),
+);
+
+test(
+  "teachback_mark: per-point marking with one entry per pupil line is the wrong shape, then no verdict",
+  withData(OPENAI, async (data) => {
+    const quiet = spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const { f, calls } = mockFetch(marks(three));
+      const v = await teachbackMark.run(input(LINES, POINTS), {
+        dataDir: data,
+        fetch: f,
+        now: NOW,
+      });
+      expect(v).toEqual({ by: "fallback", value: null, reason: "shape" });
+      expect(calls.length).toBe(2);
+    } finally {
+      quiet.mockRestore();
+    }
+  }),
+);
+
+test(
+  "teachback_mark: a note may name point 2 and the 2 marks when the pupil wrote one line",
+  withData(OPENAI, async (data) => {
+    const rows: LineMark[] = [
+      { mark: 1, note: "" },
+      { mark: 0, note: "Point 2 of the 2 marks is missing." },
+    ];
+    const { f } = mockFetch(marks(rows));
+    const v = await teachbackMark.run(input(["It is underground"], POINTS), {
+      dataDir: data,
+      fetch: f,
+      now: NOW,
+    });
+    expect(v).toEqual({ by: "model", value: { lines: rows } });
+  }),
+);
+
+test(
+  "teachback_mark: per-point marking with the provider down → null",
+  withData(OPENAI, async (data) => {
+    const quiet = spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const { f } = mockFetch(down);
+      const v = await teachbackMark.run(input(LINES, POINTS), {
+        dataDir: data,
+        fetch: f,
+        now: NOW,
+      });
+      expect(v).toEqual({ by: "fallback", value: null, reason: "network" });
     } finally {
       quiet.mockRestore();
     }

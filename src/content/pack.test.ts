@@ -79,6 +79,23 @@ test("loadItems: a topic's items, an empty list for a topic with no file, and a 
   await expect(loadItems("bad", "1MA1/X1", tmp)).rejects.toThrow(
     `${file}: not a list of items`,
   );
+  // #52: a mark scheme without its total would leave a teach-back scored out of the pupil's line count.
+  const scheme = {
+    id: "1MA1/X1#1",
+    topic: "1MA1/X1",
+    type: "short",
+    stem: "Why?",
+    mark_scheme: "1 mark: a reason.",
+    misconceptions: [],
+  };
+  for (const marks of [undefined, 0, 1.5, "2"]) {
+    writeFileSync(file, JSON.stringify([{ ...scheme, marks }]));
+    await expect(loadItems("bad", "1MA1/X1", tmp)).rejects.toThrow(
+      `${file}: not a list of items`,
+    );
+  }
+  writeFileSync(file, JSON.stringify([{ ...scheme, marks: 1 }]));
+  expect(await loadItems("bad", "1MA1/X1", tmp)).toHaveLength(1);
 });
 
 test("items: one file per topic, 5 items each, 105 in all, every item shaped and its misconceptions never the answer", async () => {

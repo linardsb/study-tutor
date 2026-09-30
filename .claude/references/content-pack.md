@@ -8,7 +8,7 @@ Source of truth: architecture D5. One pack per subject under `content/<subject>/
 content/maths/
   topics.json        [{ id: "1MA1/R9" or "1MA1/G17/cone", title, aliases: ["U349"], prerequisites: ["1MA1/N12"], tier: "F", concept?: { rule, distractors[] } }]
                      a concept topic gives O5 an invent-the-rule case
-  items/<topic>.json [{ id, topic, type, stem, figure?, scaffold?, hint?, params?, answers?, working?, mark_scheme?, misconceptions: [{ answer, message }] }]
+  items/<topic>.json [{ id, topic, type, stem, figure?, scaffold?, hint?, params?, answers?, working?, mark_scheme?, marks?, misconceptions: [{ answer, message }] }]
   generators.js      GEN["U349"] = (rng) => ({ stem, answers[], working, hint, wrong: { "4.5": "..." } })   (v1 shape, kept)
   lessons/           HTML, one per topic; each quiz section names its items file in `data-items` and `app/quiz.js` renders and posts
   reference/         HTML method sheets, one per topic; the source `teachback_mark` marks against

@@ -80,7 +80,7 @@
         "tutor",
         ...body.marks.map(
           (m, i) =>
-            `Line ${i + 1}: ${m.mark === 1 ? "1 mark" : "0 marks"}${m.note ? `. ${m.note}` : ""}`,
+            `${body.per === "point" ? "Point" : "Line"} ${i + 1}: ${m.mark === 1 ? "1 mark" : "0 marks"}${m.note ? `. ${m.note}` : ""}`,
         ),
         `${body.score} of ${body.of}.`,
         "The tutor's marks can be wrong. Check them against the working:",

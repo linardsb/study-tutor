@@ -12,6 +12,7 @@ import { hint } from "../jobs/hint";
 import {
   type LineMark,
   MAX_LINES,
+  pointsOf,
   teachbackMark,
 } from "../jobs/teachback_mark";
 import { jobItem } from "../jobs/view";
@@ -79,6 +80,7 @@ export type ChatReply =
   | { kind: "text"; by: "model" | "fallback"; text: string }
   | {
       kind: "marks";
+      per: "line" | "point"; // what each mark is for: a pupil line, or a mark scheme point (#52)
       marks: LineMark[];
       score: number;
       of: number;
@@ -138,18 +140,21 @@ export async function chat(
     return { kind: "no-verdict", working: item.working ?? null };
   const marks = v.value.lines;
   const score = marks.reduce((n, l) => n + l.mark, 0);
+  const points = pointsOf(j.item);
+  const of = points ?? steps.length;
   return {
     kind: "marks",
+    per: points === null ? "line" : "point",
     marks,
     score,
-    of: steps.length,
+    of,
     record: {
       v: 1,
       type: "teachback",
       topic: item.topic,
       item: item.id,
       marks: score,
-      of: steps.length,
+      of,
     },
   };
 }

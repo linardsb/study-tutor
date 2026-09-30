@@ -154,6 +154,7 @@ test(
       parseEvent(JSON.stringify({ ...r.record, t: NOW() })),
     ).not.toBeNull();
     expect(r.record).toMatchObject({ item: `${TOPIC}#1`, marks: 2, of: 3 });
+    expect(r.per).toBe("line");
 
     const many = Array.from({ length: 12 }, (_, i) => `step ${i + 1}`).join(
       "\n",
@@ -173,6 +174,48 @@ test(
       messages: { content: string }[];
     };
     expect(sent.messages[0]?.content).toContain("exactly 8 entries");
+  }),
+);
+
+test(
+  "#52: a mark-scheme item is scored out of the scheme's marks, not the pupil's line count",
+  withData(OPENAI, async (data) => {
+    const science = await loadCasePack("science");
+    const found = findItem(science, "8464/4.1.1.2#6");
+    if (found === null) throw new Error("no science item #6");
+    appendEvent(
+      data,
+      {
+        v: 2,
+        type: "attempt",
+        item: found.id,
+        topic: found.topic,
+        correct: null,
+        sure: true,
+        answer: "No light underground",
+      },
+      NOW,
+    );
+    // One of three lines makes both points: 2 of 2, where per-line marking could give at most 1 of 3.
+    const rows = [
+      { mark: 1, note: "" },
+      { mark: 1, note: "" },
+    ];
+    const { f } = mockFetch(chatReply(JSON.stringify({ lines: rows })));
+    const r = await chat(
+      {
+        job: "teachback_mark",
+        item: found,
+        topic: "Plant cells",
+        text: "They are cells\nUnderground there is no light for photosynthesis, so chloroplasts do nothing\nThey take in water",
+      },
+      readLines(data),
+      DAY,
+      { dataDir: data, fetch: f, now: NOW },
+    );
+    if (r.kind !== "marks") throw new Error(`expected marks, got ${r.kind}`);
+    expect([r.per, r.score, r.of]).toEqual(["point", 2, 2]);
+    expect(r.record).toMatchObject({ marks: 2, of: 2 });
   }),
 );
 
