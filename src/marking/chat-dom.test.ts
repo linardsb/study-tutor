@@ -82,3 +82,20 @@ test("L11: a multi-line teach-back keeps its line breaks in the You bubble, as t
   expect(lines).toEqual(["You: Find 10%.", "Double it.", "<b>9</b>"]);
   expect(you.querySelector("b")).toBeNull();
 });
+
+const history = (
+  globalThis as unknown as {
+    history: { replaceState: (s: null, t: string, url: string) => void };
+  }
+).history;
+
+test("opened with no question, the page says where to open it from, not a raw error", async () => {
+  doc().body.innerHTML = MAIN;
+  history.replaceState(null, "", "/chat.html");
+  await import(`${path.join(app, "chat.js")}?dom-noitem`);
+  await until(() => (doc().querySelector("#stem")?.textContent ?? "") !== "");
+  expect(doc().querySelector("#stem")?.textContent).toBe(
+    "Open the tutor chat from a question in a lesson or in practice.",
+  );
+  history.replaceState(null, "", "/chat.html?item=8464%2F4.1.1.2%236");
+});

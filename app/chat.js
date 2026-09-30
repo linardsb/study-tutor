@@ -60,6 +60,11 @@
   }
 
   function load() {
+    if (!ref.item) {
+      $("stem").textContent =
+        "Open the tutor chat from a question in a lesson or in practice.";
+      return Promise.resolve();
+    }
     return fetch(`/api/chat?${new URLSearchParams(ref)}`)
       .then((res) =>
         res.json().then((body) => {

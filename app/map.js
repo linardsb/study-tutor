@@ -51,7 +51,7 @@
       "Scan this with your phone on the same Wi-Fi. It works once, for 15 minutes.",
     snapLocal: "Or drop a photo on this computer",
     snapFirewall:
-      "If the phone cannot open the link, Windows may be blocking it. Use the link below to drop a photo on this computer instead.",
+      "If the phone cannot open the link, this computer's firewall may be blocking it. Use the link below to drop a photo on this computer instead.",
     snapNoModel:
       "No model is set up, so the tutor will store the photo but not mark it.",
     snapNoLan:

@@ -626,8 +626,25 @@
       .catch(() => false);
   }
 
+  /* the session modes in src/events/types.ts, as map.js MODE_NAMES names them, in lower case */
+  const OPEN_NAMES = {
+    practice: "practice",
+    retest: "re-test",
+    boss: "boss",
+    case: "case",
+    coach: "coach",
+    squad: "squad",
+    intake: "intake",
+  };
+  const stillOpen = (mode) =>
+    mode === "lesson"
+      ? "Another lesson is still open."
+      : `Your ${OPEN_NAMES[mode] ?? mode} session is still open.`;
+
   /* the lesson record the map's "Done with it" writes: the open lesson session's end, verbatim from
-     /api/next. Opened from the lesson list, no lesson session is open, so this one starts and ends. */
+     /api/next. Opened from the lesson list, no lesson session is open, so this one starts and ends.
+     Another session open (practice, boss, another lesson): a start would replace it and drop it, so
+     nothing is posted and the open step comes back for the page to name. */
   async function endLesson() {
     const get = (url) =>
       fetch(url).then((res) => {
@@ -649,6 +666,7 @@
       step.topic === topic
     )
       return postEvent(step.end);
+    if (step.kind === "continue") return step;
     const begin = {
       v: 1,
       type: "session",
@@ -678,6 +696,18 @@
       endLesson()
         .catch(() => false)
         .then((saved) => {
+          if (saved?.kind === "continue") {
+            const a = document.createElement("a");
+            a.href = "/map.html";
+            a.textContent = "your map";
+            note.replaceChildren(
+              `${stillOpen(saved.mode)} Finish it on `,
+              a,
+              ", then come back and mark this lesson done.",
+            );
+            btn.disabled = false;
+            return;
+          }
           if (!saved) {
             note.textContent = NOT_SAVED.trim();
             btn.disabled = false;

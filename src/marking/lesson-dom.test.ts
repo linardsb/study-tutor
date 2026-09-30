@@ -133,3 +133,45 @@ test("M2: no button or feedback names one provider", async () => {
     "Not this time. Read the working and find the step where yours went a different way.",
   );
 });
+
+test("M3: done while another session is open posts nothing, says what is open and links to the map", async () => {
+  const other = (step: object, says: string) => async () => {
+    await load();
+    served.step = step;
+    const btn = $("#lesson-done button");
+    btn.click();
+    await until(() => ($("#lesson-done").textContent ?? "").includes(says));
+    expect(posts).toEqual([]);
+    expect($("#lesson-done").textContent).not.toContain("Saved");
+    expect($("#lesson-done .note a").getAttribute("href")).toBe("/map.html");
+    expect(btn.hidden).toBe(false);
+    expect(btn.disabled).toBe(false);
+  };
+  await other(
+    {
+      kind: "continue",
+      mode: "practice",
+      topic: TOPIC,
+      end: { ...END, mode: "practice" },
+    },
+    "Your practice session is still open.",
+  )();
+  await other(
+    {
+      kind: "continue",
+      mode: "lesson",
+      topic: "1MA1/R10",
+      end: { ...END, topic: "1MA1/R10" },
+    },
+    "Another lesson is still open.",
+  )();
+  await other(
+    {
+      kind: "continue",
+      mode: "boss",
+      topic: null,
+      end: { v: 1, type: "session", phase: "end", mode: "boss" },
+    },
+    "Your boss session is still open.",
+  )();
+});

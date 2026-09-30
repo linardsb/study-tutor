@@ -2,6 +2,7 @@
    here and unregistered in afterAll, so no other test file sees a document. */
 
 import { afterAll, expect, test } from "bun:test";
+import fs from "node:fs";
 import path from "node:path";
 import { GlobalRegistrator } from "@happy-dom/global-registrator";
 import { loadCasePack } from "../api/case";
@@ -338,11 +339,11 @@ test("examiner: photos stored but none marked (no model) show no marks-left figu
 });
 
 const FIREWALL =
-  "If the phone cannot open the link, Windows may be blocking it. Use the link below to drop a photo on this computer instead.";
+  "If the phone cannot open the link, this computer's firewall may be blocking it. Use the link below to drop a photo on this computer instead.";
 const NO_MODEL =
   "No model is set up, so the tutor will store the photo but not mark it.";
 
-test("M7: with the phone link shown, the map says Windows may block it and points to the drop link", async () => {
+test("M7: with the phone link shown, the map says the computer's firewall may block it, naming no one system, and points to the drop link", async () => {
   served.snap = {
     status: 201,
     body: {
@@ -355,6 +356,7 @@ test("M7: with the phone link shown, the map says Windows may block it and point
   $("#snap-open").click();
   await until(() => $("#snap svg") !== null);
   expect($("#snap").textContent).toContain(FIREWALL);
+  expect($("#snap").textContent).not.toMatch(/Windows|Mac/);
   expect($("#snap").textContent).not.toContain(NO_MODEL);
 });
 
@@ -365,4 +367,18 @@ test("L16: with no model set up, the minted link says the photo is stored, not m
   served.config = { configured: false, config: null };
   $("#snap-open").click();
   await until(() => ($("#snap").textContent ?? "").includes(NO_MODEL));
+});
+
+test("the Examiner card promises marking only when a model is set up", () => {
+  const html = fs.readFileSync(
+    path.resolve(import.meta.dir, "../../app/map.html"),
+    "utf8",
+  );
+  const card = html.slice(
+    html.indexOf('id="examiner"'),
+    html.indexOf('id="snap-open"'),
+  );
+  expect(card).toContain(
+    "With a model set up, the tutor marks it line by line",
+  );
 });
