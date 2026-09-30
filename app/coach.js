@@ -114,6 +114,8 @@
         $("scaffold").hidden = false;
       }
       $("no-model").hidden = body.model;
+      // only a set-up model writes Dan's lines, so the AI note shows only then
+      document.querySelector(".ai-note").hidden = !body.model;
       ref.item = body.item;
       if (body.seed !== undefined) ref.seed = body.seed;
       const waiting = say("dan", "Dan is working on it…");
@@ -146,6 +148,12 @@
       e.preventDefault();
       const typed = $("answer").value.trim();
       if (!typed) return;
+      // as on the lesson pages: nothing is ticked until the pupil picks one
+      if (!$("sure").checked && !$("notsure").checked) {
+        $("sure-fb").textContent = "Sure or not sure first";
+        return;
+      }
+      $("sure-fb").textContent = "";
       const button = $("correct-form").querySelector("button");
       button.disabled = true;
       say("you", `You: ${typed}`);

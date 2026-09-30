@@ -53,6 +53,8 @@
       $("teach-form").querySelector("button").textContent = "Mark my answer";
     }
     $("no-model").hidden = state.model;
+    // only a set-up model can reply, so the AI note shows only then
+    document.querySelector(".ai-note").hidden = !state.model;
     $("before").hidden = state.attempted;
     $("after").hidden = !state.attempted;
   }
@@ -117,7 +119,8 @@
     if (!text && job !== "hint") return;
     const form = box.closest("form");
     const button = form.querySelector("button");
-    say("you", `You: ${text || "(no working yet)"}`);
+    // one paragraph per line, so a teach-back written one step per line keeps its lines
+    say("you", ...`You: ${text || "(no working yet)"}`.split("\n"));
     const waiting = say("tutor", "Thinking…");
     button.disabled = true;
     fetch("/api/chat", {

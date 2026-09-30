@@ -50,6 +50,10 @@
     snapScan:
       "Scan this with your phone on the same Wi-Fi. It works once, for 15 minutes.",
     snapLocal: "Or drop a photo on this computer",
+    snapFirewall:
+      "If the phone cannot open the link, Windows may be blocking it. Use the link below to drop a photo on this computer instead.",
+    snapNoModel:
+      "No model is set up, so the tutor will store the photo but not mark it.",
     snapNoLan:
       "The phone cannot reach this computer from here. Drop a photo on this computer instead.",
     snapFailed:
@@ -225,6 +229,10 @@
   async function openSnap(holder, btn) {
     btn.disabled = true;
     holder.replaceChildren();
+    /* false only when the settings say no model; a failed read says nothing either way */
+    const model = getJson("/api/config")
+      .then((c) => Boolean(c.configured && c.config?.preset !== "none"))
+      .catch(() => true);
     let res;
     let body;
     try {
@@ -245,11 +253,16 @@
       return;
     }
     holder.appendChild(el("p", "stem", body.stem));
+    if (!(await model)) holder.appendChild(el("p", "note", TEXT.snapNoModel));
     if (body.qr) {
       const svg = new DOMParser().parseFromString(body.qr, "image/svg+xml");
       const box = el("div", "qr");
       box.appendChild(document.importNode(svg.documentElement, true));
-      holder.append(box, el("p", "", TEXT.snapScan));
+      holder.append(
+        box,
+        el("p", "", TEXT.snapScan),
+        el("p", "note", TEXT.snapFirewall),
+      );
     } else holder.appendChild(el("p", "note", TEXT.snapNoLan));
     const a = el("a", "", TEXT.snapLocal);
     a.href = body.local;

@@ -158,6 +158,15 @@
         "The settings did not load. Check the tutor window is still open.";
     });
   loadUsage();
+  /* the running version, for a parent checking which release is installed */
+  fetch("/api/update")
+    .then((r) => (r.ok ? r.json() : null))
+    .then((u) => {
+      if (u?.version)
+        document.getElementById("version").textContent =
+          `Study tutor version ${u.version}.`;
+    })
+    .catch(() => {});
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();

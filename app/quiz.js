@@ -304,7 +304,11 @@
     btn.textContent = "Five more, fresh numbers";
     btn.addEventListener("click", () => {
       const picks = Array.from({ length: 5 }, () => ({ code, topic }));
-      const next = buildQuiz(gens, picks, `${code}, fresh set`);
+      const next = buildQuiz(
+        gens,
+        picks,
+        `${(section.dataset.label || code).replace(/, fresh set$/, "")}, fresh set`,
+      );
       btn.disabled = true;
       section.parentNode.insertBefore(next.section, section.nextSibling);
       initQuiz(next.section, next.items);
@@ -448,7 +452,7 @@
             ? "Correct."
             : "Correct on the second go."
           : named ||
-            "Not this time. Read the working, then tell Claude what you did differently.";
+            "Not this time. Read the working and find the step where yours went a different way.";
         if (work) work.hidden = false;
         input.disabled = true;
         btn.disabled = true;
@@ -535,6 +539,9 @@
 
   /* a lesson's quiz: the items file named on the section */
   function initLesson(section) {
+    /* the scoreline names the topic, as the lesson's heading does, not its code */
+    const title = document.querySelector("main h1")?.textContent.trim();
+    if (title && !section.dataset.label) section.dataset.label = title;
     fetch(section.dataset.items)
       .then((res) => {
         if (!res.ok) throw new Error(String(res.status));
@@ -549,7 +556,7 @@
       });
   }
 
-  /* a copy button per method step, so a stuck step goes to Claude in one click.
+  /* a copy button per method step, so a stuck step becomes a question in one click.
      Numbering runs on across a second list, for topics with two methods. */
   function wireMethodSteps() {
     const lists = document.querySelectorAll("#method ol");
@@ -569,20 +576,141 @@
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "copy";
-        btn.setAttribute(
-          "aria-label",
-          `Copy step ${n} as a question for Claude`,
-        );
+        btn.setAttribute("aria-label", `Copy step ${n} as a question`);
         li.appendChild(document.createTextNode(" "));
         li.appendChild(btn);
       }
     }
   }
 
+  /* the app pages' top bar, the same links in the same order; a lesson in content/ has no shell */
+  const NAV = [
+    ["/", "Lessons"],
+    ["/map.html", "Map"],
+    ["/practice.html", "Practice"],
+    ["/case.html", "Today's case"],
+    ["/squad.html", "Squad"],
+    ["/coach.html", "Coach Dan"],
+  ];
+
+  function addNav() {
+    const bar = document.createElement("header");
+    bar.className = "topbar";
+    const inner = document.createElement("div");
+    inner.className = "inner";
+    const brand = document.createElement("a");
+    brand.className = "brand";
+    brand.href = "/";
+    brand.textContent = "Study tutor";
+    const nav = document.createElement("nav");
+    nav.className = "topnav";
+    nav.setAttribute("aria-label", "Main");
+    for (const [href, text] of NAV) {
+      const a = document.createElement("a");
+      a.href = href;
+      a.textContent = text;
+      nav.appendChild(a);
+    }
+    inner.append(brand, nav);
+    bar.appendChild(inner);
+    document.body.prepend(bar);
+  }
+
+  function postEvent(body) {
+    return fetch("/api/event", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    })
+      .then((res) => res.ok)
+      .catch(() => false);
+  }
+
+  /* the lesson record the map's "Done with it" writes: the open lesson session's end, verbatim from
+     /api/next. Opened from the lesson list, no lesson session is open, so this one starts and ends. */
+  async function endLesson() {
+    const get = (url) =>
+      fetch(url).then((res) => {
+        if (!res.ok) throw new Error(String(res.status));
+        return res.json();
+      });
+    const [urls, next] = await Promise.all([
+      get("/api/lessons"),
+      get("/api/next"),
+    ]);
+    const topic = Object.keys(urls).find(
+      (id) => urls[id] === location.pathname,
+    );
+    if (!topic) return false;
+    const step = next.step;
+    if (
+      step.kind === "continue" &&
+      step.mode === "lesson" &&
+      step.topic === topic
+    )
+      return postEvent(step.end);
+    const begin = {
+      v: 1,
+      type: "session",
+      phase: "start",
+      mode: "lesson",
+      topic,
+    };
+    return (await postEvent(begin)) && postEvent({ ...begin, phase: "end" });
+  }
+
+  function addDone(main) {
+    const box = document.createElement("section");
+    box.id = "lesson-done";
+    const p = document.createElement("p");
+    p.textContent =
+      "When you have worked through it, mark it done. That fills the first bar on your map.";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "lesson-done-button";
+    btn.textContent = "Done with this lesson";
+    const note = document.createElement("p");
+    note.className = "note";
+    note.setAttribute("role", "status");
+    btn.addEventListener("click", () => {
+      btn.disabled = true;
+      note.textContent = "";
+      endLesson()
+        .catch(() => false)
+        .then((saved) => {
+          if (!saved) {
+            note.textContent = NOT_SAVED.trim();
+            btn.disabled = false;
+            return;
+          }
+          btn.hidden = true;
+          const a = document.createElement("a");
+          a.href = "/map.html";
+          a.textContent = "Back to your map";
+          note.replaceChildren("Saved. ", a, ".");
+        });
+    });
+    box.append(p, btn, note);
+    /* after the teach-back, the last thing the lesson asks for */
+    const after = document.getElementById("teach-back");
+    if (after?.parentNode === main) after.after(box);
+    else main.insertBefore(box, main.querySelector(":scope > footer"));
+  }
+
   function start() {
     for (const section of document.querySelectorAll(".quiz[data-items]"))
       initLesson(section);
     wireMethodSteps();
+    /* a lesson page: a quiz from an items file and no app top bar */
+    const main = document.querySelector("main.lesson");
+    if (
+      main &&
+      document.querySelector(".quiz[data-items]") &&
+      !document.querySelector(".topbar")
+    ) {
+      addNav();
+      addDone(main);
+    }
   }
 
   if (typeof document !== "undefined") {
