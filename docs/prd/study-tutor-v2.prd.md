@@ -207,7 +207,7 @@ errors return without a re-test; invention-first d = 0.36 on transfer (Sinha & K
 - **Q4.** Who are the first three friends, which boards and subjects, and how many are on macOS?
 - **Q5.** Does the Jev guard and teach-back grader carry over as the answer-before-attempt
   guard, or is the guard re-implemented without a second vendor?
-- **Q6.** Repo name and licence for the public download.
+- **Q6.** Repo name and licence for the public download. Answered 2026-09-30: `linardsb/study-tutor`, public, MIT for the code; Oak content stays under OGL with attribution.
 - **Q7.** What does the parent digest contain, and how often? (Weekly, factual, low-frequency
   is the evidenced shape; a live feed the teen knows is watched risks the control effect.)
 - **Q8.** Which subject is second: science (Oak coverage, equation-sheet generators) or
