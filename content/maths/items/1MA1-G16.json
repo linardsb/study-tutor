@@ -80,7 +80,16 @@
     "stem": "Find the area of this circle. Give your answer in terms of pi, like 9pi.",
     "figure": "<svg viewBox=\"0 0 120 120\" width=\"100%\" style=\"max-width:120px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"A circle with a radius of 5 cm marked from the centre to the edge\">\n        <circle cx=\"60\" cy=\"60\" r=\"48\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/>\n        <line x1=\"60\" y1=\"60\" x2=\"108\" y2=\"60\" stroke=\"#2b5797\" stroke-width=\"2\"/>\n        <circle cx=\"60\" cy=\"60\" r=\"2.5\" fill=\"#1d1d1b\"/>\n        <text x=\"84\" y=\"54\" text-anchor=\"middle\" fill=\"#2b5797\">5 cm</text>\n      </svg>",
     "hint": "This is not a compound shape. The area of a circle is pi × r × r.",
-    "answers": ["25pi"],
+    "answers": [
+      "25pi",
+      "25*pi",
+      "25xpi",
+      "pi*25",
+      "25pi cm2",
+      "25pi cm^2",
+      "25*pi cm2",
+      "25*pi cm^2"
+    ],
     "working": "A circle needs its own formula: area = pi × r². Here r = 5, so 5² = 25 and the area is 25pi cm².",
     "misconceptions": [
       {

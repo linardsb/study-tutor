@@ -38,6 +38,20 @@
   function tidy(n) {
     return Math.round(n * 1000) / 1000;
   }
+  /* the same answers again with each unit the stem names typed after them */
+  function withUnit(list, units) {
+    var out = list.slice();
+    units.forEach(function (u) {
+      list.forEach(function (a) {
+        out.push(a + u);
+      });
+    });
+    return out;
+  }
+  /* the ways of writing n lots of pi that the pi items accept */
+  function piForms(n) {
+    return [n + "pi", n + "π", n + "*pi", n + "xpi", "pi*" + n];
+  }
 
   var GEN = {};
 
@@ -120,7 +134,7 @@
       var h = hcf(big, cm);
       return {
         stem: "Simplify the ratio " + m + " m : " + cm + " cm.",
-        answers: [big / h + ":" + cm / h],
+        answers: [big / h + ":" + cm / h, big / h + " to " + cm / h],
         type: "ratio",
         working:
           m +
@@ -169,7 +183,7 @@
     var g = hcf(a, b);
     return {
       stem: "Simplify the ratio " + a + " : " + b + ".",
-      answers: [a / g + ":" + b / g],
+      answers: [a / g + ":" + b / g, a / g + " to " + b / g],
       type: "ratio",
       working:
         "The highest common factor of " +
@@ -390,7 +404,7 @@
           " cm and a perpendicular height of " +
           h +
           " cm. Find its area in cm².",
-        answers: [String((b * h) / 2)],
+        answers: withUnit([String((b * h) / 2)], ["cm²"]),
         working:
           "Area of a triangle is ½ × base × height. ½ × " +
           b +
@@ -421,7 +435,7 @@
           " cm, and a height of " +
           hh +
           " cm. Find its area in cm².",
-        answers: [String(((a + c) * hh) / 2)],
+        answers: withUnit([String(((a + c) * hh) / 2)], ["cm²"]),
         working:
           "Area of a trapezium is ½ × (a + b) × h. " +
           a +
@@ -461,7 +475,7 @@
         w2 +
         " cm cut out of one corner. " +
         "Find the area of the shape that is left, in cm².",
-      answers: [String(L * W - l2 * w2)],
+      answers: withUnit([String(L * W - l2 * w2)], ["cm²"]),
       working:
         "Big rectangle: " +
         L +
@@ -500,33 +514,50 @@
         eq: function (a, b) {
           return "y = " + a + "x + " + b;
         },
-        ans: ["straight line", "a straight line", "line", "linear"],
+        ans: ["straight line", "a straight line", "line", "a line", "linear"],
         why: "the highest power of x is 1",
-        shape: "straight line",
+        shape: "a straight line",
       },
       {
         eq: function (a, b) {
           return "y = " + a + "x² + " + b;
         },
-        ans: ["u shape", "a u shape", "parabola", "quadratic"],
+        ans: [
+          "u shape",
+          "a u shape",
+          "u-shape",
+          "a u-shape",
+          "parabola",
+          "a parabola",
+          "quadratic",
+        ],
         why: "the highest power of x is 2",
-        shape: "U shape",
+        shape: "a U shape",
       },
       {
         eq: function (a, b) {
           return "y = −" + a + "x² + " + b;
         },
-        ans: ["upside down u", "upside-down u", "n shape", "a n shape"],
+        ans: [
+          "upside down u",
+          "an upside down u",
+          "upside-down u",
+          "an upside-down u",
+          "n shape",
+          "an n shape",
+          "n-shape",
+          "an n-shape",
+        ],
         why: "the highest power of x is 2 and it is negative",
-        shape: "upside down U",
+        shape: "an upside down U",
       },
       {
         eq: function (a, b) {
           return "y = " + a + "x³ + " + b;
         },
-        ans: ["s shape", "an s shape", "cubic"],
+        ans: ["s shape", "an s shape", "s-shape", "an s-shape", "cubic"],
         why: "the highest power of x is 3",
-        shape: "S shape",
+        shape: "an S shape",
       },
     ];
     var s = pick(rng, shapes);
@@ -545,7 +576,7 @@
         b +
         " and look at the power of x. Here " +
         s.why +
-        ". That gives a " +
+        ". That gives " +
         s.shape,
       hint: "Look at the highest power of x, not at the numbers in front.",
       wrong: (function () {
@@ -571,7 +602,7 @@
           " N presses on an area of " +
           area +
           " m². Find the pressure in N/m².",
-        answers: [String(press)],
+        answers: withUnit([String(press)], ["N/m²"]),
         working:
           "Cover P on the triangle and force sits above area, so divide. Pressure = force ÷ area = " +
           force +
@@ -598,7 +629,7 @@
           " N/m² acts on an area of " +
           area +
           " m². Find the force in N.",
-        answers: [String(force)],
+        answers: withUnit([String(force)], ["N"]),
         working:
           "Cover F on the triangle and P and A sit side by side, so multiply. Force = pressure × area = " +
           press +
@@ -624,7 +655,7 @@
         " N gives a pressure of " +
         press +
         " N/m². Find the area in m².",
-      answers: [String(area)],
+      answers: withUnit([String(area)], ["m²"]),
       working:
         "Cover A on the triangle and force sits above pressure, so divide. Area = force ÷ pressure = " +
         force +
@@ -656,7 +687,7 @@
           " g and a volume of " +
           vol +
           " cm³. Find its density in g/cm³.",
-        answers: [String(dens)],
+        answers: withUnit([String(dens)], ["g/cm³"]),
         working:
           "Cover D and mass sits above volume, so divide. Density = mass ÷ volume = " +
           mass +
@@ -682,7 +713,7 @@
           " g/cm³. Find the mass, in g, of " +
           vol +
           " cm³ of it.",
-        answers: [String(mass)],
+        answers: withUnit([String(mass)], ["g"]),
         working:
           "Cover M and D and V sit side by side, so multiply. Mass = density × volume = " +
           dens +
@@ -706,7 +737,7 @@
         " g/cm³. A piece of it has a mass of " +
         mass +
         " g. Find its volume in cm³.",
-      answers: [String(vol)],
+      answers: withUnit([String(vol)], ["cm³"]),
       working:
         "Cover V and mass sits above density, so divide. Volume = mass ÷ density = " +
         mass +
@@ -755,6 +786,8 @@
         })(),
       };
     }
+    /* c = 1 would make the answer the given line itself; only those seeds roll again */
+    if (c === 1) c = int(rng, 2, 9);
     var x0 = int(rng, 1, 5);
     var y0 = m * x0 + c;
     return {
@@ -766,7 +799,11 @@
         ", " +
         y0 +
         ").",
-      answers: ["y=" + m + "x+" + c, "y=" + m + "x + " + c],
+      answers: [
+        "y=" + m + "x+" + c,
+        "y=" + m + "x + " + c,
+        "y=" + c + (m > 0 ? "+" : "") + m + "x",
+      ],
       type: "text",
       working:
         "Parallel means the same gradient, so it starts y = " +
@@ -999,7 +1036,14 @@
       };
     }
     var a = pick(rng, [2, 3, 4, 5]);
-    var b = pick(rng, [3, 5, 6, 7]);
+    /* never 3 : 3 or 5 : 5, one pick either way so the seeds stay aligned */
+    var b = pick(
+      rng,
+      [3, 5, 6, 7].filter(function (x) {
+        return x !== a;
+      }),
+    );
+    var gr = hcf(a, a + b);
     return {
       stem:
         "Paint is mixed in the ratio " +
@@ -1007,7 +1051,7 @@
         " : " +
         b +
         ", red to white. What fraction of the mix is red?",
-      answers: [a + "/" + (a + b)],
+      answers: [a / gr + "/" + (a + b) / gr, a + "/" + (a + b)],
       type: "fraction",
       working:
         "Add the parts for the bottom of the fraction: " +
@@ -1021,7 +1065,8 @@
         " of those parts = " +
         a +
         "/" +
-        (a + b),
+        (a + b) +
+        (gr > 1 ? " = " + a / gr + "/" + (a + b) / gr : ""),
       hint: "Add the two parts of the ratio to find how many parts there are in all.",
       wrong: (function () {
         var w = {};
@@ -1044,7 +1089,7 @@
           " m/s in " +
           t1 +
           " seconds. Find its acceleration in m/s².",
-        answers: [String(tidy(v / t1))],
+        answers: withUnit([String(tidy(v / t1))], ["m/s²"]),
         working:
           "Acceleration is the gradient of the line: change in velocity ÷ time taken. " +
           v +
@@ -1075,7 +1120,7 @@
         " m/s for a further " +
         t2 +
         " seconds. Find the total distance in metres.",
-      answers: [String((v * t1) / 2 + v * t2)],
+      answers: withUnit([String((v * t1) / 2 + v * t2)], ["m", "metres"]),
       working:
         "Distance is the area under the graph. Triangle: ½ × " +
         t1 +
@@ -1324,7 +1369,7 @@
           "A circle has a diameter of " +
           d +
           " cm. Find its area in terms of π, in cm².",
-        answers: [r * r + "pi", r * r + "π"],
+        answers: withUnit(piForms(r * r), ["cm²"]),
         type: "pi",
         working:
           "Halve the diameter for the radius: " +
@@ -1356,7 +1401,7 @@
         "A circle has a radius of " +
         r +
         " cm. Find its area in terms of π, in cm².",
-      answers: [r * r + "pi", r * r + "π"],
+      answers: withUnit(piForms(r * r), ["cm²"]),
       type: "pi",
       working:
         "Area = πr². Square the radius: " +
@@ -1389,7 +1434,7 @@
           "A hemisphere has a radius of " +
           r +
           " cm. Find its volume in terms of π, in cm³.",
-        answers: [half + "pi", half + "π"],
+        answers: withUnit(piForms(half), ["cm³"]),
         type: "pi",
         working:
           "Full sphere: V = 4/3 πr³. " +
@@ -1433,7 +1478,7 @@
         : "A ball has a radius of " +
           r +
           " cm. Find its volume in terms of π, in cm³.",
-      answers: [v + "pi", v + "π"],
+      answers: withUnit(piForms(v), ["cm³"]),
       type: "pi",
       working:
         (useD
@@ -1478,7 +1523,7 @@
         " cm and a perpendicular height of " +
         h +
         " cm. Find its volume in terms of π, in cm³.",
-      answers: [v + "pi", v + "π"],
+      answers: withUnit(piForms(v), ["cm³"]),
       type: "pi",
       working:
         "V = πr²h ÷ 3. Square the radius: " +
@@ -1526,7 +1571,7 @@
           " cm and a slant height of " +
           s +
           " cm. It is open at the bottom. Find the area of the four sloping faces in cm².",
-        answers: [String(tri)],
+        answers: withUnit([String(tri)], ["cm²"]),
         working:
           "One triangle: ½ × " +
           b +
@@ -1557,7 +1602,7 @@
         " cm and a slant height of " +
         s +
         " cm. Find its total surface area in cm².",
-      answers: [String(total)],
+      answers: withUnit([String(total)], ["cm²"]),
       working:
         "Base: " +
         b +
@@ -1633,7 +1678,7 @@
         " cm. Find the " +
         c.want +
         " in cm.",
-      answers: [String(ans)],
+      answers: withUnit([String(ans)], ["cm"]),
       working:
         c.word +
         ": " +

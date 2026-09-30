@@ -1,8 +1,8 @@
 # Licence for content/maths
 
 Everything in this folder was written for this project: the 21 lessons, the 21 reference sheets, the
-items in `items/`, the topic table and `generators.js`. Copyright 2025-2026 Linards Berzins. Until the
-repository licence is set (PRD Q6), this folder is redistributed only as part of the Study tutor download.
+items in `items/`, the topic table and `generators.js`. Copyright 2025-2026 Linards Berzins. It is
+released under the MIT licence, the same as the code; see [`LICENSE`](../../LICENSE) at the repository root.
 
 ## Identifiers from other people
 
@@ -15,5 +15,6 @@ repository licence is set (PRD Q6), this folder is redistributed only as part of
 
 ## Open licences
 
-No Oak National Academy material is in this folder yet. When it is used, it carries the Open Government
-Licence v3 with attribution here.
+No Oak National Academy material is in this folder yet. When it is used, it stays under the
+[Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/),
+not MIT, and is attributed here.

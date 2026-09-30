@@ -72,6 +72,14 @@
       {
         "answer": "cell membrane, cell wall, nucleus, chloroplast",
         "message": "You have swapped the two outer layers."
+      },
+      {
+        "answer": "cell wall, membrane, nucleus, chloroplast",
+        "message": "B needs its full name."
+      },
+      {
+        "answer": "cell wall, membrane, nucleus, chloroplasts",
+        "message": "B needs its full name."
       }
     ]
   },

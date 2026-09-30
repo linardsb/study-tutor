@@ -33,8 +33,9 @@ No third-party content inside Oak lessons (images, diagrams, videos, other publi
 
 The plant cell diagram in item #4 and its question, the explanation question in item #6 with its mark
 scheme, every hint, working and misconception message, the topic table and this folder's layout were
-written for this project. Copyright 2026 Linards Berzins. Until the repository licence is set (PRD Q6),
-they are redistributed only as part of the Study tutor download.
+written for this project. Copyright 2026 Linards Berzins. They are released under the MIT licence, the
+same as the code; see [`LICENSE`](../../LICENSE) at the repository root. The Oak material above is not
+covered by MIT: it stays under the Open Government Licence v3.0, with the attribution given there.
 
 ## Identifiers from other people
 
