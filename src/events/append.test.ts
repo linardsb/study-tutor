@@ -4,12 +4,15 @@ import os from "node:os";
 import path from "node:path";
 import {
   appendEvent,
+  ensureDataDir,
   listDataDir,
   makeDataDir,
   ownerAccount,
   readLines,
   readStoredState,
+  removeDataFile,
   resolveInData,
+  restrictDataDir,
   restrictToOwner,
   writeDataFile,
   writeIntakeFile,
@@ -100,6 +103,43 @@ test(
     } finally {
       spy.mockRestore();
     }
+  }),
+);
+
+test(
+  "writeDataFile: a rename refused with EBUSY (OneDrive, an antivirus scan) is retried, then copied",
+  withTemp((_dir, data) => {
+    const rename = fs.renameSync;
+    const busy = () => {
+      throw Object.assign(new Error("resource busy"), { code: "EBUSY" });
+    };
+    // Busy once, then free: the retry renames, so the write stays atomic.
+    let calls = 0;
+    const once = spyOn(fs, "renameSync").mockImplementation((a, b) => {
+      calls++;
+      if (calls === 1) busy();
+      rename(a, b);
+    });
+    try {
+      writeDataFile(data, "config.json", "one\n");
+      expect(calls).toBe(2);
+    } finally {
+      once.mockRestore();
+    }
+    expect(fs.readFileSync(path.join(data, "config.json"), "utf8")).toBe(
+      "one\n",
+    );
+    // Busy every time: the copy fallback saves it and removes the temp file.
+    const always = spyOn(fs, "renameSync").mockImplementation(busy);
+    try {
+      writeDataFile(data, "config.json", "two\n");
+    } finally {
+      always.mockRestore();
+    }
+    expect(fs.readFileSync(path.join(data, "config.json"), "utf8")).toBe(
+      "two\n",
+    );
+    expect(fs.existsSync(path.join(data, "config.json.tmp"))).toBe(false);
   }),
 );
 
@@ -589,5 +629,68 @@ test(
       /outside the data folder/,
     );
     expect(fs.readdirSync(outside)).toEqual([]);
+  }),
+);
+
+test("restrictDataDir: on Windows the data folder itself goes owner-only, inherited by every file made in it later", () => {
+  const calls: string[][] = [];
+  const spawn = (cmd: string[]) => {
+    calls.push(cmd);
+    return { exitCode: 0 };
+  };
+  expect(restrictDataDir("/d/data", "darwin", spawn, "PC\\pupil")).toBe(true);
+  expect(calls).toEqual([]);
+  expect(restrictDataDir("C:\\t\\data", "win32", spawn, "PC\\pupil")).toBe(
+    true,
+  );
+  // (OI)(CI): files and folders made inside inherit the grant; /inheritance:r drops the rest.
+  expect(calls).toEqual([
+    [
+      "icacls",
+      "C:\\t\\data",
+      "/inheritance:r",
+      "/grant:r",
+      "PC\\pupil:(OI)(CI)F",
+    ],
+  ]);
+  const err = spyOn(console, "error").mockImplementation(() => {});
+  try {
+    expect(
+      restrictDataDir("x", "win32", () => ({ exitCode: 5 }), "pupil"),
+    ).toBe(false);
+    expect(err).toHaveBeenCalledTimes(1);
+  } finally {
+    err.mockRestore();
+  }
+});
+
+test(
+  "ensureDataDir restricts data/ when it makes it, before any file is written in it, and not again",
+  withTemp((_dir, data) => {
+    const seen: string[][] = [];
+    const restrict = (dir: string) => {
+      seen.push(fs.readdirSync(dir));
+      return true;
+    };
+    ensureDataDir(data, restrict);
+    expect(seen).toEqual([[]]);
+    ensureDataDir(data, restrict);
+    expect(seen).toHaveLength(1);
+  }),
+);
+
+test.skipIf(process.platform === "win32")(
+  "removeDataFile removes a planted symlink itself, never the file it points to, and refuses paths out of data/",
+  withTemp((dir, data) => {
+    appendEvent(data, ATTEMPT, AT);
+    fs.symlinkSync(path.join(data, "events.jsonl"), path.join(data, "x.lock"));
+    removeDataFile(data, "x.lock");
+    expect(fs.existsSync(path.join(data, "x.lock"))).toBe(false);
+    expect(readLines(data)).toHaveLength(1);
+    fs.writeFileSync(path.join(dir, "outside"), "keep");
+    expect(() => removeDataFile(data, "../outside")).toThrow("Refused");
+    expect(fs.existsSync(path.join(dir, "outside"))).toBe(true);
+    removeDataFile(data, "missing.lock");
+    removeDataFile(path.join(dir, "no-data"), "x.lock");
   }),
 );

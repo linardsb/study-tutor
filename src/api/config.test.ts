@@ -120,7 +120,10 @@ test(
 
 test.skipIf(process.platform === "win32")(
   "squadFolder (#42): saved as its realpath, quotes dropped, kept when absent, cleared when empty; a bad one names no path",
-  withTemp((dir, data) => {
+  withTemp((dir) => {
+    // The tutor's own folder is dir/tutor: a sync folder beside data/ would be inside it (M10).
+    const data = path.join(dir, "tutor", "data");
+    fs.mkdirSync(path.dirname(data));
     const synced = path.join(dir, "synced");
     fs.mkdirSync(synced);
     fs.symlinkSync(synced, path.join(dir, "link"));

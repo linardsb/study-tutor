@@ -1,6 +1,7 @@
-import type { Topic } from "../content/types";
+import type { CasePack, Topic } from "../content/types";
 import { appendEvent } from "../events/append";
 import type { Event, NewEvent } from "../events/types";
+import { findItem } from "../flow/chat";
 import { passes } from "../flow/ladder";
 import { xpFor } from "../flow/xp";
 import { utcNow } from "../mcp/clock";
@@ -47,6 +48,34 @@ function refusal(event: Record<string, unknown>): string | null {
   return null;
 }
 
+/** Event types that name an item, and whether the type carries the generated item's seed. */
+const NAMES_ITEM: Record<string, boolean> = {
+  attempt: true,
+  coach: true,
+  teachback: false,
+  case: false,
+};
+
+/**
+ * The item must be one the pack holds under the event's topic: an items-file item, or `<topic>#gen`
+ * for a topic with a generator, rebuilt from its seed where the type carries one (findItem, the
+ * chat panel's lookup). Otherwise any id would earn XP. A teach-back or case with no item (the
+ * squad parent round, a rule case) names none; a malformed item is left to appendEvent's refusal.
+ */
+function unknownItem(event: Record<string, unknown>, pack: CasePack): boolean {
+  const type = String(event.type);
+  if (!Object.hasOwn(NAMES_ITEM, type) || typeof event.item !== "string")
+    return false;
+  // teachback@1 and case@1 have no seed: seed 0 only asks whether the topic has a generator.
+  const seed = NAMES_ITEM[type] ? event.seed : 0;
+  const found = findItem(
+    pack,
+    event.item,
+    typeof seed === "number" ? seed : undefined,
+  );
+  return found === null || found.topic !== event.topic;
+}
+
 /** The xp line after a scoring event. A failure is logged, never returned: the scoring event was saved. */
 function appendXp(dataDir: string, saved: Event, now: () => string): void {
   const xp = xpFor(saved);
@@ -58,12 +87,17 @@ function appendXp(dataDir: string, saved: Event, now: () => string): void {
   }
 }
 
-/** One posted body → one appended event (and its xp line after a scoring event), or a refusal with nothing written. */
+/**
+ * One posted body → one appended event (and its xp line after a scoring event), or a refusal with
+ * nothing written. `pack` is given at the HTTP boundary (/api/event), where it checks every named
+ * item; the server's own callers (chat, coach) build their records from pack items already.
+ */
 export function postEvent(
   body: unknown,
   dataDir: string,
   topics: readonly Topic[],
   now: () => string = utcNow,
+  pack?: CasePack,
 ): PostResult {
   if (!isObj(body))
     return { status: 400, body: { error: "Body must be a JSON object" } };
@@ -78,6 +112,11 @@ export function postEvent(
     );
   const refused = refusal(event);
   if (refused !== null) return { status: 400, body: { error: refused } };
+  if (pack !== undefined && unknownItem(event, pack))
+    return {
+      status: 400,
+      body: { error: "Refused: the item is not in the pack under that topic" },
+    };
   try {
     // appendEvent runs parseEvent on the line it builds and throws Refused otherwise, so the cast
     // never lets a malformed body reach the log.

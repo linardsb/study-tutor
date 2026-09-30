@@ -367,3 +367,34 @@ test(
     expect(calls).toEqual([path.join(data, "config.json")]);
   }),
 );
+
+test(
+  "restrictConfigOnStart restricts an existing data folder too (a copied folder takes its new parent's permissions)",
+  withTemp((_dir, data) => {
+    const dirs: string[] = [];
+    const restrictDir = (dir: string) => {
+      dirs.push(dir);
+      return true;
+    };
+    restrictConfigOnStart(data, () => {}, restrictDir);
+    expect(dirs).toEqual([]); // no folder: a start makes none
+    fs.mkdirSync(data);
+    restrictConfigOnStart(data, () => {}, restrictDir);
+    expect(dirs).toEqual([data]);
+  }),
+);
+
+test(
+  "saveSetup restricts data/ before the key is written, so neither config.json nor its temp file exists unrestricted",
+  withTemp((_dir, data) => {
+    fs.mkdirSync(data);
+    const seen: string[][] = [];
+    const r = saveSetup(data, OPENAI, (dir) => {
+      seen.push(fs.readdirSync(dir));
+      return true;
+    });
+    expect(r.ok).toBe(true);
+    expect(seen).toEqual([[]]);
+    expect(readConfig(data)?.key).toBe(KEY);
+  }),
+);

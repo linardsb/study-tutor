@@ -1,4 +1,4 @@
-import { expect, test } from "bun:test";
+import { expect, spyOn, test } from "bun:test";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -16,7 +16,7 @@ import { VERSION } from "../updates";
 import { loadCasePack } from "./case";
 import { postConfig } from "./config";
 import { postEvent } from "./event";
-import { getSquad, joinSquad, postSquad } from "./squad";
+import { getSquad, joinSquad, postSquad, writeMine } from "./squad";
 
 const pack = await loadCasePack("maths");
 const DAY = "2026-10-10"; // Saturday of 2026-W41
@@ -31,14 +31,18 @@ const answers = right.map((a, k) => ({
   working: `step ${k}`,
 }));
 
-/** A realpathed temp dir (macOS maps /var to /private/var), removed afterwards. */
+/**
+ * A realpathed temp dir (macOS maps /var to /private/var), removed afterwards. The tutor's own folder is
+ * dir/tutor, so data/ is dir/tutor/data and a sync folder at dir/synced is outside the app folder (M10).
+ */
 function withTemp(fn: (dir: string, data: string) => void | Promise<void>) {
   return async () => {
     const dir = fs.realpathSync.native(
       fs.mkdtempSync(path.join(os.tmpdir(), "st-squad-")),
     );
+    fs.mkdirSync(path.join(dir, "tutor"));
     try {
-      await fn(dir, path.join(dir, "data"));
+      await fn(dir, path.join(dir, "tutor", "data"));
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }
@@ -445,7 +449,7 @@ test(
     join(data);
     const other = "1MA1/R4";
     expect(other).not.toBe(round.topic);
-    const was = roundOf("year11-b", WEEK, other);
+    const was = roundOf("year11-b", WEEK, other, pack);
     appendEvent(
       data,
       {
@@ -601,7 +605,7 @@ test(
     for (const squadFolder of [
       "../synced",
       "synced",
-      path.join(sync(dir), "..", "data"),
+      path.join(sync(dir), "..", "tutor", "data"),
     ]) {
       const r = postConfig(
         { preset: "none", weeklyTarget: 3, squadFolder },
@@ -613,7 +617,7 @@ test(
     expect(fs.existsSync(path.join(data, "config.json"))).toBe(false);
     for (const squadFolder of [
       "../synced",
-      path.join(sync(dir), "..", "data"),
+      path.join(sync(dir), "..", "tutor", "data"),
     ]) {
       handSet(data, squadFolder);
       const config = fs.readFileSync(path.join(data, "config.json"));
@@ -637,7 +641,8 @@ test(
     fs.mkdirSync(inside);
     const tries = [data, inside];
     // macOS and Windows ignore case: DATA is data/ (realpath gives the stored case)
-    if (process.platform !== "linux") tries.push(path.join(dir, "DATA"));
+    if (process.platform !== "linux")
+      tries.push(path.join(dir, "tutor", "DATA"));
     for (const squadFolder of tries) {
       const r = postConfig(
         { preset: "none", weeklyTarget: 3, squadFolder },
@@ -693,5 +698,73 @@ test(
     expect(view.shared).toBe(true);
     expect(view.members.map((m) => m.pupil)).toEqual(["alex"]);
     expect(fs.readdirSync(sync(dir))).toEqual([]);
+  }),
+);
+
+test(
+  "S8. the tutor's own folder, app/ or content/ is refused on save and on use; a pupil called topics never overwrites topics.json (M10)",
+  withTemp((dir, data) => {
+    join(data);
+    const root = path.join(dir, "tutor");
+    const maths = path.join(root, "content", "maths");
+    fs.mkdirSync(maths, { recursive: true });
+    fs.mkdirSync(path.join(root, "app"));
+    const topics = path.join(maths, "topics.json");
+    fs.writeFileSync(topics, "[]\n");
+    for (const squadFolder of [root, path.join(root, "app"), maths]) {
+      const r = postConfig(
+        { preset: "none", weeklyTarget: 3, squadFolder },
+        data,
+      );
+      expect(r.status).toBe(400);
+    }
+    expect(fs.existsSync(path.join(data, "config.json"))).toBe(false);
+    joinSquad({ squad: "year11-b", pupil: "topics" }, data, DAY);
+    for (const squadFolder of [maths, root]) {
+      handSet(data, squadFolder);
+      post(data);
+      const view = getSquad(data, pack, DAY, true).body;
+      expect(view.shared).toBe(false);
+      expect(view.unreadable).toBe(1);
+    }
+    expect(fs.readFileSync(topics, "utf8")).toBe("[]\n");
+    expect(fs.existsSync(path.join(root, "topics.json"))).toBe(false);
+  }),
+);
+
+test.skipIf(process.platform === "win32")(
+  "S9. a checked folder swapped for a symlink before the write is not written through (M10)",
+  withTemp((dir, data) => {
+    const synced = sync(dir);
+    fs.mkdirSync(synced);
+    const place = { root: synced, dir: "", sync: true };
+    const target = path.join(dir, "elsewhere");
+    fs.mkdirSync(target);
+    fs.rmSync(synced, { recursive: true });
+    fs.symlinkSync(target, synced);
+    const f = squadFile(
+      {
+        v: 1,
+        type: "squad",
+        t: AT(),
+        squad: "year11-b",
+        week: WEEK,
+        topic: round.topic,
+        score: 0,
+        of: 0,
+        answers: [],
+      },
+      "sam",
+      round.seeds,
+      VERSION,
+    );
+    const quiet = spyOn(console, "error").mockImplementation(() => {});
+    try {
+      expect(writeMine(place, f)).toBe(false);
+    } finally {
+      quiet.mockRestore();
+    }
+    expect(fs.readdirSync(target)).toEqual([]);
+    expect(fs.existsSync(data)).toBe(false);
   }),
 );

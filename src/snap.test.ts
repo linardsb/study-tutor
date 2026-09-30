@@ -722,3 +722,23 @@ describe("mintSnap skips written-answer items", () => {
     expect((r.body as { error: string }).error).toBe(TEXT.gone);
   });
 });
+
+test(
+  "spent: once the marked result has been read, the token is refused for the status, the page and an upload (L7)",
+  withSnap(NO_MODEL, async (h) => {
+    h.attempt();
+    const { body } = await h.mint();
+    const base = h.lanBase(body);
+    const token = tokenOf(body);
+    expect((await h.upload(base, token)).status).toBe(202);
+    await h.snaps.current()?.done;
+    const first = await fetch(`${base}/api/snap?token=${token}`);
+    expect(first.status).toBe(200);
+    expect((await read(first)).state).toBe("done");
+    expect((await fetch(`${base}/api/snap?token=${token}`)).status).toBe(403);
+    expect((await h.main(`/api/snap?token=${token}`)).status).toBe(403);
+    expect((await fetch(`${base}/snap.html?token=${token}`)).status).toBe(403);
+    expect((await h.upload(base, token)).status).toBe(403);
+    expect(h.intake()).toHaveLength(1);
+  }),
+);

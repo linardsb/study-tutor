@@ -53,21 +53,39 @@ export function squadRound(
   const topic = (
     topics[hash(`${squad}:${week}`) % topics.length] as (typeof topics)[number]
   ).id;
-  return roundOf(squad, week, topic);
+  return roundOf(squad, week, topic, pack);
 }
 
-/** The round for a known topic: a saved squad event keeps the questions it was answered on after an update moves the pick. */
+// observed (2000-seed scratch run, 2026-09-30): the smallest generator, 1MA1/G17/sphere, rolls 9 stems, so 5 pupil + 3 parent fit; expected: 200 tries is ample
+const PARENT_TRIES = 200;
+
+/**
+ * The round for a known topic: a saved squad event keeps the questions it was answered on after an
+ * update moves the pick. The parent's seeds walk hash(`…:parent:k`) and keep only a seed whose question
+ * is none of the pupil's five and none already kept: a small generator rolls the same stem from two
+ * seeds, and the pupil's worked answers are on the page beside the parent round (M4).
+ */
 export function roundOf(
   squad: string,
   week: string,
   topic: string,
+  pack: CasePack,
 ): SquadRound {
   const seeds = Array.from({ length: SQUAD_SLOTS }, (_, k) =>
     hash(`${squad}:${week}:${topic}:${k}`),
   );
-  const parentSeeds = Array.from({ length: PARENT_SLOTS }, (_, k) =>
-    hash(`${squad}:${week}:${topic}:parent:${k}`),
-  );
+  const gen = genOf(pack, topic);
+  const stem = (s: number) =>
+    typeof gen === "function" ? gen(lcg(s)).stem : String(s);
+  const taken = new Set(seeds.map(stem));
+  const parentSeeds: number[] = [];
+  for (let k = 0; parentSeeds.length < PARENT_SLOTS && k < PARENT_TRIES; k++) {
+    const s = hash(`${squad}:${week}:${topic}:parent:${k}`);
+    const q = stem(s);
+    if (taken.has(q)) continue;
+    taken.add(q);
+    parentSeeds.push(s);
+  }
   return { squad, week, topic, seeds, parentSeeds };
 }
 

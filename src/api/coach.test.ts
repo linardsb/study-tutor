@@ -1,4 +1,6 @@
 import { expect, spyOn, test } from "bun:test";
+import fs from "node:fs";
+import path from "node:path";
 import { appendEvent, readLines } from "../events/append";
 import { findItem } from "../flow/chat";
 import { chooseWrong, pickItem } from "../flow/coach";
@@ -334,3 +336,35 @@ test("pickItem through getCoach uses the day and the shown count as the base", (
   const b = pickItem(pack, TOPIC, `${DAY}:${TOPIC}:coach:1`);
   expect(a?.seed).not.toBe(b?.seed);
 });
+
+test.skipIf(process.platform === "win32" || process.getuid?.() === 0)(
+  "postCoach correct: when the attempt cannot be saved, an error and no working or note (L6)",
+  withData(NO_MODEL, async (data) => {
+    appendEvent(data, attemptLine({ id: ID, topic: TOPIC }), NOW);
+    const { got, item } = pickedItem(data);
+    const log = path.join(data, "events.jsonl");
+    fs.chmodSync(log, 0o444); // reads still work; the append is refused
+    const quiet = spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const r = await postCoach(
+        {
+          step: "correct",
+          item: got.item,
+          seed: got.seed,
+          sure: true,
+          answer: item.answers?.[0] as string,
+        },
+        data,
+        pack,
+        { dataDir: data, now: NOW },
+      );
+      expect(r.status).toBe(500);
+      expect(Object.keys(r.body as object)).toEqual(["error"]);
+      expect(JSON.stringify(r.body)).not.toContain(item.working as string);
+    } finally {
+      quiet.mockRestore();
+      fs.chmodSync(log, 0o600);
+    }
+    expect(readLines(data)).toHaveLength(1);
+  }),
+);

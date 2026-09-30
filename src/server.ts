@@ -15,6 +15,12 @@ import { currentState } from "./api/state";
 import { topicRows } from "./api/topics";
 import { restrictConfigOnStart } from "./config";
 import type { CasePack, Topic } from "./content/types";
+import {
+  ensureDataDir,
+  readDataJson,
+  removeDataFile,
+  writeDataFile,
+} from "./events/append";
 import { refusalLines, replayCheck } from "./events/check";
 import { isDay } from "./events/types";
 import { isoWeek, localDay, utcNow } from "./mcp/clock";
@@ -47,6 +53,7 @@ export type ServerOptions = {
   // The phone listener's address. Absent → none, so a test that mints never binds the Wi-Fi address.
   snapHost?: () => string | null;
   snaps?: Snaps;
+  instance?: string; // this run's id, answered at /api/instance so a second start can find it (M8)
 };
 
 /** The folder holding app/, content/ and data/: beside the binary when compiled, the cwd under `bun run dev`. */
@@ -62,6 +69,9 @@ export function appRoot(): string {
  * the join must land strictly inside the folder. Nothing is normalised first: `path.win32.normalize`
  * reads a leading `//` as a UNC root, which turned `/../data/x` into `root/data/x` (PR #26 F1).
  * `p` is the platform's `path` and is a parameter so the tests can run the Windows rules on any OS.
+ * Windows reads more into a name than POSIX does: it strips a trailing dot or space (`.. ` is `..`),
+ * opens a device for CON or NUL.json, a drive for `C:` and a stream for `x:$DATA`. Those segments are
+ * refused on every OS; no file in app/ or content/ is named like one.
  */
 export function staticPath(
   root: string,
@@ -70,16 +80,35 @@ export function staticPath(
   p: typeof path = path,
 ): string | null {
   const segments = rel.split("/").filter((s) => s !== "");
-  if (segments.some((s) => s === ".." || s.includes("\\"))) return null;
+  if (
+    segments.some(
+      (s) =>
+        s === ".." ||
+        s.includes("\\") ||
+        s.includes(":") ||
+        /[. ]$/.test(s) ||
+        /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$/i.test(s),
+    )
+  )
+    return null;
   const base = p.join(root, folder);
   const file = p.join(base, ...segments);
   return file.startsWith(base + p.sep) ? file : null;
 }
 
-/** `/x` from app/, `/content/x` from content/. */
-async function serveStatic(req: Request, root: string): Promise<Response> {
+/**
+ * `/x` from app/, `/content/x` from content/. The same Host and Origin check as the API: an items file
+ * holds answers, and a rebound hostname would let another site read it.
+ */
+export async function serveStatic(
+  req: Request,
+  root: string,
+): Promise<Response> {
   if (req.method !== "GET" && req.method !== "HEAD")
     return new Response("Method not allowed", { status: 405 });
+  // After the method check, so a POST stays 405 rather than refuseForeign's 415.
+  const refused = refuseForeign(req);
+  if (refused) return refused;
   let pathname: string;
   try {
     pathname = decodeURIComponent(new URL(req.url).pathname);
@@ -183,10 +212,13 @@ function digestRoute(req: Request, dataDir: string): Response {
   }
 }
 
+/** A posted event; one that names an item is checked against the pack (src/api/event.ts). */
 async function postEventRoute(
   req: Request,
+  root: string,
   dataDir: string,
   topics: readonly Topic[],
+  pack: CasePack | undefined,
 ): Promise<Response> {
   const refused = refuseForeign(req);
   if (refused) return refused;
@@ -196,7 +228,14 @@ async function postEventRoute(
   } catch {
     return json(400, { error: "Body is not JSON" });
   }
-  const r = postEvent(body, dataDir, topics);
+  let loaded: CasePack;
+  try {
+    loaded = pack ?? (await loadPacks(root)).pack;
+  } catch (err) {
+    console.error(`Could not load the pack: ${(err as Error).message}`);
+    return json(500, { error: "Could not save the event" });
+  }
+  const r = postEvent(body, dataDir, topics, utcNow, loaded);
   return json(r.status, r.body);
 }
 
@@ -418,7 +457,7 @@ export function apiRoutes(opts: ServerOptions) {
       },
     },
     "/api/event": {
-      POST: (req: Request) => postEventRoute(req, dataDir, topics),
+      POST: (req: Request) => postEventRoute(req, root, dataDir, topics, pack),
     },
     "/api/config": {
       GET: (req: Request) =>
@@ -481,6 +520,13 @@ export function apiRoutes(opts: ServerOptions) {
         ),
     },
     "/api/update": { GET: (req: Request) => getUpdate(req, update) },
+    "/api/instance": {
+      GET: (req: Request) =>
+        readRoute(req, "the instance", () => ({
+          status: 200,
+          body: { id: opts.instance ?? null },
+        })),
+    },
     "/api/squad": {
       // Only this week's view rewrites the pupil's own file: the file holds one week.
       GET: (req: Request) =>
@@ -537,6 +583,67 @@ export function startServer(ports: readonly number[], opts: ServerOptions) {
   throw new Error(`No free port in ${ports.join(", ")}`);
 }
 
+/**
+ * `data/server.lock`: which run serves this data folder. `dir` is the folder's realpath, because an
+ * update copies data/ into the new version's folder and a copied lock would otherwise point at the
+ * old folder's live server. `pid` is for a person reading the file; the probe decides.
+ */
+export const LOCK_FILE = "server.lock";
+type Lock = { id: string; pid: number; port: number; dir: string };
+
+const isLock = (x: unknown): x is Lock =>
+  typeof x === "object" &&
+  x !== null &&
+  typeof (x as Lock).id === "string" &&
+  Number.isInteger((x as Lock).port) &&
+  typeof (x as Lock).dir === "string";
+
+/** Records this run as the one serving `dataDir`; a lock already there is stale by now and is replaced. */
+export function claimLock(dataDir: string, port: number, id: string): void {
+  ensureDataDir(dataDir); // so its realpath exists
+  const lock: Lock = {
+    id,
+    pid: process.pid,
+    port,
+    dir: fs.realpathSync.native(dataDir),
+  };
+  writeDataFile(dataDir, LOCK_FILE, `${JSON.stringify(lock)}\n`);
+}
+
+/** Removes the lock on a clean exit, only while it is still this run's: a later start may have replaced it. */
+export function releaseLock(dataDir: string, id: string): void {
+  const lock = readDataJson(dataDir, LOCK_FILE);
+  if (isLock(lock) && lock.id === id) removeDataFile(dataDir, LOCK_FILE);
+}
+
+/**
+ * A second start on the same data/ opens the running copy in the browser instead of serving it twice
+ * (M8). The running copy is the lock's, but only when the lock names this folder and the server on
+ * its port answers /api/instance with the lock's id: another folder's tutor on 4731 answers another
+ * id (or 404, before 0.1.2), and nothing answers for a copy that crashed. The URL it opened, or null.
+ */
+export async function deferToRunning(
+  dataDir: string,
+  open: (url: string) => void = openBrowser,
+  timeoutMs = 1000,
+): Promise<string | null> {
+  const lock = readDataJson(dataDir, LOCK_FILE);
+  if (!isLock(lock) || lock.dir !== fs.realpathSync.native(dataDir))
+    return null;
+  const url = `http://127.0.0.1:${lock.port}/`;
+  try {
+    const res = await fetch(`${url}api/instance`, {
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    const body = res.ok ? ((await res.json()) as { id?: unknown }) : null;
+    if (body?.id !== lock.id) return null;
+  } catch {
+    return null; // nothing listening, or no answer in time
+  }
+  open(url);
+  return url;
+}
+
 /** Best effort: the URL is already on the console, so a missing opener is not an error. */
 export function openBrowser(
   url: string,
@@ -587,6 +694,14 @@ if (import.meta.main) {
       );
     }
     const dataDir = path.join(root, "data");
+    // Before anything writes: a second double-click opens the running copy and leaves data/ alone.
+    // Not in --mcp mode: the harness needs its own stdio session, and the tools write through
+    // appendEvent, which is safe beside another process (O_APPEND, one write per line).
+    const running = mcp ? null : await deferToRunning(dataDir);
+    if (running !== null) {
+      console.log(`Study tutor is already running at ${running}`);
+      process.exit(0);
+    }
     const { pack, subjects } = await loadPacks(root);
     const topics = pack.topics;
     // Before the check: a refused start still leaves the key owner-only.
@@ -595,6 +710,7 @@ if (import.meta.main) {
     // Not in --mcp mode: a pending fetch would hold the process open after stdin closes.
     const update = mcp ? undefined : checkForUpdate(VERSION, RELEASES_FEED);
     const snaps = createSnaps();
+    const instance = crypto.randomUUID();
     const server = startServer([...PORTS, 0], {
       root,
       dataDir,
@@ -604,6 +720,7 @@ if (import.meta.main) {
       update,
       snapHost: () => lanAddress(os.networkInterfaces()),
       snaps,
+      instance,
     });
     const url = `http://127.0.0.1:${server.port}/`;
     if (mcp) {
@@ -623,6 +740,19 @@ if (import.meta.main) {
       await snaps.closeAll(); // stops the phone listener, then waits while a photo already taken is marked
       // nothing else holds the event loop, so the process exits 0 (plan D9)
     } else {
+      // --mcp claims no lock: its server ends when the harness closes stdin, and a double-click
+      // meanwhile should get a copy of its own rather than one that is about to stop.
+      claimLock(dataDir, server.port ?? 0, instance);
+      // Ctrl+C, a kill, or closing the console window (SIGHUP on Windows). A crash leaves the lock,
+      // which the next start finds stale.
+      for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"] as const)
+        process.on(signal, () => {
+          try {
+            releaseLock(dataDir, instance);
+          } finally {
+            process.exit(0);
+          }
+        });
       console.log(`Study tutor is running at ${url}`);
       openBrowser(url);
     }

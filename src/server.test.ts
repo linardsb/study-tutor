@@ -11,9 +11,14 @@ import { chooseWrong } from "./flow/coach";
 import { addDays, isoWeek, localDay } from "./mcp/clock";
 import {
   apiRoutes,
+  claimLock,
+  deferToRunning,
+  LOCK_FILE,
   openBrowser,
   refuseForeign,
+  releaseLock,
   type ServerOptions,
+  serveStatic,
   startServer,
   staticPath,
 } from "./server";
@@ -197,6 +202,61 @@ test("staticPath: the same guard holds under the Windows path rules, where norma
   }
 });
 
+test("staticPath: a trailing dot or space, a device name, a drive letter or a stream name is refused on every OS (Windows strips or reads them)", () => {
+  for (const p of [path.win32, path.posix]) {
+    const root = p === path.win32 ? "C:\\StudyTutor" : "/StudyTutor";
+    for (const rel of [
+      "/.. /package.json",
+      "/.. ./package.json",
+      "/quiz.js.",
+      "/quiz.js ",
+      "/con",
+      "/CON",
+      "/nul.json",
+      "/maths/Aux.txt",
+      "/com1",
+      "/LPT9.html",
+      "/C:",
+      "/C:/Windows/win.ini",
+      "/x:$DATA",
+      "/quiz.js::$DATA",
+    ]) {
+      expect(staticPath(root, "app", rel, p), `${p.sep} ${rel}`).toBeNull();
+      expect(staticPath(root, "content", rel, p), `${p.sep} ${rel}`).toBeNull();
+    }
+    // Names that only start like a device are ordinary files.
+    for (const rel of ["/console.js", "/conditional.html", "/com10.css"])
+      expect(staticPath(root, "app", rel, p), `${p.sep} ${rel}`).not.toBeNull();
+  }
+});
+
+test(
+  "static: another site cannot read content/ (an items file holds answers), by Origin or by a rebound Host",
+  withServer(async (get, _dir, opts) => {
+    const file = "/content/maths/items/1MA1-R9-of-an-amount.json";
+    expect((await get(file)).status).toBe(200);
+    const foreign = await get(file, {
+      headers: { origin: "https://evil.example" },
+    });
+    expect(foreign.status).toBe(403);
+    // Host is checked in the function: fetch does not let a test set it (DNS rebinding shape).
+    const rebound = await serveStatic(
+      new Request(`http://127.0.0.1:4731${file}`, {
+        headers: { host: "attacker.example:4731" },
+      }),
+      opts.root,
+    );
+    expect(rebound.status).toBe(403);
+    const local = await serveStatic(
+      new Request(`http://127.0.0.1:4731${file}`, {
+        headers: { host: "127.0.0.1:4731" },
+      }),
+      opts.root,
+    );
+    expect(local.status).toBe(200);
+  }),
+);
+
 test(
   "api: a foreign Origin, a foreign Host or a non-JSON POST body is refused and nothing is written (PR #26 F3)",
   withServer(async (get, _dir, opts) => {
@@ -333,6 +393,21 @@ test(
     expect(((await refused.json()) as { error: string }).error).toStartWith(
       "Refused",
     );
+    expect(fs.readFileSync(log, "utf8").trim().split("\n")).toHaveLength(2);
+
+    // An item the pack does not hold earns nothing: the route checks it against the pack.
+    const unknown = await post(
+      JSON.stringify({
+        v: 1,
+        type: "attempt",
+        item: "1MA1/R4#1",
+        topic: "U349",
+        correct: true,
+        sure: true,
+        answer: "1:2",
+      }),
+    );
+    expect(unknown.status).toBe(400);
     expect(fs.readFileSync(log, "utf8").trim().split("\n")).toHaveLength(2);
 
     const notJson = await post("not json");
@@ -963,6 +1038,104 @@ test(
     } finally {
       server.stop(true);
       feed.stop(true);
+    }
+  }),
+);
+
+test(
+  "one copy per data folder: a second start on the same data/ opens the running one and does not serve",
+  withTemp(async (_dir, opts) => {
+    const server = startServer([0], { ...opts, instance: "run-1" });
+    try {
+      claimLock(opts.dataDir, server.port ?? 0, "run-1");
+      const opened: string[] = [];
+      const url = `http://127.0.0.1:${server.port}/`;
+      expect(await deferToRunning(opts.dataDir, (u) => opened.push(u))).toBe(
+        url,
+      );
+      expect(opened).toEqual([url]);
+    } finally {
+      server.stop(true);
+    }
+  }),
+);
+
+test(
+  "one copy per data folder: a busy port serving another data/ is not attached to; the start takes the next port",
+  withTemp(async (dir, opts) => {
+    const other = { ...opts, dataDir: path.join(dir, "other-data") };
+    const running = startServer([0], { ...other, instance: "other" });
+    let mine: ReturnType<typeof startServer> | undefined;
+    try {
+      claimLock(other.dataDir, running.port ?? 0, "other");
+      const opened: string[] = [];
+      const open = (u: string) => opened.push(u);
+      // A fresh data/: no lock, so nothing to attach to.
+      expect(await deferToRunning(opts.dataDir, open)).toBe(null);
+      // The other folder's lock copied in (an update copies data/): its dir is not this one.
+      fs.mkdirSync(opts.dataDir);
+      fs.copyFileSync(
+        path.join(other.dataDir, LOCK_FILE),
+        path.join(opts.dataDir, LOCK_FILE),
+      );
+      expect(await deferToRunning(opts.dataDir, open)).toBe(null);
+      expect(opened).toEqual([]);
+      mine = startServer([running.port ?? 0, 0], { ...opts, instance: "mine" });
+      expect(mine.port).not.toBe(running.port);
+    } finally {
+      running.stop(true);
+      mine?.stop(true);
+    }
+  }),
+);
+
+test(
+  "one copy per data folder: a stale lock (nothing listening, or a server that answers another id) is replaced",
+  withTemp(async (_dir, opts) => {
+    const open = () => {
+      throw new Error("opened a stale instance");
+    };
+    // A port that was just released: nothing answers there.
+    const gone = startServer([0], opts);
+    const port = gone.port ?? 0;
+    gone.stop(true);
+    claimLock(opts.dataDir, port, "dead");
+    expect(await deferToRunning(opts.dataDir, open)).toBe(null);
+    // A live server on the lock's port with another instance id (an old copy, or 4731 of another folder).
+    const live = startServer([0], { ...opts, instance: "someone-else" });
+    try {
+      claimLock(opts.dataDir, live.port ?? 0, "dead");
+      expect(await deferToRunning(opts.dataDir, open)).toBe(null);
+    } finally {
+      live.stop(true);
+    }
+    claimLock(opts.dataDir, 4999, "new");
+    const lock = JSON.parse(
+      fs.readFileSync(path.join(opts.dataDir, LOCK_FILE), "utf8"),
+    );
+    expect(lock).toMatchObject({ id: "new", port: 4999, pid: process.pid });
+    // A clean exit removes its own lock only.
+    releaseLock(opts.dataDir, "dead");
+    expect(fs.existsSync(path.join(opts.dataDir, LOCK_FILE))).toBe(true);
+    releaseLock(opts.dataDir, "new");
+    expect(fs.existsSync(path.join(opts.dataDir, LOCK_FILE))).toBe(false);
+    releaseLock(opts.dataDir, "new"); // no lock: nothing to do
+  }),
+);
+
+test(
+  "/api/instance answers the tutor's own pages only",
+  withTemp(async (_dir, opts) => {
+    const server = startServer([0], { ...opts, instance: "run-2" });
+    try {
+      const url = `http://127.0.0.1:${server.port}/api/instance`;
+      expect(await (await fetch(url)).json()).toEqual({ id: "run-2" });
+      const foreign = await fetch(url, {
+        headers: { origin: "https://evil.example" },
+      });
+      expect(foreign.status).toBe(403);
+    } finally {
+      server.stop(true);
     }
   }),
 );

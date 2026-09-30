@@ -141,15 +141,15 @@ function parentDone(evs: readonly Event[], topic: string, week: string) {
 }
 
 /** mine's file, logged and left for the next GET when the disk refuses. True when it landed. */
-function writeMine(p: Place | null, f: SquadFile): boolean {
+export function writeMine(p: Place | null, f: SquadFile): boolean {
   if (p === null) return false;
   try {
     if (p.dir !== "") makeDataDir(p.root, p.dir);
-    writeDataFile(
-      p.root,
-      relOf(p, `${f.pupil}.json`),
-      `${JSON.stringify(f, null, 2)}\n`,
-    );
+    const rel = relOf(p, `${f.pupil}.json`);
+    // A sync folder is its checked realpath: if it has since become a link, the file would land elsewhere.
+    if (p.sync && path.dirname(resolveInData(p.root, rel)) !== p.root)
+      throw new Error(`Refused: ${rel} resolves outside the squad folder`);
+    writeDataFile(p.root, rel, `${JSON.stringify(f, null, 2)}\n`);
     return true;
   } catch (err) {
     console.error(`Could not write the squad file: ${(err as Error).message}`);
@@ -280,7 +280,7 @@ export function getSquad(
   const round =
     e === null
       ? squadRound(profile.squad, week, pack)
-      : roundOf(profile.squad, week, e.topic);
+      : roundOf(profile.squad, week, e.topic, pack);
   if (round === null) return { status: 200, body: view };
   const title =
     pack.topics.find((t) => t.id === round.topic)?.title ?? round.topic;
