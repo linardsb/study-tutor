@@ -19,7 +19,7 @@
   };
   const TEXT = {
     flame: (days, target) => `${days} of your ${target} this week`,
-    statWeek: "this week",
+    statWeek: "days with practice",
     statXp: "XP",
     statStarted: (started, total) => `${started} of ${total}`,
     statStartedLabel: "topics started",

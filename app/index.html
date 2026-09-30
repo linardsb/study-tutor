@@ -6,53 +6,85 @@
 <title>Study tutor</title>
 <link rel="stylesheet" href="/style.css">
 </head>
-<body>
-<main class="lesson">
+<body class="app">
+<header class="topbar"><div class="inner">
+  <a class="brand" href="/">Study tutor</a>
+  <nav class="topnav" aria-label="Main">
+    <a href="/" aria-current="page">Lessons</a><a href="/map.html">Map</a><a href="/practice.html">Practice</a><a href="/case.html">Today's case</a><a href="/squad.html">Squad</a><a href="/coach.html">Coach Dan</a>
+  </nav>
+</div></header>
+<main class="lesson home">
   <header>
     <h1>Study tutor</h1>
     <p class="aim">Pick a lesson. Practice gives you fresh numbers on any topic.</p>
   </header>
 
-  <section id="practice">
-    <p><a href="/intake.html">Start here: tell the tutor where you are</a></p>
-    <p><a href="/map.html">Your map</a></p>
-    <p><a href="/practice.html">Practice</a></p>
-    <p><a href="/case.html">Today's case</a></p>
-    <p><a href="/squad.html">Squad</a></p>
-    <p><a href="/coach.html">Coach Dan</a></p>
+  <section id="getting-started" class="panel steps" hidden>
+    <h2>Getting started</h2>
+    <p class="note">Three steps. Each one gets a tick when it is done.</p>
+    <ol>
+      <li data-step="settings">
+        <span class="mark" aria-hidden="true"></span>
+        <div><b>Settings</b><small>For a parent, about 2 minutes. Pick "No model" to use the tutor without one. You can add a model later.</small></div>
+        <a class="button" href="/setup.html">Open settings</a>
+      </li>
+      <li data-step="intake">
+        <span class="mark" aria-hidden="true"></span>
+        <div><b>Tell the tutor where you are</b><small>About 5 minutes. Your map then starts from what you can already do.</small></div>
+        <a class="button" href="/intake.html">Start here</a>
+      </li>
+      <li data-step="first">
+        <span class="mark" aria-hidden="true"></span>
+        <div><b>Answer your first questions</b><small>About 5 minutes. Open a lesson below, or Practice. Your map fills in as you go.</small></div>
+        <a class="button" href="/practice.html">Open practice</a>
+      </li>
+    </ol>
   </section>
+
+  <nav id="practice" class="tiles" aria-label="Ways to study">
+    <a class="tile lead" href="/intake.html"><b>Start here</b><small>Tell the tutor where you are, so the map starts from what you can do.</small></a>
+    <a class="tile" href="/map.html"><b>Your map</b><small>Every topic, how far up the ladder it is, and what to do next.</small></a>
+    <a class="tile" href="/practice.html"><b>Practice</b><small>Fresh questions on any topic. It never costs a bar.</small></a>
+    <a class="tile" href="/case.html"><b>Today's case</b><small>One puzzle a day. Three minutes.</small></a>
+    <a class="tile" href="/squad.html"><b>Squad</b><small>Five questions your squad does this week, then you compare working.</small></a>
+    <a class="tile" href="/coach.html"><b>Coach Dan</b><small>Dan gets things wrong. Spot his mistake and put it right.</small></a>
+  </nav>
 
   <section id="lessons">
     <h2>Lessons</h2>
-    <ol>
-      <li><a href="/content/maths/lessons/0001-U349-percentage-of-an-amount.html">U349 Percentage of an amount</a></li>
-      <li><a href="/content/maths/lessons/0002-U687-simplifying-ratio.html">U687 Simplifying ratio</a></li>
-      <li><a href="/content/maths/lessons/0003-U753-using-equivalent-ratios.html">U753 Using equivalent ratios</a></li>
-      <li><a href="/content/maths/lessons/0004-U558-probability-trees.html">U558 Probability trees</a></li>
-      <li><a href="/content/maths/lessons/0005-U993-area-of-shapes.html">U993 Area of shapes</a></li>
-      <li><a href="/content/maths/lessons/0006-U980-identifying-graphs.html">U980 Identifying graphs</a></li>
-      <li><a href="/content/maths/lessons/0007-U527-pressure-force-area.html">U527 Pressure, force and area</a></li>
-      <li><a href="/content/maths/lessons/0008-U910-density-mass-volume.html">U910 Density, mass and volume</a></li>
-      <li><a href="/content/maths/lessons/0009-U377-equations-of-parallel-lines.html">U377 Equations of parallel lines</a></li>
-      <li><a href="/content/maths/lessons/0010-U296-venn-diagrams.html">U296 Venn diagrams</a></li>
-      <li><a href="/content/maths/lessons/0011-U176-ratios-fractions-and-percentages.html">U176 Ratios, fractions and percentages</a></li>
-      <li><a href="/content/maths/lessons/0012-U562-velocity-time-graphs.html">U562 Velocity-time graphs</a></li>
-      <li><a href="/content/maths/lessons/0013-U554-percentage-increase-and-decrease.html">U554 Percentage increase and decrease</a></li>
-      <li><a href="/content/maths/lessons/0014-U332-repeated-percentage-change.html">U332 Repeated percentage change</a></li>
-      <li><a href="/content/maths/lessons/0015-U721-direct-proportion.html">U721 Direct proportion</a></li>
-      <li><a href="/content/maths/lessons/0016-U950-area-of-a-circle.html">U950 Area of a circle</a></li>
-      <li><a href="/content/maths/lessons/0017-U617-volume-of-a-sphere.html">U617 Volume of a sphere</a></li>
-      <li><a href="/content/maths/lessons/0018-U116-volume-of-a-cone.html">U116 Volume of a cone</a></li>
-      <li><a href="/content/maths/lessons/0019-U871-surface-area-of-a-pyramid.html">U871 Surface area of a pyramid</a></li>
-      <li><a href="/content/maths/lessons/0020-U283-trigonometry-find-a-side.html">U283 Trigonometry: find a side</a></li>
-      <li><a href="/content/maths/lessons/0021-U545-trigonometry-find-an-angle.html">U545 Trigonometry: find an angle</a></li>
+    <h3>Maths</h3>
+    <ol class="rows lesson-list">
+      <li><a href="/content/maths/lessons/0001-U349-percentage-of-an-amount.html"><span class="code">U349</span><span class="title">Percentage of an amount</span></a></li>
+      <li><a href="/content/maths/lessons/0002-U687-simplifying-ratio.html"><span class="code">U687</span><span class="title">Simplifying ratio</span></a></li>
+      <li><a href="/content/maths/lessons/0003-U753-using-equivalent-ratios.html"><span class="code">U753</span><span class="title">Using equivalent ratios</span></a></li>
+      <li><a href="/content/maths/lessons/0004-U558-probability-trees.html"><span class="code">U558</span><span class="title">Probability trees</span></a></li>
+      <li><a href="/content/maths/lessons/0005-U993-area-of-shapes.html"><span class="code">U993</span><span class="title">Area of shapes</span></a></li>
+      <li><a href="/content/maths/lessons/0006-U980-identifying-graphs.html"><span class="code">U980</span><span class="title">Identifying graphs</span></a></li>
+      <li><a href="/content/maths/lessons/0007-U527-pressure-force-area.html"><span class="code">U527</span><span class="title">Pressure, force and area</span></a></li>
+      <li><a href="/content/maths/lessons/0008-U910-density-mass-volume.html"><span class="code">U910</span><span class="title">Density, mass and volume</span></a></li>
+      <li><a href="/content/maths/lessons/0009-U377-equations-of-parallel-lines.html"><span class="code">U377</span><span class="title">Equations of parallel lines</span></a></li>
+      <li><a href="/content/maths/lessons/0010-U296-venn-diagrams.html"><span class="code">U296</span><span class="title">Venn diagrams</span></a></li>
+      <li><a href="/content/maths/lessons/0011-U176-ratios-fractions-and-percentages.html"><span class="code">U176</span><span class="title">Ratios, fractions and percentages</span></a></li>
+      <li><a href="/content/maths/lessons/0012-U562-velocity-time-graphs.html"><span class="code">U562</span><span class="title">Velocity-time graphs</span></a></li>
+      <li><a href="/content/maths/lessons/0013-U554-percentage-increase-and-decrease.html"><span class="code">U554</span><span class="title">Percentage increase and decrease</span></a></li>
+      <li><a href="/content/maths/lessons/0014-U332-repeated-percentage-change.html"><span class="code">U332</span><span class="title">Repeated percentage change</span></a></li>
+      <li><a href="/content/maths/lessons/0015-U721-direct-proportion.html"><span class="code">U721</span><span class="title">Direct proportion</span></a></li>
+      <li><a href="/content/maths/lessons/0016-U950-area-of-a-circle.html"><span class="code">U950</span><span class="title">Area of a circle</span></a></li>
+      <li><a href="/content/maths/lessons/0017-U617-volume-of-a-sphere.html"><span class="code">U617</span><span class="title">Volume of a sphere</span></a></li>
+      <li><a href="/content/maths/lessons/0018-U116-volume-of-a-cone.html"><span class="code">U116</span><span class="title">Volume of a cone</span></a></li>
+      <li><a href="/content/maths/lessons/0019-U871-surface-area-of-a-pyramid.html"><span class="code">U871</span><span class="title">Surface area of a pyramid</span></a></li>
+      <li><a href="/content/maths/lessons/0020-U283-trigonometry-find-a-side.html"><span class="code">U283</span><span class="title">Trigonometry: find a side</span></a></li>
+      <li><a href="/content/maths/lessons/0021-U545-trigonometry-find-an-angle.html"><span class="code">U545</span><span class="title">Trigonometry: find an angle</span></a></li>
+    </ol>
+    <h3>Science</h3>
+    <ol class="rows lesson-list">
+      <li><a href="/content/science/lessons/0001-8464-4.1.1.2-animal-and-plant-cells.html"><span class="code">4.1.1.2</span><span class="title">Animal and plant cells</span></a></li>
     </ol>
   </section>
 
   <footer>
     <p>When you are done, close this tab, then close the window that started the tutor.</p>
-    <p><a href="/setup.html">Settings</a> (for a parent)</p>
-    <p><a href="/parent.html">Weekly digest</a> (for a parent and for you)</p>
+    <p class="parent-links"><a href="/setup.html">Settings</a> (for a parent) · <a href="/parent.html">Weekly digest</a> (for a parent and for you)</p>
   </footer>
 </main>
 <script>
@@ -60,6 +92,7 @@
 // Only a readable "not configured" redirects; a 500 keeps the pupil on this page.
 fetch("/api/config").then((r) => (r.ok ? r.json() : null)).then((c) => { if (c?.configured === false) location.replace("/setup.html"); }).catch(() => {});
 </script>
+<script src="/home.js" defer></script>
 <script src="/update.js" defer></script>
 </body>
 </html>

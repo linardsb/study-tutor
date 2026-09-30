@@ -5,25 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Settings</title>
 <link rel="stylesheet" href="/style.css">
-<style>
-  #setup label { display: block; margin: 1rem 0 0.25rem; font-weight: 600; }
-  #setup input, #setup select { font: inherit; padding: 0.4rem; width: 100%; max-width: 28rem; box-sizing: border-box; }
-  #setup [hidden] { display: none; }
-  #setup button { margin-top: 1.5rem; font: inherit; padding: 0.5rem 1.25rem; }
-</style>
 </head>
-<body>
-<main class="lesson">
+<body class="app">
+<header class="topbar"><div class="inner">
+  <a class="brand" href="/">Study tutor</a>
+  <nav class="topnav" aria-label="Main">
+    <a href="/">Lessons</a><a href="/map.html">Map</a><a href="/practice.html">Practice</a><a href="/case.html">Today's case</a><a href="/squad.html">Squad</a><a href="/coach.html">Coach Dan</a>
+  </nav>
+</div></header>
+<main class="lesson settings">
   <header>
     <p class="crumb"><a href="/">Lessons</a> · settings</p>
     <h1>Settings</h1>
-    <p class="aim">These settings are for a parent.</p>
+    <p class="aim">These settings are for a parent. Nothing changes until you press Save.</p>
   </header>
 
   <form id="setup" novalidate>
-    <section>
+    <section class="panel">
       <h2>Model</h2>
-      <p>Pick "No model" to use the tutor without one. Lessons and practice work either way.</p>
+      <p class="note">Pick "No model" to use the tutor without one. Lessons and practice work either way.</p>
       <label for="preset">Provider</label>
       <select id="preset" name="preset"></select>
 
@@ -32,13 +32,16 @@
         <input id="base_url" name="base_url" type="url" autocomplete="off" spellcheck="false">
         <label for="model">Model name</label>
         <input id="model" name="model" type="text" autocomplete="off" spellcheck="false">
-        <label for="key">Key</label>
-        <input id="key" name="key" type="password" autocomplete="new-password" spellcheck="false">
-        <p class="note" id="key-note"></p>
+        <div id="key-field">
+          <label for="key">Key</label>
+          <input id="key" name="key" type="password" autocomplete="new-password" spellcheck="false">
+          <p class="note" id="key-note"></p>
+        </div>
       </div>
+      <p class="note key-path" id="key-hint"></p>
     </section>
 
-    <section id="limit">
+    <section id="limit" class="panel">
       <h2>Monthly limit</h2>
       <label for="cap">Tokens per month</label>
       <input id="cap" name="cap" type="number" min="1" step="1">
@@ -46,22 +49,24 @@
       <p id="usage"></p>
     </section>
 
-    <section>
+    <section class="panel">
       <h2>Weekly target</h2>
       <label for="weeklyTarget">Days a week with some practice</label>
       <input id="weeklyTarget" name="weeklyTarget" type="number" min="1" max="7" step="1">
     </section>
 
-    <section>
+    <section class="panel">
       <h2>Squad</h2>
       <label for="squadFolder">Squad sync folder</label>
       <input id="squadFolder" name="squadFolder" type="text" autocomplete="off" spellcheck="false">
       <p class="note">Optional. The full path of a folder your child and their friends share through Google Drive, OneDrive or iCloud, for example C:\Users\you\OneDrive\Squad. The tutor writes only your child's file there and reads the friends' files. Leave it empty to keep squad files in the tutor's data folder.</p>
     </section>
 
-    <button type="submit">Save</button>
-    <p id="error" role="alert"></p>
-    <p id="saved" hidden>Saved. <a href="/">Back to the lessons</a></p>
+    <div class="save-bar">
+      <p class="actions"><button type="submit">Save</button></p>
+      <p id="error" role="alert"></p>
+      <p id="saved" hidden>Saved. <a href="/">Back to the lessons</a></p>
+    </div>
   </form>
 </main>
 <script src="/setup.js"></script>

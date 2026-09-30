@@ -110,7 +110,7 @@
       parts.push(faded);
     }
     if (c.kind === "mistake") {
-      const p = el("p", "", "Kai's answer: ");
+      const p = el("p", "kai", "Kai's answer: ");
       p.appendChild(el("b", "", c.shown));
       parts.push(p);
     } else {
@@ -122,7 +122,7 @@
       }
       parts.push(list);
     }
-    parts.push(el("p", "", c.question));
+    parts.push(el("p", "ask", c.question));
     return parts;
   }
 
@@ -191,7 +191,6 @@
     );
     const bet = radios("confidence", betName, BETS);
     bet.prepend(el("span", "", "How sure are you? "));
-    q.appendChild(bet);
     const btn = el("button", "check", "Check");
     btn.type = "button";
     const fb = el("p", "feedback");
@@ -200,7 +199,9 @@
     work.hidden = true;
     const cal = el("p", "calibration");
     cal.hidden = true;
-    q.append(btn, fb, work, cal);
+    const row = el("div", "case-controls");
+    row.append(bet, btn);
+    q.append(row, fb, work, cal);
     holder.appendChild(q);
 
     btn.addEventListener("click", () => {

@@ -3,6 +3,12 @@
   const picker = document.querySelector(".picker");
   const holder = document.getElementById("set");
   const status = document.getElementById("status");
+  const count = document.getElementById("count");
+
+  function showCount() {
+    const all = picker.querySelectorAll("input").length;
+    count.textContent = `${picker.querySelectorAll("input:checked").length} of ${all} ticked`;
+  }
 
   function ticked() {
     return [...picker.querySelectorAll("input:checked")].map((b) => ({
@@ -12,6 +18,7 @@
   }
   function setAll(on) {
     for (const b of picker.querySelectorAll("input")) b.checked = on;
+    showCount();
   }
 
   /* six picks, round robin over a shuffled list, so no two in a row share a code
@@ -45,12 +52,14 @@
         label.append(box, ` ${t.title} `, span);
         picker.appendChild(label);
       }
+      showCount();
     })
     .catch(() => {
       status.textContent =
         "The topics did not load. Check the tutor window is still open.";
     });
 
+  picker.addEventListener("change", showCount);
   document.getElementById("all").addEventListener("click", () => setAll(true));
   document
     .getElementById("none")
