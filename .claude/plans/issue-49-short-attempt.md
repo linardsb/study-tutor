@@ -523,6 +523,6 @@ Every existing test the change breaks is named with its fix: `types.test.ts:33` 
   - **A3 (Level 4).** Run headless: `bun src/server.ts --mcp` serves the same routes without opening a browser, and steps 2 (page 200), 4 and 6 went over `curl`, plus a v1 `correct: null` post refused with 400. The browser steps (typing, the link click, the label on screen) are covered by `quiz-dom.test.ts` and `chat-dom.test.ts`, not by hand.
   - **A4 (Task 8 GOTCHA 4).** `no-ai-slop` then `humanizer` ran on the four strings; no change to the plan's wording.
 - **2026-09-30, PR #54 review round 1 (report `.claude/reports/pr-54-review-fixes.md`).**
-  - **A5 (Task 8, supersedes the retry behaviour).** After a failed save the open item asks `GET /api/chat` whether the attempt already landed before posting again (L2). The chain is `void`-prefixed (F1). A saved item hides "Ask the tutor" (L5).
+  - **A5 (Task 8, supersedes the retry behaviour).** After a save that got no reply the open item asks `GET /api/chat` whether the attempt already landed before posting again; a refused save retries straight to the post (L2). The chain is `void`-prefixed (F1). A saved item hides "Ask the tutor" (L5).
   - **A6 (supersedes the "New reachable path, intended" note).** `mintSnap` skips attempts whose item has no `answers`, through a filter on `lastAttempt` (L3).
   - **A7 (Task 9b).** The teach-back button reads "Mark my answer" for written items (L5). `events.md` says the page, not the server, picks `attempt@1` or `@2` (L1). `quiz-dom.test.ts` builds a fresh quiz per case (L4).

@@ -15,10 +15,11 @@ Triage (the user's call, 2026-09-30): fix all six, L3 included. Nothing deferred
 - Fix: reworded. The page picks the version; `/api/event` accepts `null` on any `attempt@2` whether or not the item has `answers`. No code change (the option the user took from the review's two).
 
 **L2 (Low) a lost reply let a retry write a second attempt and 10 XP** (`app/quiz.js`)
-- Fix: after a failed save (`lost = true`), the next click first asks `GET /api/chat?item=…[&seed=…]` (built from `chatHref`) whether an attempt exists; `attempted: true` is treated as saved and nothing is posted. The first click never asks.
+- Fix: after a save that got no reply at all (`postAttempt` resolves `null` on a rejected fetch; a 4xx/5xx reply resolves `false`), the next click first asks `GET /api/chat?item=…[&seed=…]` (built from `chatHref`) whether an attempt exists; `attempted: true` is treated as saved and nothing is posted. The first click never asks.
 - Test: `quiz-dom.test.ts` "a saved line whose reply was lost is not posted again on retry (PR #54 L2)". The fake stores the line, then throws (the review's scenario: appended, response lost). Asserts 1 post, 1 GET, item done.
-- Mutation probes (observed 2026-09-30): GET removed (`const already = Promise.resolve(false)`) → the L2 test and the retry test fail (2 fail). GET on every click → 3 fail, including "the first save does not ask the server first".
-- Failure mode of the fix's mechanism: (a) the GET itself fails → `attempted()` resolves false and the retry posts, which is the old behaviour; test "a retry whose check cannot reach the tutor posts, rather than claiming the line was saved" (2 posts). (b) `hasAttempt` matches any earlier attempt for the item, so if a pupil answered this item on an earlier day and today's first save fails, the retry reports saved without writing today's line. Accepted: it only happens after a failed save, the tutor already holds an attempt that opens the chat, and the teach-back marks the chat text, not the saved answer. Named here, not tested.
+- Mutation probes on the final tree (observed 2026-09-30): GET removed (`const already = Promise.resolve(false)`) → 2 fail (the L2 test, the chat-down test). GET on every click → 5 fail, including "the first save does not ask the server first". `lost = true` on any failure (the `8225826` behaviour) → 2 fail, including the regression test below.
+- Failure mode of the fix's mechanism, found by the advisor after the first push (`8225826`): `hasAttempt` matches any earlier attempt for the item, and the lesson quiz comes back on the 3/10/30/60 ladder, so earlier attempts are normal. At `8225826` any failed save set `lost`, so a plain 500 on a revisit made the retry skip the post and show "Saved": today's line, flame day and XP lost. Probe: item already saved, `next = "fail"`, click, retry → at `8225826` 1 post and `chatGets` 1 (`Expected: 0 Received: 1`, observed). Fixed in the second commit: only a rejected fetch sets `lost`; a refusal retries straight to the post. Test "a refused save on an item answered before is posted again, not reported saved" (2 posts, 0 GETs).
+- Remaining, accepted: (a) the GET itself fails → the retry posts, which may duplicate (the pre-fix behaviour); test "a retry whose check cannot reach the tutor posts, rather than claiming the line was saved". (b) A save with no reply on a revisit: the GET finds the earlier visit's attempt and reports saved without today's line. Untested; stated in the PR body's notes as the review allowed ("accept it and say so in the PR").
 
 **L3 (Low) examiner mode marked a written answer on the numeric rubric** (`src/flow/examiner.ts`, `src/snap.ts`)
 - Fix: `lastAttempt(log, keep)` takes an optional filter; `mintSnap` passes one that skips items whose `answers` are empty. An item no longer in the pack is kept, so it still reaches the existing `TEXT.gone` 409. A log whose only attempts are written answers gets the `noAttempt` 409.
@@ -33,7 +34,7 @@ Triage (the user's call, 2026-09-30): fix all six, L3 included. Nothing deferred
 **L5 (Low) copy mismatches for written items** (`app/chat.js`, `app/quiz.js`)
 - Fix: for `short`/`extended`/`practical-method` the teach-back button reads "Mark my answer" beside the "Explain your answer, one point per line." label. Once an open item is saved, "Ask the tutor" (`.ask`) is hidden, so only "Get it marked by the tutor" shows.
 - Tests: `chat-dom.test.ts` asserts the button text for both types; with `app/chat.js` reverted the written case fails (observed). `quiz-dom.test.ts` retry case asserts `.ask` hidden; deleting `ask.hidden = true` fails it (observed).
-- Prose gate: "Mark my answer" is three plain words in the page's existing register; no-ai-slop / humanizer pass, no change.
+- Prose gate: a mental pass only (no-ai-slop and humanizer were not run as skills): "Mark my answer" is three plain words in the page's existing register.
 
 ## Deferred
 
@@ -46,7 +47,7 @@ None.
 
 ## Gate
 
-`bun run check` on the fixed tree (2026-09-30, issue49 worktree): exit 0, 754 pass, 0 fail, 72 files; biome 194 files, no fixes, 4 warnings (observed). 754 = 748 + 6 new tests (3 in `quiz-dom.test.ts`, 3 in `snap.test.ts`; derived). `bun scripts/test-generators.ts`: all 6300 runs pass (observed).
+`bun run check` on the final tree (2026-09-30, issue49 worktree): exit 0, 755 pass, 0 fail, 72 files; biome 194 files, no fixes, 4 warnings (observed). 755 = 748 + 7 new tests (4 in `quiz-dom.test.ts`, 3 in `snap.test.ts`; derived). The first push (`8225826`) had 754. `bun scripts/test-generators.ts`: all 6300 runs pass (observed).
 
 ## Copy sweep (retired values and nouns)
 
@@ -54,7 +55,7 @@ Greps over `.claude/plans/issue-49-short-attempt.md` (plan), `.claude/reports/is
 
 | `grep -n` pattern | Hits before | Action |
 |---|---|---|
-| `748` | PR body :24, report :41 | PR body validation updated to 754; report :41 kept as the `a00d78c` figure, a round-1 line added |
+| `748`, `754` | PR body :24, report :41 | PR body validation updated to 755; report :41 kept as the `a00d78c` figure, a round-1 line added |
 | `72 files` | PR body :24, report :41 | unchanged (still 72) |
 | `194` | PR body :24 | unchanged (still 194) |
 | `6300` | PR body :25, report :42 | unchanged (re-run, still 6300) |

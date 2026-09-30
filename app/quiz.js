@@ -118,8 +118,9 @@
 
   const NOT_SAVED = " Not saved. Check the tutor window is still open.";
 
-  /* one attempt per item; the promise resolves to whether the tutor accepted it.
-     v 2 with ok null: a written answer, saved for the tutor to mark */
+  /* one attempt per item; the promise resolves to whether the tutor accepted it, or null when no
+     reply came (the line may still have been saved). v 2 with ok null: a written answer, saved for
+     the tutor to mark */
   function postAttempt(item, ok, sure, typed, v = 1) {
     const body = {
       v,
@@ -137,7 +138,7 @@
       body: JSON.stringify(body),
     })
       .then((res) => res.ok)
-      .catch(() => false);
+      .catch(() => null);
   }
 
   /* whether the tutor already holds an attempt for this item; false when it cannot say */
@@ -504,8 +505,9 @@
           return;
         }
         btn.disabled = true;
-        /* after a failed post, the line may have been saved and only the reply lost: ask first, so a
-           retry cannot write a second attempt and its XP */
+        /* after a post with no reply, the line may have been saved and only the reply lost: ask first,
+           so a retry cannot write a second attempt and its XP. A refusal saved nothing, so its retry
+           posts straight away: an attempt from an earlier visit must not pass for today's */
         const already = lost ? attempted(item) : Promise.resolve(false);
         void already
           .then((saved) =>
@@ -513,7 +515,7 @@
           )
           .then((saved) => {
             if (!saved) {
-              lost = true;
+              lost = saved === null;
               fb.textContent = NOT_SAVED.trim();
               btn.disabled = false;
               return;

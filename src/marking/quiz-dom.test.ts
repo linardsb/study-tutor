@@ -134,7 +134,7 @@ test("the retry posts attempt@2 with correct: null, then shows the link; a third
   await until(() => !btn.disabled);
   btn.click();
   await until(() => open.classList.contains("done"));
-  expect(chatGets.length).toBe(1);
+  expect(chatGets.length).toBe(0);
   expect(posts.length).toBe(2);
   expect(posts[1]).toEqual({
     v: 2,
@@ -200,12 +200,24 @@ test("the first save does not ask the server first", async () => {
 
 test("a retry whose check cannot reach the tutor posts, rather than claiming the line was saved", async () => {
   const { open, btn } = filled();
-  served.next = "fail";
+  served.next = "lost";
   btn.click();
   await until(() => !btn.disabled);
   served.chatDown = true;
   btn.click();
   await until(() => open.classList.contains("done"));
   expect(chatGets.length).toBe(1);
+  expect(posts.length).toBe(2);
+});
+
+test("a refused save on an item answered before is posted again, not reported saved", async () => {
+  saved.add(OPEN.id); // an attempt from an earlier visit to this lesson
+  const { open, btn } = filled();
+  served.next = "fail";
+  btn.click();
+  await until(() => !btn.disabled);
+  btn.click();
+  await until(() => open.classList.contains("done"));
+  expect(chatGets.length).toBe(0);
   expect(posts.length).toBe(2);
 });

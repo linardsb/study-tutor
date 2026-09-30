@@ -40,7 +40,7 @@
 - `bunx tsc --noEmit`: clean (observed).
 - `bun run check` (tsc + biome + bun test): exit 0, 748 pass, 0 fail across 72 files (observed).
 - `bun scripts/test-generators.ts`: all 6300 runs pass (observed).
-- After the PR #54 round-1 fixes (2026-09-30): `bun run check` exit 0, 754 pass, 0 fail across 72 files (observed). Detail in `.claude/reports/pr-54-review-fixes.md`.
+- After the PR #54 round-1 fixes (2026-09-30): `bun run check` exit 0, 755 pass, 0 fail across 72 files (observed). Detail in `.claude/reports/pr-54-review-fixes.md`.
 
 ## Deviations from the plan
 - **D1 `src/events/append.ts` changed (not in the plan).** With two `attempt` versions, `` KEYS[`${event.type}@${event.v}`] `` became a cross product of every type and every `v` (e.g. `case@2`), and `tsc` failed with TS2551. The lookup now reads through `KEYS as Record<string, readonly string[] | undefined>`. Behaviour is unchanged: the result was already cast to `readonly string[] | undefined` and the `?? []` fallback stays.
