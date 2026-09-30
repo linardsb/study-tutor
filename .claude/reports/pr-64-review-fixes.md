@@ -59,3 +59,7 @@ None.
 ## Validation
 
 - `record-gate.sh --clean -- bun run check` in `~/Desktop/study-tutor-a2`, 2026-09-30T18:40Z, after all fixes (observed): `bun run check` exit 0. The script printed "GATE SHORT"; that line comes from its turbo parser not matching a bun gate, not from a short run. tsc clean. biome 0 errors, 55 warnings (same as the review). `bun test`: 787 pass, 0 fail, 74 files. Derived: 784 + 3 new tests (F2, F5 in `server.test.ts`, F4 in `intake-dom.test.ts`) = 787. The F3 and F6 edits changed existing tests and added none.
+
+## Size after the fix commit
+
+As of `b42e8f8` (observed, `git diff --shortstat origin/main..HEAD`): 30 files, +1,746 / −83. Split: `-- src app content scripts` 24 files +1,284 / −80; `-- .claude` 6 files +462 / −3. Derived: 24 + 6 = 30; 1,284 + 462 = 1,746; 80 + 3 = 83. This section lands in a later commit, so the `.claude` figures at the PR head are a few lines larger.
