@@ -48,8 +48,8 @@ function withTemp(fn: (dir: string, data: string) => void | Promise<void>) {
   };
 }
 
-test("loadCasePack: 21 topics, 105 items, 21 generators, the same object on a second call", async () => {
-  expect(pack.topics).toHaveLength(21);
+test("loadCasePack: 58 topics, 105 items, 21 generators, the same object on a second call", async () => {
+  expect(pack.topics).toHaveLength(58); // derived: 21 + 37 Year 11 rows (a3 plan)
   let total = 0;
   for (const items of pack.items.values()) total += items.length;
   expect(total).toBe(105);
@@ -131,7 +131,8 @@ const row = (id: string, alias: string) => ({
 test("loadPacks: the repo's subjects merged, each topic mapped to its subject", async () => {
   const { pack: all, subjects, courses } = await loadPacks();
   expect(subjects.get("1MA1/R4")).toBe("maths");
-  expect(courses.map((c) => c.spec)).toEqual(["1MA1", "8464"]);
+  expect(courses.map((c) => c.spec)).toEqual(["8700", "8702", "1MA1", "8464"]);
+  expect(subjects.get("8702/3.1.1/macbeth")).toBe("english");
   for (const t of pack.topics) expect(all.topics).toContain(t);
   expect(Object.keys(all.gens)).toEqual(
     expect.arrayContaining(Object.keys(pack.gens)),

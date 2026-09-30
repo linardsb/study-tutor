@@ -7,10 +7,16 @@ import { lessonUrls } from "./lessons";
 
 const root = process.cwd();
 
-test("lessonUrls: one URL per pack topic, each a lesson file of the topic's subject the server can serve", async () => {
+test("lessonUrls: one URL per pack topic with items, each a lesson file of the topic's subject the server can serve", async () => {
   const { pack, subjects } = await loadPacks(root);
   const urls = lessonUrls(root, subjects, pack.topics);
-  expect(Object.keys(urls).sort()).toEqual(pack.topics.map((t) => t.id).sort());
+  // A topic has a lesson exactly when it has items; Year 11 rows have neither yet (a3 plan).
+  expect(Object.keys(urls).sort()).toEqual(
+    pack.topics
+      .filter((t) => (pack.items.get(t.id)?.length ?? 0) > 0)
+      .map((t) => t.id)
+      .sort(),
+  );
   for (const [id, url] of Object.entries(urls)) {
     expect(url).toMatch(
       new RegExp(
@@ -42,6 +48,28 @@ test("lessonUrls: a topic with no lesson file is left out, and the second call i
     const first = lessonUrls(dir, subjects, topics);
     expect(first).toEqual({});
     expect(lessonUrls(dir, subjects, topics)).toBe(first);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("lessonUrls: a subject with no lessons folder gives no URL and does not throw", () => {
+  const dir = fs.realpathSync.native(
+    fs.mkdtempSync(path.join(os.tmpdir(), "st-lessons-")),
+  );
+  try {
+    fs.mkdirSync(path.join(dir, "content", "english"), { recursive: true });
+    const topics = [
+      {
+        id: "8702/3.2.3",
+        title: "Unseen poetry",
+        aliases: [],
+        prerequisites: [],
+        tier: "F" as const,
+      },
+    ];
+    const subjects = new Map([["8702/3.2.3", "english"]]);
+    expect(lessonUrls(dir, subjects, topics)).toEqual({});
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

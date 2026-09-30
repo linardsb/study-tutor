@@ -29,7 +29,7 @@ The canon rules, one text box for every type:
 - `sequence`: lower case, "then" and "and" dropped, letters only. "B, D, A, C", "b then d then a then c" and "BDAC" are the same.
 - `label`: split on commas, semicolons or new lines, each part a `vocab` answer, in order. Every slot and the count must match.
 
-An empty canon is never right. `loadPacks` (`src/api/case.ts`) merges every `content/<subject>/` with a `topics.json`; a subject may ship no `generators.js`, and a topic id, alias, generator code or course spec seen in two subjects is refused at start-up. Start-up also refuses a topic whose spec prefix (`id.split("/")[0]`) is not a course in its own pack's `courses.json`, and a topic in a tiered course whose `tier` that course does not list.
+An empty canon is never right. `loadPacks` (`src/api/case.ts`) merges every `content/<subject>/` with a `topics.json`; a subject may ship no `generators.js`, and no `items/` or `lessons/` either (English lists topic rows only; `lessonFile` gives `null` and the topic's items are `[]`), and a topic id, alias, generator code or course spec seen in two subjects is refused at start-up. Start-up also refuses a topic whose spec prefix (`id.split("/")[0]`) is not a course in its own pack's `courses.json`, and a topic in a tiered course whose `tier` that course does not list.
 
 The pupil's courses (`profile.json` `courses`, set at intake through `POST /api/courses`) narrow every route that offers topics (`filterPack` in `src/content/profile.ts`): a topic stays when its spec is chosen and the course is untiered, the pupil picked Higher (Higher includes Foundation), or the topic is `F`. Routes that render saved work (chat, snap, squad, a saved case, `/api/event`) use the full pack. Nothing chosen, or only stale specs, leaves the pack whole.
 
@@ -37,7 +37,7 @@ The pupil's courses (`profile.json` `courses`, set at intake through `POST /api/
 
 ## Keys and licence
 
-Topic id is the exam-board specification statement (Edexcel `1MA1/...`, AQA `8300/...`, `8464/...`). Sparx U-codes and school sheet codes are `aliases`, resolved at intake. No exam-board question text or mark scheme wording in this folder. Oak National Academy content under OGL v3 with attribution in `content/<subject>/LICENCE.md`.
+Topic id is the exam-board specification statement (Edexcel `1MA1/...`, AQA `8300/...`, `8464/...`). English Language (`8700`) has no content statements, so its statement segment is paper and question (`8700/P1Q4`); English Literature (`8702`) uses the spec's content number plus a text slug (`8702/3.1.1/macbeth`). A row in an untiered course (`tiers: []`) carries `tier: "F"`, which `loadTopics` requires. Sparx U-codes and school sheet codes are `aliases`, resolved at intake. No exam-board question text or mark scheme wording in this folder. Oak National Academy content under OGL v3 with attribution in `content/<subject>/LICENCE.md`.
 
 ## Carry-over from v1
 

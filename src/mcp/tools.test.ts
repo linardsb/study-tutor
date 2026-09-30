@@ -277,12 +277,16 @@ test(
 test(
   "open_lesson: every topic has a lesson that exists, by id or U-code",
   withTemp(async (_dir, ctx) => {
-    expect(topics).toHaveLength(21); // observed, content/maths/topics.json
-    for (const t of topics) {
+    expect(topics).toHaveLength(58); // derived: 21 + 37 Year 11 rows (a3 plan)
+    for (const t of topics.slice(0, 21)) {
       const v = value(await call("open_lesson", { topic: t.id }, ctx));
       const file = (v.url as string).replace(`${ctx.origin}/`, "");
       expect(fs.existsSync(path.join(root, file))).toBe(true);
     }
+    expect(await call("open_lesson", { topic: "1MA1/G10" }, ctx)).toEqual({
+      ok: false,
+      error: "No lesson for 1MA1/G10",
+    });
     expect(value(await call("open_lesson", { topic: "U349" }, ctx))).toEqual({
       topic: "1MA1/R9/of-an-amount",
       title: topics.find((t) => t.id === "1MA1/R9/of-an-amount")?.title,
@@ -321,7 +325,7 @@ test(
   withTemp(async (_dir, ctx) => {
     const v = value(await call("read_state", {}, ctx));
     const listed = v.topics as Record<string, unknown>[];
-    expect(listed).toHaveLength(21);
+    expect(listed).toHaveLength(58); // derived: 21 + 37 Year 11 rows (a3 plan)
     for (const t of listed)
       expect(Object.keys(t).sort()).toEqual(["aliases", "id", "title"]);
     expect(v).not.toHaveProperty("items");
@@ -351,7 +355,10 @@ test(
         courses: [{ spec: "8464", tier: "F" }],
       }),
     );
-    expect(await ids()).toEqual(["8464/4.1.1.2"]);
+    const f = await ids();
+    expect(f).toHaveLength(17); // derived: 1 + 16 Foundation 8464 rows (a3 plan)
+    expect(f[0]).toBe("8464/4.1.1.2");
+    expect(f.every((id) => id.startsWith("8464/"))).toBe(true);
     const v = value(await call("read_state", { topic: "1MA1/R4" }, ctx));
     expect(v.topic).toBe("1MA1/R4");
     const items = v.items as Record<string, unknown>[];

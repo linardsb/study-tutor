@@ -360,7 +360,7 @@ test("15c: a failed match shows the checklist of every topic under its own line"
   await tellMe({ by: "none", reason: "failed" });
   await until(() => $$("#checklist li").length === pack.topics.length);
   expect($("#checklist").textContent).toContain(TEXT.matchFailed);
-  expect(pack.topics).toHaveLength(22);
+  expect(pack.topics).toHaveLength(93); // derived: 58 maths + 20 science + 15 english (a3 plan)
 });
 
 test("15c (AC 7): no model → the checklist with no interview post; lost on cells saves R", async () => {

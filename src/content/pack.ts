@@ -14,6 +14,7 @@ export function lessonFile(
   id: string,
 ): string | null {
   const dir = path.join(subjectDir(subject, root), "lessons");
+  if (!fs.existsSync(dir)) return null; // a pack may ship topic rows before any lesson
   const marker = `data-items="/content/${subject}/items/${itemsFileName(id)}"`;
   for (const file of fs.readdirSync(dir).sort()) {
     if (!file.endsWith(".html")) continue;

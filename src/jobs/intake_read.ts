@@ -14,7 +14,7 @@ export type IntakeReadInput = { source: SheetSource; known: readonly string[] };
 export type CodeRow = { code: string; rag: Rag | null };
 export type IntakeReadOutput = { codes: CodeRow[] };
 export const MAX_CODES = 80;
-const MAX_CODE = 40; // observed: the longest topic id is 25 characters (1MA1/R9/increase-decrease)
+export const MAX_CODE = 40; // observed: the longest topic id is 29 characters (8702/3.2.2/power-and-conflict); packs.test.ts pins every id under it
 const CODE = /^[A-Za-z0-9./-]+$/;
 const RAGS: readonly unknown[] = ["R", "A", "G"];
 
