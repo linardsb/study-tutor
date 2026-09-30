@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { Item, ItemView, Topic } from "./types";
+import type { Course, Item, ItemView, Topic } from "./types";
 
 /** `1MA1/G17/cone` → `1MA1-G17-cone.json`: the file under content/<subject>/items/ that holds a topic's items. */
 export function itemsFileName(topicId: string): string {
@@ -14,6 +14,7 @@ export function lessonFile(
   id: string,
 ): string | null {
   const dir = path.join(subjectDir(subject, root), "lessons");
+  if (!fs.existsSync(dir)) return null; // a pack may ship topic rows before any lesson
   const marker = `data-items="/content/${subject}/items/${itemsFileName(id)}"`;
   for (const file of fs.readdirSync(dir).sort()) {
     if (!file.endsWith(".html")) continue;
@@ -64,6 +65,34 @@ export async function loadTopics(
     );
   if (!shaped) throw new Error(`${file}: not a list of topic rows`);
   return rows as Topic[];
+}
+
+/** content/<subject>/courses.json: the specifications the pack teaches. Missing or misshapen stops start-up. */
+export async function loadCourses(
+  subject: string,
+  root = process.cwd(),
+): Promise<Course[]> {
+  const file = path.join(subjectDir(subject, root), "courses.json");
+  const f = Bun.file(file);
+  if (!(await f.exists())) throw new Error(`${file}: missing`);
+  const rows: unknown = await f.json().catch(() => null);
+  const shaped =
+    Array.isArray(rows) &&
+    rows.length > 0 &&
+    rows.every(
+      (c) =>
+        typeof c?.spec === "string" &&
+        /^[A-Z0-9]+$/.test(c.spec) &&
+        typeof c.board === "string" &&
+        c.board !== "" &&
+        typeof c.title === "string" &&
+        c.title !== "" &&
+        Array.isArray(c.tiers) &&
+        c.tiers.every((t: unknown) => t === "F" || t === "H") &&
+        new Set(c.tiers).size === c.tiers.length,
+    );
+  if (!shaped) throw new Error(`${file}: not a list of course rows`);
+  return rows as Course[];
 }
 
 /** The items file of one topic; a topic with no file is an empty list, never a throw (a pack may add a topic before its items). */

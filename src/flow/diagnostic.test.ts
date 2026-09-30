@@ -8,7 +8,9 @@ import { diagnostic, MAX_DIAGNOSTIC_TOPICS, ragFor } from "./diagnostic";
 const { pack } = await loadPacks(path.resolve(import.meta.dir, "../.."));
 const DAY = "2026-10-05";
 const SCIENCE = "8464/4.1.1.2";
-const maths = pack.topics.filter((t) => t.id !== SCIENCE).map((t) => t.id);
+const maths = pack.topics
+  .filter((t) => t.id.startsWith("1MA1/"))
+  .map((t) => t.id);
 
 const intakeLine = (ids: readonly string[]) =>
   JSON.stringify({

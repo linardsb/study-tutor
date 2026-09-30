@@ -22,6 +22,7 @@ function withTemp(fn: (ctx: ToolContext) => Promise<void>) {
         dataDir: path.join(dir, "data"),
         subjects: new Map(topics.map((t) => [t.id, "maths"])),
         topics,
+        courses: [],
         origin: "http://127.0.0.1:4731",
         now: AT,
       });

@@ -3,9 +3,9 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { startFakeProvider } from "../scripts/fake-provider";
-import { loadCasePack } from "./api/case";
+import { loadCasePack, loadPacks } from "./api/case";
 import { loadTopics } from "./content/pack";
-import { appendEvent } from "./events/append";
+import { appendEvent, PROFILE_FILE, writeDataFile } from "./events/append";
 import { findItem } from "./flow/chat";
 import { chooseWrong } from "./flow/coach";
 import { addDays, isoWeek, localDay } from "./mcp/clock";
@@ -616,7 +616,7 @@ test(
     const res = await get("/api/lessons");
     expect(res.status).toBe(200);
     const urls = (await res.json()) as Record<string, string>;
-    expect(Object.keys(urls)).toHaveLength(opts.topics.length);
+    expect(Object.keys(urls)).toHaveLength(21); // observed: the 21 v1 lessons; Year 11 rows have none yet
     const first = urls[opts.topics[0]?.id as string] as string;
     const lesson = await get(first);
     expect(lesson.status).toBe(200);
@@ -634,7 +634,7 @@ test(
     const res = await get("/api/topics");
     expect(res.status).toBe(200);
     const rows = (await res.json()) as Array<{ id: string; subject: string }>;
-    expect(rows).toHaveLength(21); // observed at 4b5125a: 21 maths topics
+    expect(rows).toHaveLength(58); // derived: 21 + 37 Year 11 rows (a3 plan)
     expect(rows.every((r) => r.subject === "maths")).toBe(true);
     expect(rows[0]).toMatchObject({
       id: topics[0]?.id,
@@ -1255,3 +1255,405 @@ test(
     }
   }),
 );
+
+/** A server over the packs under `packRoot`, with courses, and an empty data/ in a temp dir. */
+function withPacks(
+  packRoot: () => string,
+  fn: (
+    get: (p: string, init?: RequestInit) => Promise<Response>,
+    opts: ServerOptions,
+  ) => Promise<void>,
+) {
+  return withTemp(async (_dir, base) => {
+    const l = await loadPacks(packRoot());
+    const opts: ServerOptions = {
+      root: packRoot(),
+      dataDir: base.dataDir,
+      topics: l.pack.topics,
+      pack: l.pack,
+      subjects: l.subjects,
+      courses: l.courses,
+    };
+    const server = startServer([0], opts);
+    try {
+      await fn(
+        (p, init) => fetch(`http://127.0.0.1:${server.port}${p}`, init),
+        opts,
+      );
+    } finally {
+      server.stop(true);
+    }
+  });
+}
+
+const topicIds = async (get: (p: string) => Promise<Response>) =>
+  ((await (await get("/api/topics")).json()) as { id: string }[]).map(
+    (t) => t.id,
+  );
+
+test(
+  "courses: a Foundation maths save narrows topics, lessons, next and the cold test; without a save all 93 show",
+  withPacks(
+    () => root,
+    async (get) => {
+      const post = postJson(get);
+      expect(await topicIds(get)).toHaveLength(93); // derived: 58 maths + 20 science + 15 english (a3 plan)
+      const lessons = async () =>
+        Object.values(
+          (await (await get("/api/lessons")).json()) as Record<string, string>,
+        );
+      expect(
+        (await lessons()).some((u) => u.includes("content/science/")),
+      ).toBe(true);
+      const got = (await (await get("/api/courses")).json()) as {
+        courses: { spec: string }[];
+        chosen: unknown[];
+      };
+      expect(got.chosen).toEqual([]);
+      expect(got.courses.map((c) => c.spec)).toEqual([
+        "8700",
+        "8702",
+        "1MA1",
+        "8464",
+      ]);
+
+      const saved = await post("/api/courses", {
+        courses: [{ spec: "1MA1", tier: "F" }],
+      });
+      expect(saved.status).toBe(200);
+      expect(await saved.json()).toEqual({
+        chosen: [{ spec: "1MA1", tier: "F" }],
+      });
+      const ids = await topicIds(get);
+      expect(ids).toHaveLength(38); // derived: 21 + 17 Foundation Year 11 rows (a3 plan)
+      expect(ids.some((id) => id.startsWith("8464/"))).toBe(false);
+      expect(
+        (await lessons()).some((u) => u.includes("content/science/")),
+      ).toBe(false);
+
+      const refused = await post("/api/courses", { courses: [] });
+      expect(refused.status).toBe(400);
+      expect(await refused.json()).toEqual({
+        error: "Pick at least one course.",
+      });
+      expect(await topicIds(get)).toHaveLength(38);
+
+      // Science only: maths comes first in pack order, so next and the cold test show the filter.
+      await post("/api/courses", { courses: [{ spec: "8464", tier: "F" }] });
+      expect(
+        ((await (await get("/api/next")).json()) as { step: unknown }).step,
+      ).toMatchObject({ kind: "lesson", topic: "8464/4.1.1.2" });
+      const cold = (await (await get("/api/intake/diagnostic")).json()) as {
+        slots: { topic: string }[];
+      };
+      expect(cold.slots.length).toBeGreaterThan(0);
+      expect(cold.slots.every((s) => s.topic.startsWith("8464/"))).toBe(true);
+    },
+  ),
+);
+
+test(
+  "courses: a case saved today on a dropped course still renders from the full pack",
+  withPacks(
+    () => root,
+    async (get, opts) => {
+      appendEvent(
+        opts.dataDir,
+        {
+          v: 1,
+          type: "case",
+          day: "2026-10-06",
+          kind: "mistake",
+          topic: "8464/4.1.1.2",
+          item: "8464/4.1.1.2#1",
+          pick: "cytoplasm",
+          bet: 2,
+          correct: false,
+          reask: false,
+        },
+        () => "2026-10-06T07:12:00Z",
+      );
+      await postJson(get)("/api/courses", {
+        courses: [{ spec: "1MA1", tier: "F" }],
+      });
+      const r = (await (await get("/api/case?day=2026-10-06")).json()) as {
+        case: unknown;
+        source: { topic: string };
+      };
+      expect(r.case).not.toBeNull();
+      expect(r.source.topic).toBe("8464/4.1.1.2");
+    },
+  ),
+);
+
+test(
+  "courses: the coach offers and accepts only the chosen courses' topics",
+  withPacks(
+    () => root,
+    async (get, opts) => {
+      appendEvent(opts.dataDir, {
+        v: 1,
+        type: "attempt",
+        item: "1MA1/R9/of-an-amount#1",
+        topic: "1MA1/R9/of-an-amount",
+        correct: true,
+        sure: true,
+        answer: "9",
+      });
+      const coachTopics = async () =>
+        JSON.stringify(
+          ((await (await get("/api/coach")).json()) as { topics: unknown })
+            .topics,
+        );
+      expect(await coachTopics()).toContain("1MA1/R9/of-an-amount");
+      await postJson(get)("/api/courses", {
+        courses: [{ spec: "8464", tier: "F" }],
+      });
+      expect(await coachTopics()).not.toContain("1MA1/");
+      expect(await (await get("/api/coach?topic=1MA1/R4")).json()).toEqual({
+        ready: false,
+        reason: "no-topic",
+      });
+    },
+  ),
+);
+
+test(
+  "courses: coach POST still marks a question offered before its course was dropped",
+  withPacks(
+    () => root,
+    async (get, opts) => {
+      const post = postJson(get);
+      await post("/api/config", { preset: "none", weeklyTarget: 3 });
+      const topic = "1MA1/R9/of-an-amount";
+      appendEvent(opts.dataDir, {
+        v: 1,
+        type: "attempt",
+        item: `${topic}#1`,
+        topic,
+        correct: true,
+        sure: true,
+        answer: "9",
+      });
+      const q = (await (
+        await get(`/api/coach?${new URLSearchParams({ topic })}`)
+      ).json()) as { item: string; seed: number };
+      const item = findItem(pack, q.item, q.seed);
+      if (item === null) throw new Error("no item");
+      await post("/api/courses", { courses: [{ spec: "8464", tier: "F" }] });
+      const marked = await post("/api/coach", {
+        step: "correct",
+        item: q.item,
+        seed: q.seed,
+        answer: item.answers?.[0],
+        sure: true,
+      });
+      expect(marked.status).toBe(200);
+      expect(await marked.json()).toMatchObject({ saved: true });
+    },
+  ),
+);
+
+test(
+  "courses: a pack that fails to load answers 500 with an error body on GET and POST",
+  withTemp(async (dir, base) => {
+    fs.mkdirSync(path.join(dir, "content", "x"), { recursive: true });
+    fs.writeFileSync(path.join(dir, "content", "x", "topics.json"), "[]");
+    fs.writeFileSync(path.join(dir, "content", "x", "courses.json"), "{");
+    const server = startServer([0], {
+      root: dir,
+      dataDir: base.dataDir,
+      topics: [],
+    });
+    try {
+      const url = `http://127.0.0.1:${server.port}/api/courses`;
+      const got = await fetch(url);
+      expect(got.status).toBe(500);
+      expect(await got.json()).toEqual({ error: "Could not read the courses" });
+      const saved = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ courses: [{ spec: "1MA1" }] }),
+      });
+      expect(saved.status).toBe(500);
+      expect(await saved.json()).toEqual({
+        error: "Could not save the courses",
+      });
+    } finally {
+      server.stop(true);
+    }
+  }),
+);
+
+test(
+  "courses: a stale spec in profile.json is dropped, leaving every topic",
+  withPacks(
+    () => root,
+    async (get, opts) => {
+      writeDataFile(
+        opts.dataDir,
+        PROFILE_FILE,
+        JSON.stringify({ weeklyTarget: 3, courses: [{ spec: "ZZZ9" }] }),
+      );
+      expect(await topicIds(get)).toHaveLength(93);
+      expect(
+        ((await (await get("/api/courses")).json()) as { chosen: unknown })
+          .chosen,
+      ).toEqual([]);
+    },
+  ),
+);
+
+test(
+  "courses over the real packs: a fresh pupil skips rows with no items; English alone offers nothing; the maths tier and English mix",
+  withPacks(
+    () => root,
+    async (get, opts) => {
+      const step = async () =>
+        (
+          (await (await get("/api/next?day=2026-10-10")).json()) as {
+            step: { kind: string; topic?: string };
+          }
+        ).step;
+      const pick = async (courses: object[]) => {
+        writeDataFile(
+          opts.dataDir,
+          PROFILE_FILE,
+          JSON.stringify({ weeklyTarget: 3, courses }),
+        );
+        return (await (await get("/api/topics")).json()) as {
+          id: string;
+          tier: string;
+          subject: string;
+        }[];
+      };
+      // Pack order puts English first; without pickLesson's items guard this is 8700/P1Q1.
+      expect(await step()).toMatchObject({
+        kind: "lesson",
+        topic: "1MA1/R9/of-an-amount",
+      });
+
+      const english = await pick([{ spec: "8700" }, { spec: "8702" }]);
+      expect(english).toHaveLength(15); // derived: 10 language + 5 literature rows (a3 plan)
+      expect(english.every((t) => t.subject === "english")).toBe(true);
+      expect((await step()).kind).toBe("none");
+
+      const f = await pick([{ spec: "1MA1", tier: "F" }]);
+      expect(f).toHaveLength(38); // derived: 21 + 17 Foundation rows
+      expect(f.some((t) => t.tier === "H")).toBe(false);
+      expect(await pick([{ spec: "1MA1", tier: "H" }])).toHaveLength(58); // derived: 21 + 37
+
+      const mixed = await pick([
+        { spec: "1MA1", tier: "F" },
+        { spec: "8700" },
+        { spec: "8702" },
+      ]);
+      expect(mixed).toHaveLength(53); // derived: 38 + 15
+      expect(mixed.filter((t) => t.subject === "english")).toHaveLength(15);
+    },
+  ),
+);
+
+/** content/aa (AA1, F and H), bb (BB1, H only; its topic needs AA1/X2), cc (CC1, untiered, no items). */
+function tierFixture(): string {
+  const dir = fs.realpathSync.native(
+    fs.mkdtempSync(path.join(os.tmpdir(), "st-tiers-")),
+  );
+  const subject = (
+    name: string,
+    course: object,
+    topics: { id: string; tier: string; prerequisites?: string[] }[],
+    withItems = true,
+  ) => {
+    const d = path.join(dir, "content", name);
+    fs.mkdirSync(path.join(d, "items"), { recursive: true });
+    fs.writeFileSync(path.join(d, "courses.json"), JSON.stringify([course]));
+    fs.writeFileSync(
+      path.join(d, "topics.json"),
+      JSON.stringify(
+        topics.map((t) => ({
+          title: t.id,
+          aliases: [t.id.replace("/", "")],
+          prerequisites: [],
+          ...t,
+        })),
+      ),
+    );
+    if (withItems)
+      for (const t of topics)
+        fs.writeFileSync(
+          path.join(d, "items", `${t.id.replace("/", "-")}.json`),
+          JSON.stringify([
+            {
+              id: `${t.id}#1`,
+              topic: t.id,
+              type: "vocab",
+              stem: "Which part of a cell holds the genetic material?",
+              answers: ["nucleus"],
+              misconceptions: [
+                { answer: "cytoplasm", message: "That is the jelly." },
+              ],
+            },
+          ]),
+        );
+  };
+  const course = (spec: string, tiers: string[]) => ({
+    spec,
+    board: "B",
+    title: spec,
+    tiers,
+  });
+  subject("aa", course("AA1", ["F", "H"]), [
+    { id: "AA1/X1", tier: "F" },
+    { id: "AA1/X2", tier: "H" },
+  ]);
+  subject("bb", course("BB1", ["H"]), [
+    { id: "BB1/X1", tier: "H", prerequisites: ["AA1/X2"] },
+  ]);
+  subject("cc", course("CC1", []), [{ id: "CC1/X1", tier: "F" }], false);
+  return dir;
+}
+
+let tiers = "";
+test("courses: Higher keeps Foundation topics, Foundation drops Higher ones, a dropped prerequisite counts as met, and nothing to offer gives none", async () => {
+  try {
+    await withPacks(
+      () => {
+        tiers ||= tierFixture();
+        return tiers;
+      },
+      async (get) => {
+        const post = postJson(get);
+        const save = async (courses: object[]) =>
+          expect((await post("/api/courses", { courses })).status).toBe(200);
+        const next = async () =>
+          ((await (await get("/api/next")).json()) as { step: unknown }).step;
+
+        await save([{ spec: "AA1", tier: "H" }]);
+        expect(await topicIds(get)).toEqual(["AA1/X1", "AA1/X2"]);
+        await save([{ spec: "AA1", tier: "F" }]);
+        expect(await topicIds(get)).toEqual(["AA1/X1"]);
+        // A red mark puts AA1/X2 ahead of AA1/X1, so only the filter keeps it out of next.
+        expect(
+          (
+            await post("/api/event", {
+              v: 1,
+              type: "intake",
+              door: "interview",
+              topics: [{ topic: "AA1/X2", rag: "R" }],
+            })
+          ).status,
+        ).toBe(201);
+        expect(await next()).toMatchObject({ kind: "lesson", topic: "AA1/X1" });
+        await save([{ spec: "BB1", tier: "H" }]);
+        expect(await topicIds(get)).toEqual(["BB1/X1"]);
+        expect(await next()).toMatchObject({ kind: "lesson", topic: "BB1/X1" });
+        await save([{ spec: "CC1" }]);
+        expect(await topicIds(get)).toEqual(["CC1/X1"]);
+        expect(await next()).toEqual({ kind: "none" });
+      },
+    )();
+  } finally {
+    if (tiers) fs.rmSync(tiers, { recursive: true, force: true });
+  }
+});

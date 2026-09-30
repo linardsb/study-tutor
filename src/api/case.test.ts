@@ -48,8 +48,8 @@ function withTemp(fn: (dir: string, data: string) => void | Promise<void>) {
   };
 }
 
-test("loadCasePack: 21 topics, 105 items, 21 generators, the same object on a second call", async () => {
-  expect(pack.topics).toHaveLength(21);
+test("loadCasePack: 58 topics, 105 items, 21 generators, the same object on a second call", async () => {
+  expect(pack.topics).toHaveLength(58); // derived: 21 + 37 Year 11 rows (a3 plan)
   let total = 0;
   for (const items of pack.items.values()) total += items.length;
   expect(total).toBe(105);
@@ -106,11 +106,19 @@ test(
   }),
 );
 
-/** A tmp root with content/<subject>/topics.json per row; no generators.js unless written. */
-function writeSubject(dir: string, subject: string, topics: object[]) {
+/** A tmp root with content/<subject>/topics.json and courses.json; by default one untiered course per topic prefix. No generators.js unless written. */
+function writeSubject(
+  dir: string,
+  subject: string,
+  topics: { id: string; [k: string]: unknown }[],
+  courses: object[] = [...new Set(topics.map((t) => t.id.split("/")[0]))].map(
+    (spec) => ({ spec, board: "B", title: spec, tiers: [] }),
+  ),
+) {
   const d = path.join(dir, "content", subject);
   fs.mkdirSync(d, { recursive: true });
   fs.writeFileSync(path.join(d, "topics.json"), JSON.stringify(topics));
+  fs.writeFileSync(path.join(d, "courses.json"), JSON.stringify(courses));
 }
 const row = (id: string, alias: string) => ({
   id,
@@ -121,8 +129,10 @@ const row = (id: string, alias: string) => ({
 });
 
 test("loadPacks: the repo's subjects merged, each topic mapped to its subject", async () => {
-  const { pack: all, subjects } = await loadPacks();
+  const { pack: all, subjects, courses } = await loadPacks();
   expect(subjects.get("1MA1/R4")).toBe("maths");
+  expect(courses.map((c) => c.spec)).toEqual(["8700", "8702", "1MA1", "8464"]);
+  expect(subjects.get("8702/3.1.1/macbeth")).toBe("english");
   for (const t of pack.topics) expect(all.topics).toContain(t);
   expect(Object.keys(all.gens)).toEqual(
     expect.arrayContaining(Object.keys(pack.gens)),
@@ -151,5 +161,66 @@ test(
     expect(p.gens).toEqual({});
     expect(p.items.get("ZZ1/X1")).toEqual([]);
     expect([...subjects]).toEqual([["ZZ1/X1", "zz"]]);
+  }),
+);
+
+test(
+  "loadPacks: a course spec in two subjects is refused, naming both",
+  withTemp(async (dir) => {
+    const course = { spec: "AA1", board: "B", title: "T", tiers: [] };
+    writeSubject(dir, "aaa", [row("AA1/X1", "A1")], [course]);
+    writeSubject(
+      dir,
+      "bbb",
+      [row("BB1/X1", "B1")],
+      [course, { ...course, spec: "BB1" }],
+    );
+    await expect(loadPacks(dir)).rejects.toThrow(
+      "content/bbb/courses.json: course AA1 is also in content/aaa",
+    );
+  }),
+);
+
+test(
+  "loadPacks: a topic whose spec is not a course of its pack is refused",
+  withTemp(async (dir) => {
+    writeSubject(
+      dir,
+      "aaa",
+      [row("AA1/X1", "A1"), row("CC1/X1", "C1")],
+      [{ spec: "AA1", board: "B", title: "T", tiers: [] }],
+    );
+    await expect(loadPacks(dir)).rejects.toThrow(
+      "content/aaa/topics.json: topic CC1/X1 has spec CC1, not in content/aaa/courses.json",
+    );
+  }),
+);
+
+test(
+  "loadPacks: a topic tier its course does not have is refused",
+  withTemp(async (dir) => {
+    writeSubject(
+      dir,
+      "aaa",
+      [{ ...row("AA1/X1", "A1"), tier: "H" }],
+      [{ spec: "AA1", board: "B", title: "T", tiers: ["F"] }],
+    );
+    await expect(loadPacks(dir)).rejects.toThrow(
+      "content/aaa/topics.json: topic AA1/X1 is tier H, not a tier of AA1",
+    );
+  }),
+);
+
+test(
+  "caseForDay: a new case is picked from the offer pack; a saved one is rebuilt from the full pack",
+  withTemp((_dir, data) => {
+    const only = pack.topics.find((t) => t.id === "1MA1/R9/of-an-amount");
+    if (!only) throw new Error("fixture topic missing");
+    const offer = { ...pack, topics: [only] };
+    expect(caseForDay(data, pack, DAY, offer).source?.topic).toBe(only.id);
+    appendEvent(data, { ...first, topic: "1MA1/R4", item: "1MA1/R4#1" }, AT);
+    const r = caseForDay(data, pack, DAY, offer);
+    expect(r.source?.topic).toBe("1MA1/R4");
+    expect(r.case).not.toBeNull();
   }),
 );

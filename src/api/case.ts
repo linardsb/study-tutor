@@ -1,8 +1,19 @@
 import fs from "node:fs";
 import path from "node:path";
 import { loadGenerators } from "../content/generators";
-import { loadItems, loadTopics, subjectDir } from "../content/pack";
-import type { CasePack, Generator, Item, Topic } from "../content/types";
+import {
+  loadCourses,
+  loadItems,
+  loadTopics,
+  subjectDir,
+} from "../content/pack";
+import type {
+  CasePack,
+  Course,
+  Generator,
+  Item,
+  Topic,
+} from "../content/types";
 import type { CaseRecord } from "../events/replay";
 import {
   buildCase,
@@ -41,11 +52,20 @@ export function loadCasePack(
   return loading;
 }
 
-export type Packs = { pack: CasePack; subjects: ReadonlyMap<string, string> };
+export type Packs = {
+  pack: CasePack;
+  subjects: ReadonlyMap<string, string>;
+  courses: readonly Course[];
+};
 
 const merged = new Map<string, Promise<Packs>>();
 
-/** Every content/<subject>/ with a topics.json, merged into one pack, plus topic id → subject. Topic ids, aliases and generator codes must be unique across subjects: resolveTopic takes the first match. */
+/**
+ * Every content/<subject>/ with a topics.json, merged into one pack, plus topic id → subject and every
+ * pack's courses. Topic ids, aliases, generator codes and course specs must be unique across subjects:
+ * resolveTopic takes the first match. A topic's spec prefix must be a course of its own pack, at a tier
+ * that course has.
+ */
 export function loadPacks(root = process.cwd()): Promise<Packs> {
   const key = path.resolve(root, "content");
   const cached = merged.get(key);
@@ -63,18 +83,36 @@ export function loadPacks(root = process.cwd()): Promise<Packs> {
     const items = new Map<string, readonly Item[]>();
     const gens: Record<string, Generator> = {};
     const subjects = new Map<string, string>();
-    const owner = new Map<string, string>(); // "topic id x" / "alias x" / "generator code x" → subject
-    const claim = (s: string, what: string) => {
+    const courses: Course[] = [];
+    const owner = new Map<string, string>(); // "topic id x" / "alias x" / "generator code x" / "course x" → subject
+    const claim = (s: string, what: string, file = "topics.json") => {
       const other = owner.get(what);
       if (other !== undefined)
         throw new Error(
-          `content/${s}/topics.json: ${what} is also in content/${other}`,
+          `content/${s}/${file}: ${what} is also in content/${other}`,
         );
       owner.set(what, s);
     };
     for (const s of names) {
+      // Courses first: a spec in two packs is reported as a course, before any topic claim.
+      const bySpec = new Map<string, Course>();
+      for (const c of await loadCourses(s, root)) {
+        claim(s, `course ${c.spec}`, "courses.json");
+        bySpec.set(c.spec, c);
+        courses.push(c);
+      }
       const p = await loadCasePack(s, root);
       for (const t of p.topics) {
+        const prefix = t.id.split("/")[0] ?? t.id;
+        const course = bySpec.get(prefix);
+        if (course === undefined)
+          throw new Error(
+            `content/${s}/topics.json: topic ${t.id} has spec ${prefix}, not in content/${s}/courses.json`,
+          );
+        if (course.tiers.length > 0 && !course.tiers.includes(t.tier))
+          throw new Error(
+            `content/${s}/topics.json: topic ${t.id} is tier ${t.tier}, not a tier of ${prefix}`,
+          );
         claim(s, `topic id ${t.id}`);
         for (const a of t.aliases) claim(s, `alias ${a}`);
         topics.push(t);
@@ -86,7 +124,7 @@ export function loadPacks(root = process.cwd()): Promise<Packs> {
         gens[code] = g;
       }
     }
-    return { pack: { topics, items, gens }, subjects };
+    return { pack: { topics, items, gens }, subjects, courses };
   })();
   merged.set(key, loading);
   return loading;
@@ -113,12 +151,13 @@ export function caseForDay(
   dataDir: string,
   pack: CasePack,
   day: string,
+  offer: CasePack = pack, // picks a new case; the full pack still builds one saved before a course change
 ): CaseResponse {
   const state = currentState(dataDir);
   const record = state.cases[day] ?? null;
   const source = record
     ? sourceOf(record)
-    : pickCase(day, state.caseSeed, casePool(pack));
+    : pickCase(day, state.caseSeed, casePool(offer));
   return {
     day,
     record,

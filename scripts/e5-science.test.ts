@@ -137,6 +137,7 @@ test("E5: intake by alias, lesson, attempts, a boss three days on, a passed re-t
       dataDir,
       subjects,
       topics: pack.topics,
+      courses: [],
       origin: "http://127.0.0.1:1",
       now: () => T,
     };

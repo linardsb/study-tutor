@@ -1,8 +1,13 @@
 # Study tutor
 
-GCSE maths practice that runs on your own computer. It works with no AI model at all. If you want the
-parts that use one, you add a key from a model provider you pay for, and the key stays on your
-computer. Your child's progress is kept in one folder on your computer, and none of it is sent to us.
+GCSE revision that runs on your own computer. Maths is ready now (Edexcel
+Foundation); science has started, and more subjects and boards are added as
+pupils need them. Tell us which ones your child needs.
+
+It works with no AI model at all. If you want the parts that use one, you add
+a key from a model provider you pay for, and the key stays on your computer.
+Your child's progress is kept in one folder on your computer, and none of it
+is sent to us.
 
 Setting it up takes about 15 minutes: download, first start and settings, 5 minutes each (an estimate).
 

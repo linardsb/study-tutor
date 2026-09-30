@@ -4,7 +4,12 @@ import os from "node:os";
 import path from "node:path";
 import { loadPacks } from "../api/case";
 import { loadTopics } from "../content/pack";
-import { appendEvent, readLines } from "../events/append";
+import {
+  appendEvent,
+  PROFILE_FILE,
+  readLines,
+  writeDataFile,
+} from "../events/append";
 import { EVENT_TYPES, type NewEvent } from "../events/types";
 import {
   MCP_WRITABLE,
@@ -32,6 +37,7 @@ function withTemp(fn: (dir: string, ctx: ToolContext) => Promise<void>) {
         dataDir: path.join(dir, "data"),
         subjects: new Map(topics.map((t) => [t.id, "maths"])),
         topics,
+        courses: [],
         origin: "http://127.0.0.1:4731",
         now: AT,
       });
@@ -271,12 +277,16 @@ test(
 test(
   "open_lesson: every topic has a lesson that exists, by id or U-code",
   withTemp(async (_dir, ctx) => {
-    expect(topics).toHaveLength(21); // observed, content/maths/topics.json
-    for (const t of topics) {
+    expect(topics).toHaveLength(58); // derived: 21 + 37 Year 11 rows (a3 plan)
+    for (const t of topics.slice(0, 21)) {
       const v = value(await call("open_lesson", { topic: t.id }, ctx));
       const file = (v.url as string).replace(`${ctx.origin}/`, "");
       expect(fs.existsSync(path.join(root, file))).toBe(true);
     }
+    expect(await call("open_lesson", { topic: "1MA1/G10" }, ctx)).toEqual({
+      ok: false,
+      error: "No lesson for 1MA1/G10",
+    });
     expect(value(await call("open_lesson", { topic: "U349" }, ctx))).toEqual({
       topic: "1MA1/R9/of-an-amount",
       title: topics.find((t) => t.id === "1MA1/R9/of-an-amount")?.title,
@@ -315,7 +325,7 @@ test(
   withTemp(async (_dir, ctx) => {
     const v = value(await call("read_state", {}, ctx));
     const listed = v.topics as Record<string, unknown>[];
-    expect(listed).toHaveLength(21);
+    expect(listed).toHaveLength(58); // derived: 21 + 37 Year 11 rows (a3 plan)
     for (const t of listed)
       expect(Object.keys(t).sort()).toEqual(["aliases", "id", "title"]);
     expect(v).not.toHaveProperty("items");
@@ -339,7 +349,45 @@ test(
         if (i.working) expect(text, i.id).not.toContain(i.working);
     }
     expect(subjects.size).toBe(pack.topics.length);
-    expect(new Set(subjects.values())).toEqual(new Set(["maths", "science"]));
+    expect(new Set(subjects.values())).toEqual(
+      new Set(["english", "maths", "science"]),
+    );
     expect(seen).toBeGreaterThan(0);
+  }),
+);
+
+test(
+  "read_state: the topic list narrows to the saved courses; a topic outside them still opens, answer-free",
+  withTemp(async (_dir, base) => {
+    const l = await loadPacks(root);
+    const ctx: ToolContext = {
+      ...base,
+      subjects: l.subjects,
+      topics: l.pack.topics,
+      courses: l.courses,
+    };
+    const ids = async () =>
+      (value(await call("read_state", {}, ctx)).topics as { id: string }[]).map(
+        (t) => t.id,
+      );
+    expect((await ids()).some((id) => id.startsWith("1MA1/"))).toBe(true);
+    writeDataFile(
+      ctx.dataDir,
+      PROFILE_FILE,
+      JSON.stringify({
+        weeklyTarget: 3,
+        courses: [{ spec: "8464", tier: "F" }],
+      }),
+    );
+    const f = await ids();
+    expect(f).toHaveLength(17); // derived: 1 + 16 Foundation 8464 rows (a3 plan)
+    expect(f[0]).toBe("8464/4.1.1.2");
+    expect(f.every((id) => id.startsWith("8464/"))).toBe(true);
+    const v = value(await call("read_state", { topic: "1MA1/R4" }, ctx));
+    expect(v.topic).toBe("1MA1/R4");
+    const items = v.items as Record<string, unknown>[];
+    expect(items.map((i) => i.id)).toEqual(R4);
+    for (const i of items)
+      for (const k of HIDDEN) expect(i).not.toHaveProperty(k);
   }),
 );

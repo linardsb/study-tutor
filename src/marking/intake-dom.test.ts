@@ -38,6 +38,8 @@ const served = {
   diagnostic: null as Diagnostic | null,
   eventOk: true,
   sheetStatus: 200,
+  courses: null as null | { courses: unknown[]; chosen: unknown[] },
+  coursesPost: { status: 200, body: {} as unknown },
 };
 type Call = { method: string; url: string; body?: Record<string, unknown> };
 const calls: Call[] = [];
@@ -50,6 +52,12 @@ globalThis.fetch = (async (url: string, init?: RequestInit) => {
       configured: true,
       config: { preset: served.preset },
     });
+  if (url === "/api/courses" && method === "POST")
+    return Response.json(served.coursesPost.body, {
+      status: served.coursesPost.status,
+    });
+  if (url === "/api/courses" && served.courses !== null)
+    return Response.json(wire(served.courses));
   if (url === "/api/topics")
     return Response.json(
       pack.topics.map((t) => ({ ...t, subject: subjects.get(t.id) })),
@@ -100,6 +108,7 @@ type Page = {
   encode: (file: unknown) => Promise<string>;
   confirmRows: (door: string, rows: Row[], source: string) => void;
   openDoor: (door: string) => Promise<void>;
+  page: { topics: unknown };
 };
 const page = (globalThis as { intake?: Page }).intake as Page;
 const { TEXT } = page;
@@ -351,7 +360,7 @@ test("15c: a failed match shows the checklist of every topic under its own line"
   await tellMe({ by: "none", reason: "failed" });
   await until(() => $$("#checklist li").length === pack.topics.length);
   expect($("#checklist").textContent).toContain(TEXT.matchFailed);
-  expect(pack.topics).toHaveLength(22);
+  expect(pack.topics).toHaveLength(93); // derived: 58 maths + 20 science + 15 english (a3 plan)
 });
 
 test("15c (AC 7): no model → the checklist with no interview post; lost on cells saves R", async () => {
@@ -473,4 +482,101 @@ test("15d: nothing to ask says so", async () => {
   served.diagnostic = null;
   await page.openDoor("diagnostic");
   await until(() => $("#cold-intro").textContent === TEXT.nothingToAsk);
+});
+
+// ---- A2: the courses panel before the doors ----
+
+const COURSES = [
+  {
+    spec: "1MA1",
+    board: "Edexcel",
+    title: "GCSE Mathematics",
+    tiers: ["F", "H"],
+  },
+  {
+    spec: "8464",
+    board: "AQA",
+    title: "GCSE Combined Science: Trilogy",
+    tiers: ["F", "H"],
+  },
+];
+const coursePosts = () =>
+  calls.filter((c) => c.method === "POST" && c.url === "/api/courses");
+
+test("A2 (AC 5): no courses saved → the panel shows and the doors hide; a save posts the ticks and brings the doors back", async () => {
+  served.courses = { courses: COURSES, chosen: [] };
+  await fresh("none");
+  expect($("#courses").hidden).toBe(false);
+  expect($("#doors").hidden).toBe(true);
+  expect($("#courses-line").hidden).toBe(true);
+  await page.openDoor("sheet"); // fills the topic cache the save must drop
+  expect(page.page.topics).not.toBeNull();
+
+  (
+    $('#course-list input[data-spec="1MA1"]') as El & { checked: boolean }
+  ).checked = true;
+  (
+    $('input[name="tier-1MA1"][value="F"]') as El & { checked: boolean }
+  ).checked = true;
+  served.coursesPost = {
+    status: 200,
+    body: { chosen: [{ spec: "1MA1", tier: "F" }] },
+  };
+  $("#courses-save").click();
+  await until(() => status() === "Courses saved.");
+  expect(coursePosts().map((c) => c.body)).toEqual([
+    { courses: [{ spec: "1MA1", tier: "F" }] },
+  ]);
+  expect($("#doors").hidden).toBe(false);
+  expect($("#courses").hidden).toBe(true);
+  expect(page.page.topics).toBeNull();
+  expect($("#courses-line").textContent).toContain(
+    "Edexcel GCSE Mathematics, Foundation",
+  );
+});
+
+test("A2: a refused save shows the server's sentence and keeps the doors hidden", async () => {
+  served.courses = { courses: COURSES, chosen: [] };
+  await fresh("none");
+  (
+    $('#course-list input[data-spec="1MA1"]') as El & { checked: boolean }
+  ).checked = true;
+  served.coursesPost = {
+    status: 400,
+    body: { error: "Pick Foundation or Higher for GCSE Mathematics." },
+  };
+  $("#courses-save").click();
+  await until(
+    () => status() === "Pick Foundation or Higher for GCSE Mathematics.",
+  );
+  expect(coursePosts().map((c) => c.body)).toEqual([
+    { courses: [{ spec: "1MA1" }] },
+  ]);
+  expect($("#doors").hidden).toBe(true);
+});
+
+test("A2: saved courses → the doors show with a line naming them; no route → the page as before", async () => {
+  served.courses = {
+    courses: COURSES,
+    chosen: [{ spec: "8464", tier: "H" }],
+  };
+  await fresh("none");
+  expect($("#courses").hidden).toBe(true);
+  expect($("#doors").hidden).toBe(false);
+  expect($("#courses-line").textContent).toContain(
+    "AQA GCSE Combined Science: Trilogy, Higher",
+  );
+  served.courses = null;
+  await fresh("none");
+  expect($("#courses").hidden).toBe(true);
+  expect($("#courses-line").hidden).toBe(true);
+  expect($("#doors").hidden).toBe(false);
+});
+
+test("A2: a courses reply with no course to pick → the page as before, doors first", async () => {
+  served.courses = { courses: [], chosen: [] };
+  await fresh("none");
+  expect($("#courses").hidden).toBe(true);
+  expect($("#courses-line").hidden).toBe(true);
+  expect($("#doors").hidden).toBe(false);
 });

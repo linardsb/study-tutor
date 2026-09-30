@@ -5,6 +5,7 @@ import path from "node:path";
 import { normaliseAnswer } from "../marking/normalise";
 import {
   itemsFileName,
+  loadCourses,
   loadItems,
   loadTopics,
   subjectDir,
@@ -25,32 +26,31 @@ const ITEM_TYPES: Record<ItemType, true> = {
 
 async function allItems(): Promise<Map<string, Item[]>> {
   const out = new Map<string, Item[]>();
-  for (const t of await loadTopics("maths"))
-    out.set(
-      t.id,
-      (await Bun.file(
-        `content/maths/items/${itemsFileName(t.id)}`,
-      ).json()) as Item[],
-    );
+  for (const t of await loadTopics("maths")) {
+    const f = Bun.file(`content/maths/items/${itemsFileName(t.id)}`);
+    // Year 11 rows ship before their items (a3 plan).
+    if (await f.exists()) out.set(t.id, (await f.json()) as Item[]);
+  }
   return out;
 }
 
-test("topics.json: 21 rows, unique ids and aliases, ids follow the grammar, prerequisites resolve, tier F", async () => {
+test("topics.json: 58 rows, unique ids and aliases, ids follow the grammar, prerequisites resolve, the 21 v1 rows tier F and 20 rows tier H", async () => {
   const topics = await loadTopics("maths");
-  expect(topics).toHaveLength(21);
+  expect(topics).toHaveLength(58); // derived: 21 + 37 Year 11 rows (a3 plan)
   const ids = topics.map((t) => t.id);
-  expect(new Set(ids).size).toBe(21);
+  expect(new Set(ids).size).toBe(58);
   const aliases = topics.flatMap((t) => t.aliases);
   expect(new Set(aliases).size).toBe(aliases.length);
   for (const t of topics) {
     expect(t.id).toMatch(/^1MA1\/[NARGPS]\d+(\/[a-z-]+)?$/);
     expect(t.title.length).toBeGreaterThan(0);
-    expect(t.tier).toBe("F");
     for (const p of t.prerequisites) {
       expect(ids).toContain(p);
       expect(p).not.toBe(t.id);
     }
   }
+  expect(topics.slice(0, 21).every((t) => t.tier === "F")).toBe(true);
+  expect(topics.filter((t) => t.tier === "H")).toHaveLength(20); // derived: a3 plan table
   // Three concept topics (T7 Q3); each rule is one of three options with two distractors.
   const concepts = topics.filter((t) => t.concept !== undefined);
   expect(concepts.map((t) => t.id)).toEqual([
@@ -174,7 +174,7 @@ test("loadTopics reads from root, not the cwd, and refuses a file that is not a 
   const tmp = mkdtempSync(path.join(tmpdir(), "study-tutor-"));
   process.chdir(tmp);
   try {
-    expect(await loadTopics("maths", root)).toHaveLength(21);
+    expect(await loadTopics("maths", root)).toHaveLength(58);
   } finally {
     process.chdir(root);
   }
@@ -183,6 +183,40 @@ test("loadTopics reads from root, not the cwd, and refuses a file that is not a 
   writeFileSync(file, JSON.stringify([{ id: "1MA1/R9", title: "t" }]));
   await expect(loadTopics("bad", tmp)).rejects.toThrow(
     `${file}: not a list of topic rows`,
+  );
+});
+
+test("loadCourses: the real packs load; a bad tier and a missing file are refused, naming the file", async () => {
+  expect(await loadCourses("maths")).toEqual([
+    {
+      spec: "1MA1",
+      board: "Edexcel",
+      title: "GCSE Mathematics",
+      tiers: ["F", "H"],
+    },
+  ]);
+  expect((await loadCourses("science")).map((c) => c.spec)).toEqual(["8464"]);
+  const tmp = mkdtempSync(path.join(tmpdir(), "study-tutor-"));
+  const dir = path.join(tmp, "content", "bad");
+  mkdirSync(dir, { recursive: true });
+  const file = path.join(dir, "courses.json");
+  await expect(loadCourses("bad", tmp)).rejects.toThrow(`${file}: missing`);
+  const row = { spec: "AA1", board: "B", title: "T", tiers: ["F"] };
+  for (const bad of [
+    [{ ...row, tiers: ["X"] }],
+    [{ ...row, tiers: ["F", "F"] }],
+    [{ ...row, spec: "aa1" }],
+    [{ ...row, title: "" }],
+    [],
+  ]) {
+    writeFileSync(file, JSON.stringify(bad));
+    await expect(loadCourses("bad", tmp)).rejects.toThrow(
+      `${file}: not a list of course rows`,
+    );
+  }
+  writeFileSync(file, "not json");
+  await expect(loadCourses("bad", tmp)).rejects.toThrow(
+    `${file}: not a list of course rows`,
   );
 });
 

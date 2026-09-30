@@ -29,7 +29,7 @@ const order = (a: string | number, b: string | number): number => {
 const rungOf = (state: State, id: string): number =>
   state.topics[id]?.rung ?? 0;
 
-/** A new topic whose in-pack prerequisites are all started, red first, then pack order. */
+/** A new topic with items whose in-pack prerequisites are all started, red first, then pack order. */
 function pickLesson(state: State, pack: CasePack): string | null {
   const inPack = new Set(pack.topics.map((t) => t.id));
   const ready = pack.topics
@@ -37,6 +37,7 @@ function pickLesson(state: State, pack: CasePack): string | null {
     .filter(
       ({ t }) =>
         rungOf(state, t.id) === 0 &&
+        (pack.items.get(t.id)?.length ?? 0) > 0 && // a pack may list a topic before its items
         t.prerequisites.every((p) => !inPack.has(p) || rungOf(state, p) >= 1),
     )
     .map(({ t, index }) => ({
