@@ -54,7 +54,7 @@ test("six-week history: rungs, next-due, XP, flame, pool, calibration, tokens", 
   expect(s.tokens).toEqual({ "2026-10": 1500, "2026-11": 600 });
   expect(s.lines).toBe(33);
   expect(s.skipped).toBe(0);
-  expect(s.shape).toBe(6);
+  expect(s.shape).toBe(7);
   expect(s.coach).toEqual({ shown: 0, caught: 0, rank: 0 });
   expect(s.retests).toEqual({
     "2026-W41": { score: 4, of: 6, taken: 2, passed: 1 },
@@ -138,6 +138,59 @@ test("attempt@2: a null attempt counts the day and nothing else", () => {
   expect(after.confidentWrong).toEqual(before.confidentWrong);
   expect(after.flame["2026-W41"]).toEqual(["2026-10-05", "2026-10-07"]);
   expect(replay([NULL_SURE]).topics["8464/4.1.1.2"]).toBeDefined();
+});
+
+const TEACH = (marks: number, of: number, t = "2026-10-12T17:00:00Z") =>
+  `{"v":1,"t":"${t}","type":"teachback","topic":"8464/4.1.1.2","item":"8464/4.1.1.2#6","marks":${marks},"of":${of}}`;
+const W41 = "2026-W41";
+const cal = (sureRight: number, sureWrong: number) => ({
+  sureRight,
+  sureWrong,
+  unsureRight: 0,
+  unsureWrong: 0,
+});
+
+test("#53: the first teach-back after a null attempt settles the bet in the attempt's week, full marks right", () => {
+  // The attempt is in W41 and the teach-back in W42: the bet stays in W41, where it was made.
+  expect(replay([NULL_SURE, TEACH(2, 2)]).calibration).toEqual({
+    [W41]: cal(1, 0),
+  });
+  expect(replay([NULL_SURE, TEACH(1, 2)]).calibration).toEqual({
+    [W41]: cal(0, 1),
+  });
+  expect(replay([NULL_SURE, TEACH(2, 2)]).unmarked).toEqual({});
+  const unsure = NULL_SURE.replace('"sure":true', '"sure":false');
+  expect(replay([unsure, TEACH(0, 2)]).calibration[W41]).toEqual({
+    sureRight: 0,
+    sureWrong: 0,
+    unsureRight: 0,
+    unsureWrong: 1,
+  });
+  expect(replay([NULL_SURE, TEACH(0, 2)]).confidentWrong).toEqual({});
+});
+
+test("#53: a second teach-back, a teach-back with no item or no null attempt, and a newer marked attempt settle nothing", () => {
+  expect(
+    replay([NULL_SURE, TEACH(1, 2), TEACH(2, 2, "2026-10-13T17:00:00Z")])
+      .calibration,
+  ).toEqual({ [W41]: cal(0, 1) });
+  const squad = `{"v":1,"t":"2026-10-12T17:00:00Z","type":"teachback","topic":"8464/4.1.1.2","marks":3,"of":3}`;
+  expect(replay([NULL_SURE, squad]).calibration).toEqual({});
+  expect(replay([TEACH(2, 2)]).calibration).toEqual({});
+  // The latest attempt is the marked one, so the teach-back has no null bet left to settle.
+  expect(replay([NULL_SURE, WRONG, TEACH(2, 2)]).calibration).toEqual({
+    [W41]: cal(0, 1),
+  });
+  // A second null attempt replaces the first: its week and bet are the ones settled.
+  const later = NULL_SURE.replace("2026-10-07", "2026-10-13").replace(
+    '"sure":true',
+    '"sure":false',
+  );
+  expect(
+    replay([NULL_SURE, later, TEACH(2, 2, "2026-10-14T17:00:00Z")]).calibration,
+  ).toEqual({
+    "2026-W42": { sureRight: 0, sureWrong: 0, unsureRight: 1, unsureWrong: 0 },
+  });
 });
 
 test("attempt@2: a boolean v2 replays as v1", () => {
