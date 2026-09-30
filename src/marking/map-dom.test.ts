@@ -2,6 +2,7 @@
    here and unregistered in afterAll, so no other test file sees a document. */
 
 import { afterAll, expect, test } from "bun:test";
+import fs from "node:fs";
 import path from "node:path";
 import { GlobalRegistrator } from "@happy-dom/global-registrator";
 import { loadCasePack } from "../api/case";
@@ -46,6 +47,10 @@ const served = {
       stem: "Find 20% of 45.",
     },
   } as { status: number; body: Record<string, unknown> },
+  config: { configured: true, config: { preset: "openai" } } as Record<
+    string,
+    unknown
+  >,
 };
 
 doc().body.innerHTML =
@@ -66,6 +71,7 @@ globalThis.fetch = (async (url: string, init?: RequestInit) => {
   if (url === "/api/next?day=2026-13-45")
     return Response.json({ error: "day must be YYYY-MM-DD" }, { status: 400 });
   if (url.startsWith("/api/next")) return Response.json(served.next);
+  if (url === "/api/config") return Response.json(served.config);
   if (url === "/api/snap")
     return Response.json(served.snap.body, { status: served.snap.status });
   if (url === "/api/topics")
@@ -330,4 +336,49 @@ test("examiner: photos stored but none marked (no model) show no marks-left figu
   await until(() => $$("#stats .stat").length === 3);
   expect($("#stats").textContent).not.toContain("left on the table");
   served.state = { status: 200, body: wire(state) };
+});
+
+const FIREWALL =
+  "If the phone cannot open the link, this computer's firewall may be blocking it. Use the link below to drop a photo on this computer instead.";
+const NO_MODEL =
+  "No model is set up, so the tutor will store the photo but not mark it.";
+
+test("M7: with the phone link shown, the map says the computer's firewall may block it, naming no one system, and points to the drop link", async () => {
+  served.snap = {
+    status: 201,
+    body: {
+      local: "/snap.html?token=T",
+      lan: "http://192.168.1.11:52311/snap.html?token=T",
+      qr: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><rect width="1" height="1"/></svg>',
+      stem: "Find 20% of 45.",
+    },
+  };
+  $("#snap-open").click();
+  await until(() => $("#snap svg") !== null);
+  expect($("#snap").textContent).toContain(FIREWALL);
+  expect($("#snap").textContent).not.toMatch(/Windows|Mac/);
+  expect($("#snap").textContent).not.toContain(NO_MODEL);
+});
+
+test("L16: with no model set up, the minted link says the photo is stored, not marked", async () => {
+  served.config = { configured: true, config: { preset: "none" } };
+  $("#snap-open").click();
+  await until(() => ($("#snap").textContent ?? "").includes(NO_MODEL));
+  served.config = { configured: false, config: null };
+  $("#snap-open").click();
+  await until(() => ($("#snap").textContent ?? "").includes(NO_MODEL));
+});
+
+test("the Examiner card promises marking only when a model is set up", () => {
+  const html = fs.readFileSync(
+    path.resolve(import.meta.dir, "../../app/map.html"),
+    "utf8",
+  );
+  const card = html.slice(
+    html.indexOf('id="examiner"'),
+    html.indexOf('id="snap-open"'),
+  );
+  expect(card).toContain(
+    "With a model set up, the tutor marks it line by line",
+  );
 });

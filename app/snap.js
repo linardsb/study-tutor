@@ -18,7 +18,9 @@
     expired: "This link has expired. Open a new one from the map.",
     total: (marks, of) =>
       `${marks} of ${of}. Marks left on the table: ${of - marks}.`,
-    clean: "Clean sheet.",
+    // examiner_mark's clean: every presentation line earned, whatever the method and accuracy marks
+    clean:
+      "Clean sheet on presentation: no marks lost on the answer, units or sense.",
     notNeeded: "not needed",
   };
   const LABELS = {
@@ -103,6 +105,40 @@
     return out;
   }
 
+  /* the app pages' top bar, the same links in the same order as app/*.html */
+  const NAV = [
+    ["/", "Lessons"],
+    ["/map.html", "Map"],
+    ["/practice.html", "Practice"],
+    ["/case.html", "Today's case"],
+    ["/squad.html", "Squad"],
+    ["/coach.html", "Coach Dan"],
+  ];
+
+  function addNav() {
+    if (document.querySelector(".topbar")) return;
+    const bar = document.createElement("header");
+    bar.className = "topbar";
+    const inner = document.createElement("div");
+    inner.className = "inner";
+    const brand = document.createElement("a");
+    brand.className = "brand";
+    brand.href = "/";
+    brand.textContent = "Study tutor";
+    const nav = document.createElement("nav");
+    nav.className = "topnav";
+    nav.setAttribute("aria-label", "Main");
+    for (const [href, text] of NAV) {
+      const a = document.createElement("a");
+      a.href = href;
+      a.textContent = text;
+      nav.appendChild(a);
+    }
+    inner.append(brand, nav);
+    bar.appendChild(inner);
+    document.body.prepend(bar);
+  }
+
   function start() {
     const $ = (id) => document.getElementById(id);
     // A token is 32 random bytes as base64url (src/snap.ts). Any other value is not sent: the server
@@ -114,6 +150,14 @@
     const status = $("status");
     const send = $("send");
     let sending = false;
+    /* on this computer (the dropped-file route) the page gets the main nav and a way back; the
+       phone's LAN route serves only this page, so a link from there would lead nowhere */
+    const local = ["127.0.0.1", "localhost"].includes(location.hostname);
+    if (local) addNav();
+    function sent() {
+      form.hidden = true;
+      if (local) $("back").hidden = false;
+    }
 
     function render(result) {
       $("result").replaceChildren(
@@ -169,7 +213,7 @@
         const res = await fetch(q);
         const body = await res.json();
         if (!res.ok || body.state === "open") return false;
-        form.hidden = true;
+        sent();
         if (body.state === "done") render(body.result);
         else poll();
         return true;
@@ -205,14 +249,14 @@
           return;
         }
         if (res.status === 202) {
-          form.hidden = true;
+          sent();
           poll();
           return;
         }
         // A 403 after a lost 202 (saved, but the reply never arrived): the snap says so, not "expired".
         if (res.status === 403 && (await taken())) return;
         status.textContent = body.error || TEXT.network;
-        if (res.status === 403) form.hidden = true;
+        if (res.status === 403) sent();
       } finally {
         sending = false;
         send.disabled = false;
@@ -266,9 +310,14 @@
             $("figure").hidden = false;
           }
           $("no-model").hidden = body.model;
+          // only a set-up model marks the photo, so the AI note shows only then
+          document.querySelector(".ai-note").hidden = !body.model;
           if (body.state === "open") form.hidden = false;
-          else if (body.state === "done") render(body.result);
-          else poll();
+          else {
+            sent();
+            if (body.state === "done") render(body.result);
+            else poll();
+          }
         }),
       )
       .catch(() => {

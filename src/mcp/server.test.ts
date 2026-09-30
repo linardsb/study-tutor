@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { loadTopics } from "../content/pack";
+import { VERSION } from "../updates";
 import { handle, runStdio } from "./server";
 import { TOOLS, type ToolContext } from "./tools";
 
@@ -58,7 +59,7 @@ test(
     expect((await ask(init("2025-11-25"), ctx)).result).toMatchObject({
       protocolVersion: "2025-11-25",
       capabilities: { tools: {} },
-      serverInfo: { name: "study-tutor" },
+      serverInfo: { name: "study-tutor", version: VERSION },
     });
     expect((await ask(init("1900-01-01"), ctx)).result?.protocolVersion).toBe(
       "2025-11-25",

@@ -226,3 +226,31 @@ test("readCodes: a code alone has no R/A/G; lower case and a topic id are read",
     { code: "1MA1/R4", rag: "R" },
   ]);
 });
+
+test("readCodes: the rating after the topic name is read on its own row, not shifted down one (M1)", () => {
+  const sheet = [
+    "U349 Percentage of an amount R",
+    "U687 Simplifying ratio G",
+    "U950 Area of a circle A",
+  ].join("\n");
+  expect(readCodes(sheet, KNOWN)).toEqual([
+    { code: "U349", rag: "R" },
+    { code: "U687", rag: "G" },
+    { code: "U950", rag: "A" },
+  ]);
+  // A row with no rating stays null and does not borrow the next row's.
+  expect(
+    readCodes("U349 Percentage R\nU687 Ratio\nU950 Circles A", KNOWN),
+  ).toEqual([
+    { code: "U349", rag: "R" },
+    { code: "U687", rag: null },
+    { code: "U950", rag: "A" },
+  ]);
+});
+
+test("readCodes: when both orders fit equally and disagree, no rating is read (M1)", () => {
+  expect(readCodes("R U349 G U687 A", KNOWN)).toEqual([
+    { code: "U349", rag: null },
+    { code: "U687", rag: null },
+  ]);
+});

@@ -11,11 +11,16 @@ import { chooseWrong } from "./flow/coach";
 import { addDays, isoWeek, localDay } from "./mcp/clock";
 import {
   apiRoutes,
+  claimLock,
+  LOCK_FILE,
   openBrowser,
   refuseForeign,
+  releaseLock,
   type ServerOptions,
+  serveStatic,
   startServer,
   staticPath,
+  takeLock,
 } from "./server";
 import { checkForUpdate, RELEASES_PAGE } from "./updates";
 
@@ -197,6 +202,83 @@ test("staticPath: the same guard holds under the Windows path rules, where norma
   }
 });
 
+test("staticPath: a trailing dot or space, a device name, a drive letter or a stream name is refused on every OS (Windows strips or reads them)", () => {
+  for (const p of [path.win32, path.posix]) {
+    const root = p === path.win32 ? "C:\\StudyTutor" : "/StudyTutor";
+    for (const rel of [
+      "/.. /package.json",
+      "/.. ./package.json",
+      "/quiz.js.",
+      "/quiz.js ",
+      "/con",
+      "/CON",
+      "/nul.json",
+      "/maths/Aux.txt",
+      "/com1",
+      "/LPT9.html",
+      "/COM0",
+      "/lpt0.txt",
+      "/COM\u00b9",
+      "/COM\u00b2.js",
+      "/com\u00b3",
+      "/LPT\u00b9",
+      "/LPT\u00b2",
+      "/lpt\u00b3.css",
+      "/CONIN$",
+      "/conout$.txt",
+      "/con .txt",
+      "/nul  .json",
+      "/maths/Aux .html",
+      "/C:",
+      "/C:/Windows/win.ini",
+      "/x:$DATA",
+      "/quiz.js::$DATA",
+    ]) {
+      expect(staticPath(root, "app", rel, p), `${p.sep} ${rel}`).toBeNull();
+      expect(staticPath(root, "content", rel, p), `${p.sep} ${rel}`).toBeNull();
+    }
+    // A request carries the superscript percent-encoded; serveStatic decodes it before staticPath.
+    const sup = decodeURIComponent(new URL("http://x/COM%C2%B9.js").pathname);
+    expect(staticPath(root, "app", sup, p), `${p.sep} ${sup}`).toBeNull();
+    // Names that only start like a device are ordinary files.
+    for (const rel of [
+      "/console.js",
+      "/conditional.html",
+      "/com10.css",
+      "/conin.js",
+      "/lpt\u2074.css",
+    ])
+      expect(staticPath(root, "app", rel, p), `${p.sep} ${rel}`).not.toBeNull();
+  }
+});
+
+test(
+  "static: another site cannot read content/ (an items file holds answers), by Origin or by a rebound Host",
+  withServer(async (get, _dir, opts) => {
+    const file = "/content/maths/items/1MA1-R9-of-an-amount.json";
+    expect((await get(file)).status).toBe(200);
+    const foreign = await get(file, {
+      headers: { origin: "https://evil.example" },
+    });
+    expect(foreign.status).toBe(403);
+    // Host is checked in the function: fetch does not let a test set it (DNS rebinding shape).
+    const rebound = await serveStatic(
+      new Request(`http://127.0.0.1:4731${file}`, {
+        headers: { host: "attacker.example:4731" },
+      }),
+      opts.root,
+    );
+    expect(rebound.status).toBe(403);
+    const local = await serveStatic(
+      new Request(`http://127.0.0.1:4731${file}`, {
+        headers: { host: "127.0.0.1:4731" },
+      }),
+      opts.root,
+    );
+    expect(local.status).toBe(200);
+  }),
+);
+
 test(
   "api: a foreign Origin, a foreign Host or a non-JSON POST body is refused and nothing is written (PR #26 F3)",
   withServer(async (get, _dir, opts) => {
@@ -333,6 +415,21 @@ test(
     expect(((await refused.json()) as { error: string }).error).toStartWith(
       "Refused",
     );
+    expect(fs.readFileSync(log, "utf8").trim().split("\n")).toHaveLength(2);
+
+    // An item the pack does not hold earns nothing: the route checks it against the pack.
+    const unknown = await post(
+      JSON.stringify({
+        v: 1,
+        type: "attempt",
+        item: "1MA1/R4#1",
+        topic: "U349",
+        correct: true,
+        sure: true,
+        answer: "1:2",
+      }),
+    );
+    expect(unknown.status).toBe(400);
     expect(fs.readFileSync(log, "utf8").trim().split("\n")).toHaveLength(2);
 
     const notJson = await post("not json");
@@ -963,6 +1060,198 @@ test(
     } finally {
       server.stop(true);
       feed.stop(true);
+    }
+  }),
+);
+
+/** Writes a lock file by hand: the shapes a crash or a mid-write leaves. */
+function plantLock(dataDir: string, text: string) {
+  fs.mkdirSync(dataDir, { recursive: true });
+  fs.writeFileSync(path.join(dataDir, LOCK_FILE), text);
+}
+const lockOf = (dataDir: string) =>
+  JSON.parse(fs.readFileSync(path.join(dataDir, LOCK_FILE), "utf8"));
+const neverOpen = () => {
+  throw new Error("opened a stale instance");
+};
+
+test(
+  "one copy per data folder: a second start on the same data/ opens the running one and does not serve",
+  withTemp(async (_dir, opts) => {
+    const opened: string[] = [];
+    expect(await takeLock(opts.dataDir, "run-1", neverOpen)).toBe(null);
+    const server = startServer([0], { ...opts, instance: "run-1" });
+    try {
+      claimLock(opts.dataDir, server.port ?? 0, "run-1");
+      const url = `http://127.0.0.1:${server.port}/`;
+      expect(await takeLock(opts.dataDir, "run-2", (u) => opened.push(u))).toBe(
+        url,
+      );
+      expect(opened).toEqual([url]);
+      expect(lockOf(opts.dataDir).id).toBe("run-1");
+    } finally {
+      server.stop(true);
+    }
+  }),
+);
+
+test(
+  "one copy per data folder: two starts at once on one data/ (two processes) serve once; the other opens it (M8)",
+  withTemp(async (dir, opts) => {
+    const script = path.join(dir, "start.ts");
+    // A stand-in for main: claim, a load time, bind, record the port, then stay up while the other probes.
+    fs.writeFileSync(
+      script,
+      `import { claimLock, startServer, takeLock } from ${JSON.stringify(path.join(root, "src", "server.ts"))};
+const [dataDir, id, root] = Bun.argv.slice(2);
+const url = await takeLock(dataDir, id, (u) => console.log("opened " + u), 4000);
+if (url !== null) process.exit(0);
+await Bun.sleep(300);
+const s = startServer([0], { root, dataDir, topics: [], instance: id });
+claimLock(dataDir, s.port ?? 0, id);
+console.log("served http://127.0.0.1:" + s.port + "/");
+await Bun.sleep(2500);
+s.stop(true);
+`,
+    );
+    const run = (id: string) =>
+      Bun.spawn([process.execPath, script, opts.dataDir, id, root], {
+        stdout: "pipe",
+        stderr: "inherit",
+      });
+    const procs = [run("a"), run("b")];
+    const out = await Promise.all(
+      procs.map(async (p) => {
+        const text = await new Response(p.stdout).text();
+        await p.exited;
+        return text.trim();
+      }),
+    );
+    const served = out.filter((o) => o.startsWith("served "));
+    const opened = out.filter((o) => o.startsWith("opened "));
+    expect(served, out.join(" | ")).toHaveLength(1);
+    expect(opened, out.join(" | ")).toHaveLength(1);
+    expect(opened[0]?.slice("opened ".length)).toBe(
+      served[0]?.slice("served ".length),
+    );
+  }),
+  15000,
+);
+
+test(
+  "one copy per data folder: a running copy slower to answer than a second is still deferred to (M8)",
+  withTemp(async (_dir, opts) => {
+    const slow = Bun.serve({
+      hostname: "127.0.0.1",
+      port: 0,
+      fetch: async () => {
+        await Bun.sleep(1500);
+        return Response.json({ id: "slow" });
+      },
+    });
+    try {
+      claimLock(opts.dataDir, slow.port ?? 0, "slow");
+      const opened: string[] = [];
+      const url = `http://127.0.0.1:${slow.port}/`;
+      expect(
+        await takeLock(opts.dataDir, "me", (u) => opened.push(u), 3000),
+      ).toBe(url);
+      expect(opened).toEqual([url]);
+      expect(lockOf(opts.dataDir).id).toBe("slow");
+    } finally {
+      slow.stop(true);
+    }
+  }),
+  10000,
+);
+
+test(
+  "one copy per data folder: a busy port serving another data/ is not attached to; the start takes the next port",
+  withTemp(async (dir, opts) => {
+    const other = { ...opts, dataDir: path.join(dir, "other-data") };
+    const running = startServer([0], { ...other, instance: "other" });
+    let mine: ReturnType<typeof startServer> | undefined;
+    try {
+      claimLock(other.dataDir, running.port ?? 0, "other");
+      // The other folder's lock copied in (an update copies data/): its dir is not this one, so it is replaced.
+      fs.mkdirSync(opts.dataDir);
+      fs.copyFileSync(
+        path.join(other.dataDir, LOCK_FILE),
+        path.join(opts.dataDir, LOCK_FILE),
+      );
+      expect(await takeLock(opts.dataDir, "mine", neverOpen)).toBe(null);
+      expect(lockOf(opts.dataDir)).toMatchObject({ id: "mine", port: 0 });
+      mine = startServer([running.port ?? 0, 0], { ...opts, instance: "mine" });
+      expect(mine.port).not.toBe(running.port);
+    } finally {
+      running.stop(true);
+      mine?.stop(true);
+    }
+  }),
+);
+
+test(
+  "one copy per data folder: a stale lock is replaced (dead pid at once; no answer, another id or an unreadable lock after the wait)",
+  withTemp(async (_dir, opts) => {
+    const gone = startServer([0], opts);
+    const port = gone.port ?? 0;
+    gone.stop(true);
+    fs.mkdirSync(opts.dataDir, { recursive: true });
+    const dir = fs.realpathSync.native(opts.dataDir);
+    // A crashed copy: its pid has exited. Replaced without waiting out the budget.
+    const dead = Bun.spawn([process.execPath, "-e", ""]);
+    await dead.exited;
+    plantLock(
+      opts.dataDir,
+      JSON.stringify({ id: "dead", pid: dead.pid, port, dir }),
+    );
+    const t0 = performance.now();
+    expect(await takeLock(opts.dataDir, "new-1", neverOpen, 5000)).toBe(null);
+    expect(performance.now() - t0).toBeLessThan(1000);
+    expect(lockOf(opts.dataDir)).toMatchObject({
+      id: "new-1",
+      pid: process.pid,
+      port: 0,
+    });
+    // A live pid (a reused one) but nothing listening on the lock's port: replaced after the wait.
+    claimLock(opts.dataDir, port, "quiet");
+    expect(await takeLock(opts.dataDir, "new-2", neverOpen, 300)).toBe(null);
+    expect(lockOf(opts.dataDir).id).toBe("new-2");
+    // A server on the lock's port that answers another id (an old copy, or 4731 of another folder).
+    const live = startServer([0], { ...opts, instance: "someone-else" });
+    try {
+      claimLock(opts.dataDir, live.port ?? 0, "dead");
+      expect(await takeLock(opts.dataDir, "new-3", neverOpen, 5000)).toBe(null);
+      expect(lockOf(opts.dataDir).id).toBe("new-3");
+    } finally {
+      live.stop(true);
+    }
+    // An empty lock (a start that crashed between create and write): replaced after the wait.
+    plantLock(opts.dataDir, "");
+    expect(await takeLock(opts.dataDir, "new-4", neverOpen, 300)).toBe(null);
+    expect(lockOf(opts.dataDir).id).toBe("new-4");
+    // A clean exit removes its own lock only.
+    releaseLock(opts.dataDir, "dead");
+    expect(fs.existsSync(path.join(opts.dataDir, LOCK_FILE))).toBe(true);
+    releaseLock(opts.dataDir, "new-4");
+    expect(fs.existsSync(path.join(opts.dataDir, LOCK_FILE))).toBe(false);
+    releaseLock(opts.dataDir, "new-4"); // no lock: nothing to do
+  }),
+);
+
+test(
+  "/api/instance answers the tutor's own pages only",
+  withTemp(async (_dir, opts) => {
+    const server = startServer([0], { ...opts, instance: "run-2" });
+    try {
+      const url = `http://127.0.0.1:${server.port}/api/instance`;
+      expect(await (await fetch(url)).json()).toEqual({ id: "run-2" });
+      const foreign = await fetch(url, {
+        headers: { origin: "https://evil.example" },
+      });
+      expect(foreign.status).toBe(403);
+    } finally {
+      server.stop(true);
     }
   }),
 );

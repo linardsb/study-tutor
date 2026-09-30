@@ -104,7 +104,7 @@
     "stem": "A ramp rises 3 m and makes an angle of 30° with the ground. How long is the ramp, in metres?",
     "figure": "<svg viewBox=\"0 0 240 135\" width=\"100%\" style=\"max-width:240px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" role=\"img\" aria-label=\"A ramp drawn as a right-angled triangle: the ramp is the sloping side, it makes 30° with the ground, and the vertical rise is 3 m\"><title>A ramp drawn as a right-angled triangle: the ramp is the sloping side, it makes 30° with the ground, and the vertical rise is 3 m</title><polygon points=\"20,110 180,110 180,25\" fill=\"#e6f4ec\" stroke=\"#1d1d1b\" stroke-width=\"2\"/><polyline points=\"168,110 168,98 180,98\" fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/><path d=\"M 46 110 A 26 26 0 0 0 43 97\" fill=\"none\" stroke=\"#2b5797\" stroke-width=\"1.5\"/><text x=\"50\" y=\"104\" fill=\"#2b5797\" font-weight=\"700\">30°</text><text x=\"62\" y=\"52\" fill=\"#1d1d1b\" font-weight=\"700\">ramp</text><text x=\"185\" y=\"72\" fill=\"#1d1d1b\" font-weight=\"700\">3 m</text><text x=\"100\" y=\"126\" text-anchor=\"middle\" fill=\"#1d1d1b\" font-weight=\"700\">ground</text></svg>",
     "hint": "The ramp is H. sin 30° = 3 ÷ H.",
-    "answers": ["6", "6m"],
+    "answers": ["6", "6m", "6 metres"],
     "working": "The height is O, across from the 30°. The ramp is H. Step 3: SOH. Step 4: ½ = 3 ÷ H. Step 5: H is on the bottom, so divide: H = 3 ÷ ½ = 6. Step 6: 6 m.",
     "misconceptions": [
       {

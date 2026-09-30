@@ -2,9 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   CONFIG_FILE,
+  ensureDataDir,
   PROFILE_FILE,
   readDataJson,
   resolveInData,
+  restrictDataDir,
   restrictToOwner,
   writeDataFile,
 } from "./events/append";
@@ -164,36 +166,31 @@ export function readConfig(dataDir: string): Config | null {
 
 /**
  * The squad sync folder's realpath, or null when it is not an absolute path to an existing folder, or
- * is data/ itself or inside it (a pupil slug such as `config` would then overwrite config.json).
- * Run when the parent saves it and again on every squad read and write.
+ * is the tutor's own folder (the one holding the binary, app/, content/ and data/) or anything inside
+ * it: a pupil slug such as `config` or `topics` would then overwrite config.json or a content file, and
+ * an update replaces that folder (D9, M10). Both sides are realpaths; data/ is checked as well, in case
+ * it is a link to somewhere else. Run when the parent saves it and again on every squad read and write.
  */
 export function checkSquadFolder(dataDir: string, p: unknown): string | null {
   if (!str(p) || !path.isAbsolute(p)) return null;
   let real: string;
+  const refused: string[] = [];
   try {
     real = fs.realpathSync.native(p);
     if (!fs.statSync(real).isDirectory()) return null;
+    // data/ is made on the first save, so only the folder holding it has to exist.
+    refused.push(fs.realpathSync.native(path.dirname(dataDir)));
   } catch {
     return null;
   }
-  let data: string;
   try {
-    data = fs.realpathSync.native(dataDir);
-  } catch {
-    // data/ is made on the first save: compare against where it will be.
-    try {
-      data = path.join(
-        fs.realpathSync.native(path.dirname(dataDir)),
-        path.basename(dataDir),
-      );
-    } catch {
-      return null;
-    }
-  }
-  const r = path.relative(data, real);
-  const outside =
-    r === ".." || r.startsWith(`..${path.sep}`) || path.isAbsolute(r);
-  return outside ? real : null;
+    refused.push(fs.realpathSync.native(dataDir));
+  } catch {}
+  const inside = (root: string) => {
+    const r = path.relative(root, real);
+    return !(r === ".." || r.startsWith(`..${path.sep}`) || path.isAbsolute(r));
+  };
+  return refused.some(inside) ? null : real;
 }
 
 /** Built field by field, never by spreading `c`, so a field added to Config does not reach the browser. */
@@ -250,18 +247,25 @@ export type SetupResult =
 
 /** Validates the setup form, then writes config.json and profile.json. Nothing is written on a refusal. */
 /**
- * Re-applies the owner-only permissions on data/config.json at start: on Windows, a data folder copied
- * into a new version's folder takes that folder's inherited permissions, so an update loses them.
+ * Re-applies the owner-only permissions on data/ and data/config.json at start: on Windows, a data
+ * folder copied into a new version's folder takes that folder's inherited permissions, so an update
+ * loses them. A missing data/ stays missing: only a writer makes it.
  */
 export function restrictConfigOnStart(
   dataDir: string,
   restrict: (file: string) => void = restrictToOwner,
+  restrictDir: (dir: string) => boolean = restrictDataDir,
 ): void {
+  if (fs.existsSync(dataDir)) restrictDir(dataDir);
   if (!fs.existsSync(path.join(dataDir, CONFIG_FILE))) return;
   restrict(resolveInData(dataDir, CONFIG_FILE));
 }
 
-export function saveSetup(dataDir: string, body: unknown): SetupResult {
+export function saveSetup(
+  dataDir: string,
+  body: unknown,
+  restrictDir: (dir: string) => boolean = restrictDataDir,
+): SetupResult {
   if (!isObj(body)) return { ok: false, error: "The settings did not arrive." };
   if (!isPreset(body.preset))
     return { ok: false, error: "Pick a provider from the list." };
@@ -287,7 +291,7 @@ export function saveSetup(dataDir: string, body: unknown): SetupResult {
         return {
           ok: false,
           error:
-            "The squad sync folder must be the full path of a folder that exists on this computer, and not the tutor's data folder or a folder inside it.",
+            "The squad sync folder must be the full path of a folder that exists on this computer, outside the tutor's own folder.",
         };
       squadFolder = real;
     }
@@ -354,6 +358,9 @@ export function saveSetup(dataDir: string, body: unknown): SetupResult {
 
   if (squadFolder !== undefined) config.squadFolder = squadFolder;
   const profile = { ...readProfile(dataDir), weeklyTarget };
+  // data/ goes owner-only before the key is written (Windows), so the temp file and a copy fallback
+  // are never readable by other accounts; a folder this call makes is restricted as it is made.
+  if (!ensureDataDir(dataDir, restrictDir)) restrictDir(dataDir);
   writeDataFile(dataDir, CONFIG_FILE, `${JSON.stringify(config, null, 2)}\n`);
   restrictToOwner(resolveInData(dataDir, CONFIG_FILE));
   writeDataFile(dataDir, PROFILE_FILE, `${JSON.stringify(profile, null, 2)}\n`);

@@ -30,7 +30,7 @@
     "stem": "A parcel weighs 60 kg. Its weight goes up by 15%. Find the new weight in kg. The first step is done.",
     "scaffold": "Step 1: 10% of 60 = 6 and 5% of 60 = 3, so 15% = …",
     "hint": "15% is 6 + 3. Then add that to 60.",
-    "answers": ["69", "69 kg"],
+    "answers": ["69", "69 kg", "69 kilograms"],
     "working": "Step 1: 10% of 60 = 6 and 5% of 60 = 3, so 15% = 6 + 3 = 9. Step 2: goes up, so 60 + 9 = 69 kg.",
     "misconceptions": [
       {

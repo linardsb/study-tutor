@@ -7,7 +7,7 @@
     "figure": "<svg viewBox=\"0 0 200 150\" width=\"100%\" style=\"max-width:200px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"Axes with the line y = 4x + 1 drawn and a point marked at 7 on the y-axis\">\n        <line x1=\"10\" y1=\"110\" x2=\"190\" y2=\"110\" stroke=\"#d9d7d0\" stroke-width=\"1.5\"/>\n        <line x1=\"70\" y1=\"6\" x2=\"70\" y2=\"144\" stroke=\"#d9d7d0\" stroke-width=\"1.5\"/>\n        <line x1=\"45\" y1=\"140\" x2=\"105\" y2=\"20\" stroke=\"#2b5797\" stroke-width=\"2.5\"/>\n        <circle cx=\"70\" cy=\"100\" r=\"3.5\" fill=\"#2b5797\"/>\n        <text x=\"108\" y=\"24\" fill=\"#2b5797\">y = 4x + 1</text>\n        <text x=\"60\" y=\"104\" text-anchor=\"end\" fill=\"#2b5797\">1</text>\n        <circle cx=\"70\" cy=\"40\" r=\"4\" fill=\"#c8372d\"/>\n        <text x=\"60\" y=\"44\" text-anchor=\"end\" fill=\"#c8372d\">7</text>\n      </svg>",
     "scaffold": "Step 2: m = 4. Step 4: keep m, so y = 4x + c. Crossing the y-axis at 7 means c = 7. So the line is …",
     "hint": "Put c = 7 into y = 4x + c.",
-    "answers": ["y=4x+7", "4x+7", "y=7+4x"],
+    "answers": ["y=4x+7", "4x+7", "y=7+4x", "7+4x"],
     "working": "Step 2: m = 4. Step 4: keep m, so y = 4x + c. Crossing the y-axis at 7 means c = 7. So the line is y = 4x + 7.",
     "misconceptions": [
       {
@@ -32,7 +32,7 @@
     "figure": "<svg viewBox=\"0 0 200 150\" width=\"100%\" style=\"max-width:200px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"Axes with the line y = 2x minus 7 drawn and the point (3, 10) marked above it\">\n        <line x1=\"10\" y1=\"100\" x2=\"190\" y2=\"100\" stroke=\"#d9d7d0\" stroke-width=\"1.5\"/>\n        <line x1=\"50\" y1=\"6\" x2=\"50\" y2=\"144\" stroke=\"#d9d7d0\" stroke-width=\"1.5\"/>\n        <line x1=\"40\" y1=\"142\" x2=\"150\" y2=\"32\" stroke=\"#2b5797\" stroke-width=\"2.5\"/>\n        <text x=\"120\" y=\"26\" fill=\"#2b5797\">y = 2x − 7</text>\n        <circle cx=\"86\" cy=\"20\" r=\"4\" fill=\"#c8372d\"/>\n        <text x=\"94\" y=\"18\" fill=\"#c8372d\">(3, 10)</text>\n        <line x1=\"60\" y1=\"130\" x2=\"100\" y2=\"90\" stroke=\"#5f5f5a\" stroke-width=\"1\" stroke-dasharray=\"3 3\"/>\n      </svg>",
     "scaffold": "Step 2: m = 2. Step 4: keep m, so y = 2x + c. Step 5: put in x = 3 and y = 10: 10 = 2 × 3 + c. …",
     "hint": "2 × 3 is 6. What has to be added to 6 to make 10?",
-    "answers": ["y=2x+4", "2x+4", "y=4+2x"],
+    "answers": ["y=2x+4", "2x+4", "y=4+2x", "4+2x"],
     "working": "Step 2: m = 2. Step 4: keep m, so y = 2x + c. Step 5: put in x = 3 and y = 10: 10 = 2 × 3 + c. So 10 = 6 + c and c = 4. The line is y = 2x + 4.",
     "misconceptions": [
       {
@@ -96,7 +96,7 @@
     "stem": "Phone plan A costs C = 3n + 10 pounds a month, where n is the gigabytes used. Plan B charges the same per gigabyte but £5 more each month. Write the equation for plan B.",
     "figure": "<svg viewBox=\"0 0 220 150\" width=\"100%\" style=\"max-width:220px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"12\" aria-label=\"Axes with n along the bottom and C up the side. Plan A is a line starting at 10. Plan B is a dashed parallel line starting higher, marked with a question mark\">\n        <line x1=\"30\" y1=\"130\" x2=\"210\" y2=\"130\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <line x1=\"30\" y1=\"10\" x2=\"30\" y2=\"130\" stroke=\"#1d1d1b\" stroke-width=\"1.5\"/>\n        <text x=\"200\" y=\"145\" fill=\"#5f5f5a\">n</text>\n        <text x=\"12\" y=\"20\" fill=\"#5f5f5a\">C</text>\n        <line x1=\"30\" y1=\"100\" x2=\"190\" y2=\"40\" stroke=\"#2b5797\" stroke-width=\"2.5\"/>\n        <text x=\"192\" y=\"40\" fill=\"#2b5797\">A</text>\n        <text x=\"26\" y=\"104\" text-anchor=\"end\">10</text>\n        <line x1=\"30\" y1=\"85\" x2=\"190\" y2=\"25\" stroke=\"#c8372d\" stroke-width=\"2.5\" stroke-dasharray=\"5 3\"/>\n        <text x=\"192\" y=\"24\" fill=\"#c8372d\">B</text>\n        <text x=\"26\" y=\"89\" text-anchor=\"end\" fill=\"#c8372d\">?</text>\n      </svg>",
     "hint": "Same price per gigabyte means the same m. Only the monthly charge, c, moves.",
-    "answers": ["C=3n+15", "3n+15", "C=15+3n"],
+    "answers": ["C=3n+15", "3n+15", "C=15+3n", "15+3n"],
     "working": "Same price per gigabyte means the same gradient, 3. £5 more a month moves c from 10 to 15. C = 3n + 15. On a graph the two plans are parallel lines.",
     "misconceptions": [
       {

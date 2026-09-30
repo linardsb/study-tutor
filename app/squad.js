@@ -72,7 +72,8 @@
     );
   }
 
-  /* the parent's three fresh questions: the same topic, the round's parent seeds */
+  /* the parent's three fresh questions: the same topic, the round's parent seeds, which roundOf picks so
+     none repeats a pupil question (M4) */
   function parentItems(round, topics, gens, quiz) {
     return buildRound(round, topics, gens, quiz, round.parentSeeds);
   }

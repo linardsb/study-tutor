@@ -923,10 +923,24 @@ ul.prompts li.link {
     gap: 0.35rem;
     padding: 0.5rem 1rem;
   }
-  .topnav {
-    margin-left: -0.5rem;
-    mask-image: linear-gradient(to right, #000 85%, transparent);
+  /* the links wrap onto a second row, so none hides past the edge; the bar scrolls away with the
+     page, so its height need not be known */
+  .topbar {
+    position: static;
   }
+  .topnav {
+    flex-wrap: wrap;
+    overflow: visible;
+    margin-left: -0.5rem;
+  }
+  .topnav a {
+    padding: 0.35rem 0.5rem;
+  }
+}
+/* a lesson in content/ gets the bar from quiz.js; its own section nav is the sticky one */
+body:not(.app) > .topbar {
+  position: static;
+  font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
 /* controls */
@@ -1559,8 +1573,6 @@ ul.prompts li.link {
   margin: 0;
   font-size: 0.8rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--accent);
 }
 .app .week h3 {
@@ -1727,6 +1739,13 @@ ul.prompts li.link {
   align-items: center;
   gap: 0.5rem 1rem;
   margin: 1.25rem 0 0;
+  /* Save stays in view on a short screen, over the sections still below it */
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  padding: 0.75rem 0;
+  background: var(--paper);
+  border-top: 1px solid var(--line);
 }
 .app .settings .save-bar .actions {
   margin: 0;
@@ -1967,7 +1986,7 @@ ul.prompts li.link {
 }
 @media (max-width: 600px) {
   .app {
-    --bar: 5.8rem;
+    --bar: 0rem; /* the top bar is not sticky at phone width */
   }
 }
 
@@ -2172,8 +2191,6 @@ ul.prompts li.link {
   margin: 0 0 0.25rem;
   font-size: 0.8rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--accent);
 }
 .app #case .q {
@@ -2629,4 +2646,20 @@ ul.prompts li.link {
 /* share */
 .app .squad-page #share .button {
   margin-top: 0.25rem;
+}
+
+/* the lesson's done control, added by quiz.js; styled as the quiz's Check button */
+.lesson-done-button {
+  font: inherit;
+  font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.lesson-done-button:disabled {
+  opacity: 0.5;
+  cursor: default;
 }

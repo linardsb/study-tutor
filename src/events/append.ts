@@ -20,6 +20,11 @@ const APPEND =
 const WRITE =
   fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL | NOFOLLOW;
 const OWNER_ONLY = 0o600;
+// writeDataFile's replace: the codes Windows gives for a file held open, and 4 tries 50 ms apart
+// (at most 150 ms of waiting) before the copy.
+const REPLACE_REFUSED = new Set(["EPERM", "EACCES", "EBUSY", "EEXIST"]);
+const RENAME_TRIES = 4;
+const RENAME_WAIT_MS = 50;
 
 const isMissing = (err: unknown) =>
   (err as { code?: string }).code === "ENOENT";
@@ -33,14 +38,19 @@ export function resolveInData(dataDir: string, rel: string): string {
     real = fs.realpathSync.native(target);
   } catch (err) {
     if (!isMissing(err)) throw err;
+    const st = fs.lstatSync(target, { throwIfNoEntry: false });
     // A dangling symlink: opening it would create its target, wherever that is.
-    if (fs.lstatSync(target, { throwIfNoEntry: false }) !== undefined) {
+    if (st?.isSymbolicLink()) {
       throw new Error(`Refused: ${rel} resolves outside the data folder`);
     }
-    real = path.join(
-      fs.realpathSync.native(path.dirname(target)),
-      path.basename(target),
-    );
+    // Not a link: another writer process made the file between the two calls (the two-writer test).
+    real =
+      st !== undefined
+        ? fs.realpathSync.native(target)
+        : path.join(
+            fs.realpathSync.native(path.dirname(target)),
+            path.basename(target),
+          );
   }
   const r = path.relative(root, real);
   if (
@@ -106,7 +116,7 @@ export function appendEvent(
       );
     }
   }
-  fs.mkdirSync(dataDir, { recursive: true });
+  ensureDataDir(dataDir);
   const file = resolveInData(dataDir, EVENTS_FILE);
   const fd = fs.openSync(file, APPEND, OWNER_ONLY);
   try {
@@ -172,7 +182,7 @@ export function writeDataFile(
   rel: string,
   data: string | Uint8Array,
 ): void {
-  fs.mkdirSync(dataDir, { recursive: true });
+  ensureDataDir(dataDir);
   const file = resolveInData(dataDir, rel);
   // Not resolved: a leftover .tmp, symlink or not, is removed itself, never the file it points to.
   const tmp = `${file}.tmp`;
@@ -185,16 +195,65 @@ export function writeDataFile(
   } finally {
     fs.closeSync(fd);
   }
-  try {
-    fs.renameSync(tmp, file);
-  } catch (err) {
-    // Windows refuses to replace a file another process has open (an antivirus scan, Notepad).
-    // Not atomic, which is acceptable: state.json is derived and the next replay rebuilds it.
-    const code = (err as { code?: string }).code;
-    if (code !== "EPERM" && code !== "EACCES" && code !== "EEXIST") throw err;
-    fs.copyFileSync(tmp, file);
-    fs.rmSync(tmp);
+  // Windows refuses to replace a file another process has open (an antivirus scan, OneDrive, Notepad):
+  // EPERM, EACCES or EBUSY. A scan lets go within moments, so the rename is tried a few more times
+  // before the copy, which is not atomic: a torn copy of config.json would lose the key.
+  for (let tries = 1; ; tries++) {
+    try {
+      fs.renameSync(tmp, file);
+      return;
+    } catch (err) {
+      const code = (err as { code?: string }).code;
+      if (!REPLACE_REFUSED.has(code ?? "")) throw err;
+      if (tries >= RENAME_TRIES) break;
+      Bun.sleepSync(RENAME_WAIT_MS);
+    }
   }
+  fs.copyFileSync(tmp, file);
+  fs.rmSync(tmp);
+}
+
+/**
+ * Creates one file under data/ only when nothing is at `rel` yet (O_EXCL, so of two processes racing
+ * exactly one wins), owner-only, fsynced; false when something is already there. Not atomic like
+ * writeDataFile: a reader can see the file empty or partial until the write lands. Refuses paths that
+ * leave data/, symlinks included.
+ */
+export function createDataFile(
+  dataDir: string,
+  rel: string,
+  data: string,
+): boolean {
+  ensureDataDir(dataDir);
+  const file = resolveInData(dataDir, rel);
+  let fd: number;
+  try {
+    fd = fs.openSync(file, WRITE, OWNER_ONLY);
+  } catch (err) {
+    if ((err as { code?: string }).code === "EEXIST") return false;
+    throw err;
+  }
+  try {
+    fs.writeFileSync(fd, data);
+    fs.fsyncSync(fd);
+  } finally {
+    fs.closeSync(fd);
+  }
+  return true;
+}
+
+/** Removes one file under data/, refusing paths that leave it; a missing file or data/ is a no-op. */
+export function removeDataFile(dataDir: string, rel: string): void {
+  let root: string;
+  try {
+    root = fs.realpathSync.native(dataDir);
+    resolveInData(dataDir, rel);
+  } catch (err) {
+    if (isMissing(err)) return;
+    throw err;
+  }
+  // The unresolved path: a symlink planted at `rel` is itself removed, never the file it points to.
+  fs.rmSync(path.join(root, rel), { force: true });
 }
 
 /**
@@ -203,7 +262,7 @@ export function writeDataFile(
  * `mode` applies to each level this call makes, not to one that already exists.
  */
 export function makeDataDir(dataDir: string, rel: string, mode = 0o777): void {
-  fs.mkdirSync(dataDir, { recursive: true });
+  ensureDataDir(dataDir);
   const parts = rel.split("/");
   for (let i = 1; i <= parts.length; i++) {
     const prefix = parts.slice(0, i).join("/");
@@ -301,6 +360,46 @@ export function restrictToOwner(
     );
 }
 
+/**
+ * The data folder itself, owner-only on Windows: inheritance off and one grant for this account that
+ * files and folders made inside inherit ((OI)(CI)). A file is then owner-only from the moment it is
+ * created, so events.jsonl, photos, and config.json's temp file or copy are never readable by other
+ * accounts, even briefly (L8). Windows behaviour is expected, not observed. Warns rather than throws.
+ */
+export function restrictDataDir(
+  dir: string,
+  platform: NodeJS.Platform = process.platform,
+  spawn: Spawn = (cmd) =>
+    Bun.spawnSync(cmd, { stdio: ["ignore", "ignore", "pipe"] }),
+  user = ownerAccount(),
+): boolean {
+  if (platform !== "win32") return true;
+  let ok = false;
+  try {
+    ok =
+      spawn(["icacls", dir, "/inheritance:r", "/grant:r", `${user}:(OI)(CI)F`])
+        .exitCode === 0;
+  } catch {
+    ok = false;
+  }
+  if (!ok)
+    console.error(
+      "Could not limit the data folder to this account; other accounts on this PC may be able to read the pupil's record and the key.",
+    );
+  return ok;
+}
+
+/** Makes data/ if it is missing, restricting it before anything is written inside; true when this call made it. */
+export function ensureDataDir(
+  dataDir: string,
+  restrict: (dir: string) => boolean = restrictDataDir,
+): boolean {
+  // recursive mkdir returns the first folder it made, or undefined when data/ already existed.
+  if (fs.mkdirSync(dataDir, { recursive: true }) === undefined) return false;
+  restrict(dataDir);
+  return true;
+}
+
 /** Writes data/state.json atomically: temp file, fsync, rename. */
 export function writeState(dataDir: string, state: State): void {
   writeDataFile(dataDir, STATE_FILE, `${JSON.stringify(state, null, 2)}\n`);
@@ -308,7 +407,7 @@ export function writeState(dataDir: string, state: State): void {
 
 /** Copies one data file to another, both confined to `dataDir`; no-op if `from` does not exist. */
 export function copyState(dataDir: string, from: string, to: string): void {
-  fs.mkdirSync(dataDir, { recursive: true });
+  ensureDataDir(dataDir);
   const src = resolveInData(dataDir, from);
   const dest = resolveInData(dataDir, to);
   if (!fs.existsSync(src)) return;

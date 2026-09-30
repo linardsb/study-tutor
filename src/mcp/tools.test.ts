@@ -333,6 +333,30 @@ test(
 );
 
 test(
+  "guard: every subject's items (science carries mark_scheme) reach read_state without answer fields before an attempt",
+  withTemp(async (_dir, ctx) => {
+    const { pack, subjects } = await loadPacks(root);
+    const all = { ...ctx, topics: pack.topics, subjects };
+    let seen = 0;
+    for (const t of pack.topics) {
+      const out = value(await call("read_state", { topic: t.id }, all));
+      const text = JSON.stringify(out);
+      for (const i of out.items as Row[]) {
+        expect(shows(i), i.id).toBe(false);
+        seen++;
+      }
+      for (const i of pack.items.get(t.id) ?? [])
+        if (i.working) expect(text, i.id).not.toContain(i.working);
+    }
+    expect(subjects.size).toBe(pack.topics.length);
+    expect(new Set(subjects.values())).toEqual(
+      new Set(["english", "maths", "science"]),
+    );
+    expect(seen).toBeGreaterThan(0);
+  }),
+);
+
+test(
   "read_state: the topic list narrows to the saved courses; a topic outside them still opens, answer-free",
   withTemp(async (_dir, base) => {
     const l = await loadPacks(root);

@@ -4,12 +4,16 @@ import os from "node:os";
 import path from "node:path";
 import {
   appendEvent,
+  createDataFile,
+  ensureDataDir,
   listDataDir,
   makeDataDir,
   ownerAccount,
   readLines,
   readStoredState,
+  removeDataFile,
   resolveInData,
+  restrictDataDir,
   restrictToOwner,
   writeDataFile,
   writeIntakeFile,
@@ -100,6 +104,43 @@ test(
     } finally {
       spy.mockRestore();
     }
+  }),
+);
+
+test(
+  "writeDataFile: a rename refused with EBUSY (OneDrive, an antivirus scan) is retried, then copied",
+  withTemp((_dir, data) => {
+    const rename = fs.renameSync;
+    const busy = () => {
+      throw Object.assign(new Error("resource busy"), { code: "EBUSY" });
+    };
+    // Busy once, then free: the retry renames, so the write stays atomic.
+    let calls = 0;
+    const once = spyOn(fs, "renameSync").mockImplementation((a, b) => {
+      calls++;
+      if (calls === 1) busy();
+      rename(a, b);
+    });
+    try {
+      writeDataFile(data, "config.json", "one\n");
+      expect(calls).toBe(2);
+    } finally {
+      once.mockRestore();
+    }
+    expect(fs.readFileSync(path.join(data, "config.json"), "utf8")).toBe(
+      "one\n",
+    );
+    // Busy every time: the copy fallback saves it and removes the temp file.
+    const always = spyOn(fs, "renameSync").mockImplementation(busy);
+    try {
+      writeDataFile(data, "config.json", "two\n");
+    } finally {
+      always.mockRestore();
+    }
+    expect(fs.readFileSync(path.join(data, "config.json"), "utf8")).toBe(
+      "two\n",
+    );
+    expect(fs.existsSync(path.join(data, "config.json.tmp"))).toBe(false);
   }),
 );
 
@@ -589,5 +630,89 @@ test(
       /outside the data folder/,
     );
     expect(fs.readdirSync(outside)).toEqual([]);
+  }),
+);
+
+test("restrictDataDir: on Windows the data folder itself goes owner-only, inherited by every file made in it later", () => {
+  const calls: string[][] = [];
+  const spawn = (cmd: string[]) => {
+    calls.push(cmd);
+    return { exitCode: 0 };
+  };
+  expect(restrictDataDir("/d/data", "darwin", spawn, "PC\\pupil")).toBe(true);
+  expect(calls).toEqual([]);
+  expect(restrictDataDir("C:\\t\\data", "win32", spawn, "PC\\pupil")).toBe(
+    true,
+  );
+  // (OI)(CI): files and folders made inside inherit the grant; /inheritance:r drops the rest.
+  expect(calls).toEqual([
+    [
+      "icacls",
+      "C:\\t\\data",
+      "/inheritance:r",
+      "/grant:r",
+      "PC\\pupil:(OI)(CI)F",
+    ],
+  ]);
+  const err = spyOn(console, "error").mockImplementation(() => {});
+  try {
+    expect(
+      restrictDataDir("x", "win32", () => ({ exitCode: 5 }), "pupil"),
+    ).toBe(false);
+    expect(err).toHaveBeenCalledTimes(1);
+  } finally {
+    err.mockRestore();
+  }
+});
+
+test(
+  "ensureDataDir restricts data/ when it makes it, before any file is written in it, and not again",
+  withTemp((_dir, data) => {
+    const seen: string[][] = [];
+    const restrict = (dir: string) => {
+      seen.push(fs.readdirSync(dir));
+      return true;
+    };
+    ensureDataDir(data, restrict);
+    expect(seen).toEqual([[]]);
+    ensureDataDir(data, restrict);
+    expect(seen).toHaveLength(1);
+  }),
+);
+
+test.skipIf(process.platform === "win32")(
+  "removeDataFile removes a planted symlink itself, never the file it points to, and refuses paths out of data/",
+  withTemp((dir, data) => {
+    appendEvent(data, ATTEMPT, AT);
+    fs.symlinkSync(path.join(data, "events.jsonl"), path.join(data, "x.lock"));
+    removeDataFile(data, "x.lock");
+    expect(fs.existsSync(path.join(data, "x.lock"))).toBe(false);
+    expect(readLines(data)).toHaveLength(1);
+    fs.writeFileSync(path.join(dir, "outside"), "keep");
+    expect(() => removeDataFile(data, "../outside")).toThrow("Refused");
+    expect(fs.existsSync(path.join(dir, "outside"))).toBe(true);
+    removeDataFile(data, "missing.lock");
+    removeDataFile(path.join(dir, "no-data"), "x.lock");
+  }),
+);
+
+test.skipIf(process.platform === "win32")(
+  "createDataFile makes a file only when nothing is there (O_EXCL), owner-only, and refuses paths out of data/",
+  withTemp((dir, data) => {
+    expect(createDataFile(data, "x.lock", "first\n")).toBe(true);
+    expect(fs.readFileSync(path.join(data, "x.lock"), "utf8")).toBe("first\n");
+    expect(fs.statSync(path.join(data, "x.lock")).mode & 0o777).toBe(0o600);
+    // A second create loses and leaves the first file as it was.
+    expect(createDataFile(data, "x.lock", "second\n")).toBe(false);
+    expect(fs.readFileSync(path.join(data, "x.lock"), "utf8")).toBe("first\n");
+    fs.writeFileSync(path.join(dir, "outside"), "keep");
+    expect(() => createDataFile(data, "../y.lock", "z")).toThrow("Refused");
+    fs.symlinkSync(path.join(dir, "outside"), path.join(data, "out.lock"));
+    expect(() => createDataFile(data, "out.lock", "z")).toThrow("Refused");
+    fs.symlinkSync(path.join(dir, "nowhere"), path.join(data, "dangling.lock"));
+    expect(() => createDataFile(data, "dangling.lock", "z")).toThrow("Refused");
+    expect(fs.readFileSync(path.join(dir, "outside"), "utf8")).toBe("keep");
+    expect(fs.existsSync(path.join(dir, "nowhere"))).toBe(false);
+    expect(fs.existsSync(path.join(dir, "y.lock"))).toBe(false);
   }),
 );

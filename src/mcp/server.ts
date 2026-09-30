@@ -1,3 +1,4 @@
+import { VERSION } from "../updates";
 import { runTool, TOOLS, type ToolContext, type ToolName } from "./tools";
 
 /** initialize-handshake revisions, newest first (plan D4). */
@@ -30,7 +31,8 @@ function initialize(params: Obj) {
   return {
     protocolVersion: known ? asked : SUPPORTED_VERSIONS[0],
     capabilities: { tools: {} },
-    serverInfo: { name: "study-tutor", version: "0.0.0" },
+    // The build stamp ("0.1.2"), or "dev" unbuilt: the same string as --version.
+    serverInfo: { name: "study-tutor", version: VERSION },
     instructions: INSTRUCTIONS,
   };
 }

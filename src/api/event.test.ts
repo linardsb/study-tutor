@@ -4,9 +4,11 @@ import os from "node:os";
 import path from "node:path";
 import { loadTopics } from "../content/pack";
 import { readLines } from "../events/append";
+import { loadPacks } from "./case";
 import { postEvent, resolveTopic } from "./event";
 
 const topics = await loadTopics("maths");
+const { pack } = await loadPacks(process.cwd());
 const AT = () => "2026-10-05T16:00:00Z";
 const attempt = {
   v: 1,
@@ -360,5 +362,102 @@ test(
     });
     expect(readLines(data)).toEqual([]);
     expect(fs.existsSync(data)).toBe(false);
+  }),
+);
+
+test(
+  "with the pack, an event that names an item must name one the pack holds under that topic, or nothing is written and no XP given",
+  withTemp((_dir, data) => {
+    const post = (body: Record<string, unknown>) =>
+      postEvent(body, data, pack.topics, AT, pack);
+    for (const body of [
+      { ...attempt, item: "1MA1/R9/of-an-amount#99" }, // not in the items file
+      { ...attempt, item: "made-up" },
+      { ...attempt, item: "1MA1/R4#1" }, // a real item, another topic
+      { ...attempt, topic: "U999" }, // a topic the pack does not hold
+      { ...attempt, item: "1MA1/R9/of-an-amount#gen" }, // generated, no seed
+      { ...attempt, item: "1MA1/R9/of-an-amount#gen", seed: -1 },
+      { ...attempt, item: "1MA1/R4#gen", seed: 8812 }, // another topic's generator
+      // 8464/4.1.1.2 (science) has no generator, so no generated item
+      { ...attempt, item: "8464/4.1.1.2#gen", topic: "8464/4.1.1.2", seed: 1 },
+      {
+        v: 1,
+        type: "teachback",
+        topic: "1MA1/R4",
+        item: "1MA1/R4#9",
+        marks: 1,
+        of: 2,
+      },
+      {
+        v: 1,
+        type: "teachback",
+        topic: "1MA1/R4",
+        item: "1MA1/R9/of-an-amount#1",
+        marks: 1,
+        of: 2,
+      },
+      {
+        v: 1,
+        type: "case",
+        day: "2026-10-05",
+        kind: "mistake",
+        topic: "1MA1/R4",
+        item: "1MA1/R4#9",
+        pick: "x",
+        bet: 1,
+        correct: true,
+        reask: false,
+      },
+    ]) {
+      const r = post(body);
+      expect(r.status, JSON.stringify(body)).toBe(400);
+      expect(r.body).toEqual({
+        error: "Refused: the item is not in the pack under that topic",
+      });
+    }
+    expect(fs.existsSync(data)).toBe(false);
+
+    // What the pages post still lands: a pack item by U-code, a generated item with its seed, a
+    // teach-back on a generated item (teachback@1 has no seed), and the item-free squad teach-back.
+    for (const body of [
+      attempt,
+      { ...attempt, item: "1MA1/R9/of-an-amount#gen", seed: 8812 },
+      { ...attempt, item: "8464/4.1.1.2#1", topic: "8464/4.1.1.2" },
+      {
+        v: 1,
+        type: "teachback",
+        topic: "U349",
+        item: "1MA1/R9/of-an-amount#gen",
+        marks: 1,
+        of: 2,
+      },
+      { v: 1, type: "teachback", topic: "1MA1/R4", marks: 1, of: 2 },
+      {
+        v: 1,
+        type: "case",
+        day: "2026-10-05",
+        kind: "mistake",
+        topic: "U349",
+        item: "1MA1/R9/of-an-amount#1",
+        pick: "x",
+        bet: 1,
+        correct: true,
+        reask: false,
+      },
+    ])
+      expect(post(body).status, JSON.stringify(body)).toBe(201);
+    expect(types(data)).toEqual([
+      "attempt",
+      "xp",
+      "attempt",
+      "xp",
+      "attempt",
+      "xp",
+      "teachback",
+      "xp",
+      "teachback",
+      "xp",
+      "case",
+    ]);
   }),
 );

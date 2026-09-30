@@ -330,3 +330,21 @@ test("7. the parent round: three questions; two right posts one teachback of 2 o
   expect($$("#parent .q")).toHaveLength(0);
   expect(texts("#parent p")).toEqual([TEXT.parentDone]);
 });
+
+test("8. the parent's questions are none of the pupil's, whose worked answers are on the same page (M4)", async () => {
+  // year11-b in 2026-W50 rolls 1MA1/R11/pressure, whose small table repeated two pupil stems in the parent round.
+  const w50 = squadRound("year11-b", "2026-W50", pack) as SquadRound;
+  served.view = done({
+    week: "2026-W50",
+    round: { ...w50, title: "Pressure" },
+    parentDone: false,
+  });
+  await page.reload();
+  await until(() => $$("#parent .q").length === PARENT_SLOTS);
+  const stem = (e: El) =>
+    (e.querySelector(".stem")?.textContent ?? "").replace(/^\d+\. /, "");
+  const pupil = $$("#compare .q").map(stem);
+  const parent = $$("#parent .q").map(stem);
+  expect(pupil).toHaveLength(5);
+  for (const s of parent) expect(pupil).not.toContain(s);
+});

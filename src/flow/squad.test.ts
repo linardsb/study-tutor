@@ -177,8 +177,8 @@ test("comparable: false on another topic, other seeds or another week", () => {
 });
 
 test("roundOf: the picked topic gives squadRound's round exactly; another topic gives its own seeds", () => {
-  expect(roundOf("year11-b", "2026-W41", round.topic)).toEqual(round);
-  expect(roundOf("year11-b", "2026-W41", "1MA1/R4").seeds).not.toEqual(
+  expect(roundOf("year11-b", "2026-W41", round.topic, pack)).toEqual(round);
+  expect(roundOf("year11-b", "2026-W41", "1MA1/R4", pack).seeds).not.toEqual(
     round.seeds,
   );
 });
@@ -236,4 +236,23 @@ test("generators.js depends only on its rng: no locale, clock or Math.random", (
     "utf8",
   );
   expect(src).not.toMatch(/toLocale|Intl\.|new Date|Date\.now|Math\.random/);
+});
+
+test("roundOf: the parent's questions are never the pupil's, for every generator topic across a year (M4)", () => {
+  const topics = pack.topics.filter(
+    (t) => typeof pack.gens[t.aliases[0] ?? ""] === "function",
+  );
+  const shared: string[] = [];
+  for (const t of topics)
+    for (let w = 1; w <= 52; w += 1) {
+      const week = `2026-W${String(w).padStart(2, "0")}`;
+      const r = roundOf("year11-b", week, t.id, pack);
+      const pupil = roll(r, pack).map((q) => q.stem);
+      const parent = roll(r, pack, r.parentSeeds).map((q) => q.stem);
+      expect(parent).toHaveLength(PARENT_SLOTS);
+      if (new Set(parent).size !== PARENT_SLOTS) shared.push(`${week} ${t.id}`);
+      for (const s of parent)
+        if (pupil.includes(s)) shared.push(`${week} ${t.id}: ${s}`);
+    }
+  expect(shared).toEqual([]);
 });

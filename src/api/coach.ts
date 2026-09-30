@@ -23,6 +23,7 @@ const REFUSED: Record<Refusal, string> = {
   "already-answered": "You have answered this one. Ask for another.",
 };
 const NO_STEP = { error: "Dan has no wrong step for this question" };
+const NOT_SAVED = "Your answer could not be saved. Try again in a moment.";
 
 const isObj = (x: unknown): x is Record<string, unknown> =>
   typeof x === "object" && x !== null && !Array.isArray(x);
@@ -121,13 +122,13 @@ export async function postCoach(
   if (marked.kind === "skipped") return { status: 404, body: NO_STEP };
   const now = deps.now;
   const attempt = postEvent(marked.attempt, dataDir, pack.topics, now);
-  const record =
-    attempt.status === 201
-      ? postEvent(marked.record, dataDir, pack.topics, now)
-      : null;
-  if (attempt.status !== 201)
+  // The working and the note answer the item: without a saved attempt a reload would ask it again (L6).
+  if (attempt.status !== 201) {
     console.error(`Could not save the correction: ${attempt.body.error}`);
-  else if (record !== null && record.status !== 201)
+    return { status: 500, body: { error: NOT_SAVED } };
+  }
+  const record = postEvent(marked.record, dataDir, pack.topics, now);
+  if (record.status !== 201)
     console.error(`Could not save the coach record: ${record.body.error}`);
   return {
     status: 200,
@@ -139,7 +140,7 @@ export async function postCoach(
       note: marked.wrong.message,
       working: r.item.working ?? null,
       rank: rank(currentState(dataDir).coach.caught),
-      saved: record?.status === 201,
+      saved: record.status === 201,
     },
   };
 }

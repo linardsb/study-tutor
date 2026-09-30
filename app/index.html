@@ -87,11 +87,6 @@
     <p class="parent-links"><a href="/setup.html">Settings</a> (for a parent) · <a href="/parent.html">Weekly digest</a> (for a parent and for you)</p>
   </footer>
 </main>
-<script>
-// First run: no settings saved yet, so the parent sets up (or picks "No model") before anything else.
-// Only a readable "not configured" redirects; a 500 keeps the pupil on this page.
-fetch("/api/config").then((r) => (r.ok ? r.json() : null)).then((c) => { if (c?.configured === false) location.replace("/setup.html"); }).catch(() => {});
-</script>
 <script src="/home.js" defer></script>
 <script src="/update.js" defer></script>
 </body>

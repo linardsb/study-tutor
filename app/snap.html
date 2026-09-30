@@ -12,7 +12,7 @@
   .snap-page h1 { margin: 0.5rem 0 1rem; }
   .snap-page #item { margin-top: 0; }
   .snap-page #item:has(#stem:empty):has(#figure[hidden]) { display: none; }
-  .app .snap-page #title { display: block; margin: 0 0 0.35rem; color: var(--accent); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+  .app .snap-page #title { display: block; margin: 0 0 0.35rem; color: var(--accent); font-size: 0.8rem; font-weight: 700; }
   .app .snap-page #title:empty { display: none; }
   .snap-page .stem { margin: 0; font-size: 1.15rem; font-weight: 600; line-height: 1.45; }
   .snap-page .figure { margin-top: 0.75rem; overflow-x: auto; }
@@ -38,12 +38,13 @@
   /* the total reads first, above the line-by-line marks */
   .snap-page #result p.total { order: -1; border-top: 0; font-size: 1.2rem; font-weight: 700; background: var(--grey-bg); }
   .snap-page #result p.clean { color: var(--green); font-weight: 700; background: var(--green-bg); }
+  .topbar + main .ai-note { top: var(--bar); }
   [hidden] { display: none; }
 </style>
 </head>
 <body class="app">
 <main class="lesson snap-page">
-  <p class="ai-note" role="note">This is an AI. It can be wrong. It marks your working and never writes the answer.</p>
+  <p class="ai-note" role="note" hidden>This is an AI. It can be wrong. It marks your working and never writes the answer.</p>
   <header>
     <h1>Mark my working</h1>
   </header>
@@ -66,6 +67,7 @@
 
   <div id="result"></div>
   <p class="note" id="status" role="status"></p>
+  <p id="back" hidden><a href="/map.html">Back to your map</a></p>
 </main>
 <script src="/snap.js"></script>
 </body>

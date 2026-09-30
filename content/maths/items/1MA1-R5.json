@@ -53,7 +53,7 @@
     "type": "cloze",
     "stem": "A recipe for 4 people needs 300 g of flour. How many grams for 10 people?",
     "hint": "The multiplier is 10 ÷ 4.",
-    "answers": ["750"],
+    "answers": ["750", "750g", "750 grams"],
     "working": "Multiplier: 10 ÷ 4 = 2.5. 300 × 2.5 = 750 g.",
     "misconceptions": [
       {

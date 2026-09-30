@@ -114,9 +114,10 @@ const marked = (over: Record<string, unknown> = {}) => ({
 });
 const PHOTO = { name: "a.jpg", type: "image/jpeg", size: 10 };
 
-test("no model: the note shows and the form is offered", async () => {
+test("no model: the note shows, the AI note is hidden (M5), and the form is offered", async () => {
   await load([view({ model: false })]);
   expect($("#no-model").hidden).toBe(false);
+  expect($(".ai-note").hidden).toBe(true);
   expect($("#snap-form").hidden).toBe(false);
   expect($("#stem").textContent).toBe("Find 20% of 45.");
 });
@@ -151,7 +152,7 @@ test("done with five lines: a row each, the total, marks left on the table, and 
     "Units: not needed",
     "Sense: 1 mark",
     "4 of 5. Marks left on the table: 1.",
-    "Clean sheet.",
+    "Clean sheet on presentation: no marks lost on the answer, units or sense.",
   ]);
 });
 
@@ -171,7 +172,7 @@ test("loaded when done (a reload): no form, the result shows", async () => {
   await load([view({ state: "done", result: marked({ clean: false }) })]);
   expect($("#snap-form").hidden).toBe(true);
   expect(rows()).toContain("4 of 5. Marks left on the table: 1.");
-  expect(rows()).not.toContain("Clean sheet.");
+  expect(rows().some((r) => r?.startsWith("Clean sheet"))).toBe(false);
 });
 
 test("a poll answered 403: the closed sentence", async () => {
@@ -316,4 +317,23 @@ test("a lost 202: the retry's 403 reads the snap, and a photo being marked is po
   expect($("#snap-form").hidden).toBe(true);
   expect(rows()[0]).toBe("Method: 1 mark");
   expect($("#status").textContent).toBe("");
+});
+
+test("M5: a model is set up: the AI note shows", async () => {
+  await load([view()]);
+  expect($(".ai-note").hidden).toBe(false);
+});
+
+test("L16: on this computer the page has the main nav, and after Send a link back to the map", async () => {
+  const api = await load([view(), view({ state: "done", result: marked() })]);
+  expect($("header.topbar").hidden).toBe(false);
+  expect(
+    [...doc().querySelectorAll("header.topbar nav a")].map(
+      (a) => a.textContent,
+    ),
+  ).toContain("Map");
+  await api.upload(PHOTO);
+  await until(() => rows().length > 0);
+  expect($("#back").hidden).toBe(false);
+  expect($("#back a").getAttribute("href")).toBe("/map.html");
 });

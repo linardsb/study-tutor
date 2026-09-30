@@ -114,6 +114,7 @@ export type Snap = {
   state: "open" | "marking" | "done";
   result: SnapResult | null;
   deadline: number;
+  spent: boolean; // the marked result has been served once; the token is refused from then on (L7)
   done: Promise<void>; // background marking; resolved when there is none
   cancel: () => void; // this snap's own expiry timer
 };
@@ -156,6 +157,7 @@ export function createSnaps({
       state: "open",
       result: null,
       deadline: now() + SNAP_TTL_MS,
+      spent: false,
       done: Promise.resolve(),
       cancel: () => {},
     };
@@ -165,9 +167,14 @@ export function createSnaps({
     return snap;
   }
 
-  /** The live snap for this token before its deadline, whatever its state. Status reads use it. */
+  /** The live snap for this token before its deadline and before its result was served. Status reads use it. */
   function find(t: unknown): Snap | null {
-    if (live === null || typeof t !== "string" || now() >= live.deadline)
+    if (
+      live === null ||
+      live.spent ||
+      typeof t !== "string" ||
+      now() >= live.deadline
+    )
       return null;
     const a = Buffer.from(t);
     const b = Buffer.from(live.token);
@@ -256,6 +263,9 @@ export function getSnap(token: unknown, ctx: SnapContext): Result {
   // Named fields from the stripped view: answers, working and mark_scheme never reach the page.
   const view = toItemView(item);
   const preset = readConfig(ctx.dataDir)?.preset;
+  // The token travels over plain HTTP on the LAN, so it ends once the result is served (L7). The
+  // listener is left to the snap's own timer: stopping it here could drop this very response.
+  if (snap.state === "done") snap.spent = true;
   return {
     status: 200,
     body: {

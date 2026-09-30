@@ -23,7 +23,9 @@ The Windows zip is about 41 MB and the Mac zip about 47 MB. Allow 5 minutes.
 Allow 5 minutes.
 
 1. Double-click `StudyTutor-mac.zip` to extract it. You get a folder called `StudyTutor` followed by a
-   version number, for example `StudyTutor-0.1.0`. Move that folder wherever you like, such as Documents.
+   version number, for example `StudyTutor-0.1.2`. Move that folder somewhere that is not synced (see
+   [Keep it out of OneDrive](#keep-it-out-of-onedrive-and-icloud)), such as a folder called `Tutor` in your
+   home folder.
 2. Open the folder and double-click `Start.command`.
 3. The Mac says it cannot verify the file. Click **Done**.
 4. Open **System Settings**, click **Privacy & Security**, scroll down to **Security**, and click
@@ -41,16 +43,39 @@ You only do steps 3 and 4 the first time for each version.
 Allow 5 minutes.
 
 1. Right-click `StudyTutor-windows.zip` and choose **Extract All**, then **Extract**. You get a folder
-   called `StudyTutor` followed by a version number, for example `StudyTutor-0.1.0`.
+   called `StudyTutor` followed by a version number, for example `StudyTutor-0.1.2`. Extract it
+   somewhere that is not synced (see [Keep it out of OneDrive](#keep-it-out-of-onedrive-and-icloud)), such
+   as `C:\Tutor`.
 2. Open that folder and double-click `Start.bat`.
 3. If Windows says "Windows protected your PC", click **More info**, then **Run anyway**.
 4. A black window opens with one line of text, then your browser opens on the tutor.
+
+### The Windows firewall and the phone
+
+Your child can photograph written working with a phone and send it to the tutor over your Wi-Fi. The
+first time they click **Mark my written working**, Windows may ask whether to let StudyTutor use your
+network.
+
+- Allow it on private networks only.
+- If Windows has your home Wi-Fi down as a public network, it blocks the phone even after you allow it.
+  If it is your own home network, change it to private in Windows network settings.
+- Windows asks again after each update, because each version is a new program to it.
+- If the phone still cannot open the link, take the photo, move it to the computer, and use the link
+  on that page to drop a photo on this computer instead.
+
+## Keep it out of OneDrive and iCloud
+
+Put the tutor's folder somewhere that is not synced to OneDrive, iCloud Drive, Dropbox or Google Drive.
+Its `data` folder holds your child's records and your model key, and a synced folder copies both
+online. Desktop and Documents are often synced without you knowing: OneDrive does this on many Windows
+computers, and iCloud can on a Mac. A folder you make yourself, such as `C:\Tutor` on Windows or `Tutor`
+in your home folder on a Mac, is safer.
 
 ## The settings page
 
 Allow 5 minutes.
 
-The first time, the tutor opens its **Settings** page. It is for a parent.
+The first time, the home page lists three steps. The first is **Open settings**, and it is for a parent.
 
 - **Provider**: pick the company whose model you pay for, or **No model**. With no model, lessons, practice
   and marking all work; only the parts that need a model are switched off.
@@ -81,14 +106,16 @@ Copy, do not move. Until step 5 the old folder still has everything, so you can 
 - Do not copy the new folder over the old one.
 - If the tutor asks for setup again, you started the new folder without its `data` folder. Close it and
   do step 3.
-- The Mac or Windows warning from the first start comes back after each update. Answer it the same way.
+- The Mac or Windows warning from the first start comes back after each update, and so does the Windows
+  firewall question. Answer them the same way.
 - If the tutor stops with "this version of the tutor would lower progress", start the old folder again
   and tell us.
 
 ## Where the records live
 
 All of your child's records are in the `data` folder inside the tutor's folder. To back
-it up, copy that folder somewhere safe. Do not share `config.json` from it: it holds your key.
+it up, copy that folder somewhere safe. Do not share `config.json` from it: it holds your key. Do not
+move the tutor's folder into OneDrive or iCloud to back it up: that syncs the key too.
 
 ## Stopping the tutor
 

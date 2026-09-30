@@ -7,7 +7,7 @@
     "figure": "<svg viewBox=\"0 0 150 150\" width=\"100%\" style=\"max-width:150px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"11\" aria-label=\"Grid with a straight line crossing the y-axis at 3 and rising 2 for every 1 across\">\n        <g stroke=\"#e8e6e0\" stroke-width=\"1\">\n          <line x1=\"15\" y1=\"15\" x2=\"15\" y2=\"135\"/><line x1=\"40\" y1=\"15\" x2=\"40\" y2=\"135\"/><line x1=\"90\" y1=\"15\" x2=\"90\" y2=\"135\"/><line x1=\"115\" y1=\"15\" x2=\"115\" y2=\"135\"/>\n          <line x1=\"15\" y1=\"35\" x2=\"135\" y2=\"35\"/><line x1=\"15\" y1=\"60\" x2=\"135\" y2=\"60\"/><line x1=\"15\" y1=\"85\" x2=\"135\" y2=\"85\"/><line x1=\"15\" y1=\"135\" x2=\"135\" y2=\"135\"/>\n        </g>\n        <line x1=\"15\" y1=\"110\" x2=\"135\" y2=\"110\" stroke=\"#5f5f5a\" stroke-width=\"1.5\"/>\n        <line x1=\"65\" y1=\"15\" x2=\"65\" y2=\"145\" stroke=\"#5f5f5a\" stroke-width=\"1.5\"/>\n        <line x1=\"27\" y1=\"145\" x2=\"102\" y2=\"20\" stroke=\"#2b5797\" stroke-width=\"2.5\"/>\n        <text x=\"60\" y=\"122\" text-anchor=\"end\" fill=\"#5f5f5a\">0</text>\n        <text x=\"60\" y=\"63\" text-anchor=\"end\" fill=\"#5f5f5a\">3</text>\n        <text x=\"115\" y=\"122\" fill=\"#5f5f5a\">2</text>\n      </svg>",
     "scaffold": "Read c: the line crosses the y-axis at 3. Read m: it goes up 2 for every 1 across, so m = 2. …",
     "hint": "Write the m, then the x, then the c.",
-    "answers": ["2x+3", "y=2x+3"],
+    "answers": ["2x+3", "y=2x+3", "3+2x", "y=3+2x"],
     "working": "Read c: the line crosses the y-axis at 3. Read m: it goes up 2 for every 1 across, so m = 2. Equation: y = 2x + 3.",
     "misconceptions": [
       {
@@ -32,7 +32,7 @@
     "figure": "<svg viewBox=\"0 0 150 150\" width=\"100%\" style=\"max-width:150px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"11\" aria-label=\"Grid with a straight line crossing the y-axis at 4 and falling 2 for every 1 across\">\n        <g stroke=\"#e8e6e0\" stroke-width=\"1\">\n          <line x1=\"15\" y1=\"15\" x2=\"15\" y2=\"135\"/><line x1=\"40\" y1=\"15\" x2=\"40\" y2=\"135\"/><line x1=\"90\" y1=\"15\" x2=\"90\" y2=\"135\"/><line x1=\"115\" y1=\"15\" x2=\"115\" y2=\"135\"/>\n          <line x1=\"15\" y1=\"35\" x2=\"135\" y2=\"35\"/><line x1=\"15\" y1=\"60\" x2=\"135\" y2=\"60\"/><line x1=\"15\" y1=\"85\" x2=\"135\" y2=\"85\"/><line x1=\"15\" y1=\"135\" x2=\"135\" y2=\"135\"/>\n        </g>\n        <line x1=\"15\" y1=\"110\" x2=\"135\" y2=\"110\" stroke=\"#5f5f5a\" stroke-width=\"1.5\"/>\n        <line x1=\"65\" y1=\"15\" x2=\"65\" y2=\"145\" stroke=\"#5f5f5a\" stroke-width=\"1.5\"/>\n        <line x1=\"28\" y1=\"18\" x2=\"103\" y2=\"143\" stroke=\"#c8372d\" stroke-width=\"2.5\"/>\n        <text x=\"60\" y=\"122\" text-anchor=\"end\" fill=\"#5f5f5a\">0</text>\n        <text x=\"60\" y=\"38\" text-anchor=\"end\" fill=\"#5f5f5a\">4</text>\n        <text x=\"115\" y=\"122\" fill=\"#5f5f5a\">2</text>\n      </svg>",
     "scaffold": "Read c: the line crosses the y-axis at 4. …",
     "hint": "The line falls, so m is negative. Count how far it drops for one step across.",
-    "answers": ["-2x+4", "4-2x", "y=-2x+4"],
+    "answers": ["-2x+4", "4-2x", "y=-2x+4", "y=4-2x"],
     "working": "Read c: the line crosses the y-axis at 4. It falls from left to right, so m is negative. It drops 2 for every 1 across, so m = −2. Equation: y = −2x + 4.",
     "misconceptions": [
       {
@@ -80,7 +80,7 @@
     "stem": "The solid line is y = 3x + 1. The dashed line is parallel to it and crosses the y-axis at −4. Write the dashed line as mx + c, like 4x+1.",
     "figure": "<svg viewBox=\"0 0 150 150\" width=\"100%\" style=\"max-width:150px;display:block;margin:.4rem 0\" font-family=\"-apple-system, Segoe UI, Helvetica, Arial, sans-serif\" font-size=\"11\" aria-label=\"Two parallel lines of the same steepness, one crossing the y-axis above zero and one below\">\n        <line x1=\"15\" y1=\"80\" x2=\"135\" y2=\"80\" stroke=\"#5f5f5a\" stroke-width=\"1.5\"/>\n        <line x1=\"75\" y1=\"15\" x2=\"75\" y2=\"145\" stroke=\"#5f5f5a\" stroke-width=\"1.5\"/>\n        <line x1=\"35\" y1=\"140\" x2=\"95\" y2=\"20\" stroke=\"#2b5797\" stroke-width=\"2.5\"/>\n        <line x1=\"60\" y1=\"145\" x2=\"125\" y2=\"20\" stroke=\"#2e8b57\" stroke-width=\"2.5\" stroke-dasharray=\"6 4\"/>\n      </svg>",
     "hint": "Parallel lines have the same gradient. Only the c changes.",
-    "answers": ["3x-4", "y=3x-4"],
+    "answers": ["3x-4", "y=3x-4", "-4+3x", "y=-4+3x"],
     "working": "Parallel means the same steepness, so m stays 3. The new line crosses at −4, so c = −4. Equation: y = 3x − 4.",
     "misconceptions": [
       {

@@ -53,7 +53,7 @@
     "type": "cloze",
     "stem": "The probability it rains on any day is 0.3. What is the probability it rains on exactly one of Saturday and Sunday?",
     "hint": "Not raining is 0.7. Two paths fit: wet then dry, and dry then wet.",
-    "answers": ["0.42", "42%", "21/50"],
+    "answers": ["0.42", "42%", "21/50", "42/100"],
     "working": "Not raining is 0.7. Rain then dry: 0.3 × 0.7 = 0.21. Dry then rain: 0.7 × 0.3 = 0.21. Add the two paths: 0.42.",
     "misconceptions": [
       {
