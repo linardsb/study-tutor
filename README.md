@@ -70,7 +70,7 @@ in your home folder on a Mac, is safer.
 
 Allow 5 minutes.
 
-The first time, the tutor opens its **Settings** page. It is for a parent.
+The first time, the home page lists three steps. The first is **Open settings**, and it is for a parent.
 
 - **Provider**: pick the company whose model you pay for, or **No model**. With no model, lessons, practice
   and marking all work; only the parts that need a model are switched off.
