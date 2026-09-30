@@ -162,5 +162,5 @@
       send(job, $(box));
     });
 
-  load();
+  void load();
 })();

@@ -423,7 +423,7 @@
         /* the record is the first check: the bet, not the hinted second try */
         if (!posted) {
           posted = true;
-          postAttempt(item, ok, sureAtFirst, input.value.trim()).then(
+          void postAttempt(item, ok, sureAtFirst, input.value.trim()).then(
             (saved) => {
               if (!saved) fb.textContent += NOT_SAVED;
             },
