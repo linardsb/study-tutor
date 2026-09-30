@@ -37,6 +37,15 @@ export type AttemptV1 = Line<"attempt", 1> & {
   answer: string;
   seed?: number;
 };
+// correct: null = answered, not marked in code (a short, extended or practical-method item); a teach-back marks it later.
+export type AttemptV2 = Line<"attempt", 2> & {
+  item: string;
+  topic: string;
+  correct: boolean | null;
+  sure: boolean;
+  answer: string;
+  seed?: number;
+};
 export type RetestV1 = Line<"retest", 1> & {
   topic: string;
   score: number;
@@ -121,6 +130,7 @@ export type JobV1 = Line<"job", 1> & {
 export type Event =
   | SessionV1
   | AttemptV1
+  | AttemptV2
   | RetestV1
   | TeachbackV1
   | IntakeV1
@@ -177,6 +187,13 @@ const FIELDS: { [K in EventKey]: (o: Obj) => boolean } = {
     str(o.item) &&
     str(o.topic) &&
     bool(o.correct) &&
+    bool(o.sure) &&
+    str(o.answer) &&
+    optInt(o.seed),
+  "attempt@2": (o) =>
+    str(o.item) &&
+    str(o.topic) &&
+    (bool(o.correct) || o.correct === null) &&
     bool(o.sure) &&
     str(o.answer) &&
     optInt(o.seed),
@@ -250,6 +267,7 @@ type Own<K extends EventKey> = Exclude<keyof EventByKey[K], "v" | "t" | "type">;
 export const KEYS = {
   "session@1": ["phase", "mode", "topic"],
   "attempt@1": ["item", "topic", "correct", "sure", "answer", "seed"],
+  "attempt@2": ["item", "topic", "correct", "sure", "answer", "seed"],
   "retest@1": ["topic", "score", "of", "passed", "seed"],
   "teachback@1": ["topic", "item", "marks", "of"],
   "intake@1": ["door", "topics"],

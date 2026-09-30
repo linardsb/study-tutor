@@ -70,7 +70,10 @@ export function appendEvent(
     t: now(),
     type: event.type,
   };
-  const own = KEYS[`${event.type}@${event.v}`] as readonly string[] | undefined;
+  // Widened: with two attempt versions the template is a cross product of every type and v.
+  const own = (KEYS as Record<string, readonly string[] | undefined>)[
+    `${event.type}@${event.v}`
+  ];
   for (const k of own ?? []) {
     const value = (event as Record<string, unknown>)[k];
     if (value !== undefined) obj[k] = value;

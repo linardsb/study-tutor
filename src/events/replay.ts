@@ -85,6 +85,36 @@ function work(s: State, t: string): void {
   s.flame[week] = days;
 }
 
+/** attempt@1 and attempt@2. A null `correct` (answered, not marked in code) is work, and says nothing about calibration or confident-wrong. */
+function attempt(
+  s: State,
+  e: EventByKey["attempt@1"] | EventByKey["attempt@2"],
+): void {
+  topic(s, e.topic);
+  work(s, e.t);
+  if (e.correct === null) return;
+  const week = isoWeek(localDay(e.t));
+  const c = s.calibration[week] ?? {
+    sureRight: 0,
+    sureWrong: 0,
+    unsureRight: 0,
+    unsureWrong: 0,
+  };
+  if (e.sure) {
+    if (e.correct) c.sureRight++;
+    else c.sureWrong++;
+  } else if (e.correct) c.unsureRight++;
+  else c.unsureWrong++;
+  s.calibration[week] = c;
+  if (e.correct) delete s.confidentWrong[e.item];
+  else if (e.sure) {
+    s.confidentWrong[e.item] =
+      e.seed === undefined
+        ? { topic: e.topic, t: e.t, answer: e.answer }
+        : { topic: e.topic, t: e.t, answer: e.answer, seed: e.seed };
+  }
+}
+
 const CASES: { [K in EventKey]: (s: State, e: EventByKey[K]) => void } = {
   "session@1": (s, e) => {
     s.session = onSession(s.session, e);
@@ -96,30 +126,8 @@ const CASES: { [K in EventKey]: (s: State, e: EventByKey[K]) => void } = {
     ts.rung = r;
     ts.nextDue = addDays(localDay(e.t), NEXT_DAYS[r]);
   },
-  "attempt@1": (s, e) => {
-    topic(s, e.topic);
-    work(s, e.t);
-    const week = isoWeek(localDay(e.t));
-    const c = s.calibration[week] ?? {
-      sureRight: 0,
-      sureWrong: 0,
-      unsureRight: 0,
-      unsureWrong: 0,
-    };
-    if (e.sure) {
-      if (e.correct) c.sureRight++;
-      else c.sureWrong++;
-    } else if (e.correct) c.unsureRight++;
-    else c.unsureWrong++;
-    s.calibration[week] = c;
-    if (e.correct) delete s.confidentWrong[e.item];
-    else if (e.sure) {
-      s.confidentWrong[e.item] =
-        e.seed === undefined
-          ? { topic: e.topic, t: e.t, answer: e.answer }
-          : { topic: e.topic, t: e.t, answer: e.answer, seed: e.seed };
-    }
-  },
+  "attempt@1": attempt,
+  "attempt@2": attempt,
   "retest@1": (s, e) => {
     const ts = topic(s, e.topic);
     const r = afterRetest(ts.rung, e.passed);

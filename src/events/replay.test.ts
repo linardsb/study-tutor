@@ -102,7 +102,7 @@ test("file order wins over t", () => {
 test("bad lines are skipped and counted, never fatal", () => {
   const bad = [
     "not json",
-    `{"v":2,"t":"2026-10-05T16:21:00Z","type":"attempt","item":"x","topic":"1MA1/R9","correct":true,"sure":true,"answer":"1"}`,
+    `{"v":3,"t":"2026-10-05T16:21:00Z","type":"attempt","item":"x","topic":"1MA1/R9","correct":true,"sure":true,"answer":"1"}`,
     `{"v":1,"t":"2026-10-05T16:21:00Z","type":"login"}`,
     `{"v":1,"t":"2026-10-05T16:21:00Z","type":"attempt","item":"x","correct":true,"sure":true,"answer":"1"}`,
     // day is an invalid Date (month 13): isDay threw and every state route was a 500 (PR #31 F2)
@@ -127,6 +127,25 @@ test.each([...EVENT_KEYS])(
     expect(replay(lines).skipped).toBe(0);
   },
 );
+
+const WRONG = `{"v":1,"t":"2026-10-05T16:00:00Z","type":"attempt","item":"8464/4.1.1.2#6","topic":"8464/4.1.1.2","correct":false,"sure":true,"answer":"no sun"}`;
+const NULL_SURE = `{"v":2,"t":"2026-10-07T16:00:00Z","type":"attempt","item":"8464/4.1.1.2#6","topic":"8464/4.1.1.2","correct":null,"sure":true,"answer":"no light underground"}`;
+
+test("attempt@2: a null attempt counts the day and nothing else", () => {
+  const before = replay([WRONG]);
+  const after = replay([WRONG, NULL_SURE]);
+  expect(after.calibration).toEqual(before.calibration);
+  expect(after.confidentWrong).toEqual(before.confidentWrong);
+  expect(after.flame["2026-W41"]).toEqual(["2026-10-05", "2026-10-07"]);
+  expect(replay([NULL_SURE]).topics["8464/4.1.1.2"]).toBeDefined();
+});
+
+test("attempt@2: a boolean v2 replays as v1", () => {
+  const v2 = `{"v":2,"t":"2026-10-06T16:11:00Z","type":"attempt","item":"maths/U349/g","topic":"1MA1/R9","correct":false,"sure":true,"answer":"4.5","seed":8812}`;
+  const { hash: _a, ...two } = replay([v2]);
+  const { hash: _b, ...one } = replay([v2.replace('"v":2', '"v":1')]);
+  expect(two).toEqual(one);
+});
 
 const CASE_LINES = fs
   .readFileSync(path.join(FIXTURES, "case.v1.jsonl"), "utf8")

@@ -90,6 +90,29 @@ test(
 );
 
 test(
+  "attempt@2 with correct: null is a 201 and earns the 10 XP of any attempt (XP.attempt, src/flow/xp.ts)",
+  withTemp((_dir, data) => {
+    const r = postEvent(
+      { ...attempt, v: 2, correct: null, answer: "because" },
+      data,
+      topics,
+      AT,
+    );
+    expect(r.status).toBe(201);
+    const lines = readLines(data);
+    expect(lines.length).toBe(2);
+    expect(lines[0]).toContain('"v":2');
+    expect(lines[0]).toContain('"correct":null');
+    expect(JSON.parse(lines[1] as string)).toMatchObject({
+      v: 1,
+      type: "xp",
+      amount: 10,
+      reason: "attempt",
+    });
+  }),
+);
+
+test(
   "a malformed event is refused with 400 and no data folder",
   withTemp((_dir, data) => {
     const r = postEvent({ v: 1, type: "attempt", item: "x" }, data, topics, AT);

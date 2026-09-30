@@ -21,6 +21,18 @@ test("hasAttempt: a generated item matches on id and seed; no seed is never atte
   expect(hasAttempt(log, { id: gen.id })).toBe(false);
 });
 
+test("hasAttempt: an attempt@2 line (correct: null) counts, and still matches on seed", () => {
+  const id = "8464/4.1.1.2#6";
+  const v2 = (e: object) => line({ ...e, v: 2, correct: null });
+  expect(
+    hasAttempt([v2(attemptLine({ id, topic: "8464/4.1.1.2" }))], { id }),
+  ).toBe(true);
+  const gen = { id: "1MA1/R9#gen", topic: "1MA1/R9" };
+  const log = [v2(attemptLine(gen, 5))];
+  expect(hasAttempt(log, { id: gen.id, seed: 5 })).toBe(true);
+  expect(hasAttempt(log, { id: gen.id, seed: 6 })).toBe(false);
+});
+
 test("jobItem before the attempt: the view carries no answer-side field", () => {
   const j = jobItem([], sentinelItem());
   expect(j.attempted).toBe(false);

@@ -68,6 +68,7 @@ export function getChat(
       ...(r.item.seed === undefined ? {} : { seed: r.item.seed }),
       topic: view.topic,
       title: titleOf(pack, view.topic),
+      type: view.type,
       stem: view.stem,
       ...(view.scaffold === undefined ? {} : { scaffold: view.scaffold }),
       ...(view.figure === undefined ? {} : { figure: view.figure }),

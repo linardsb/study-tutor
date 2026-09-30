@@ -118,10 +118,11 @@
 
   const NOT_SAVED = " Not saved. Check the tutor window is still open.";
 
-  /* one attempt per item; the promise resolves to whether the tutor accepted it */
-  function postAttempt(item, ok, sure, typed) {
+  /* one attempt per item; the promise resolves to whether the tutor accepted it.
+     v 2 with ok null: a written answer, saved for the tutor to mark */
+  function postAttempt(item, ok, sure, typed, v = 1) {
     const body = {
-      v: 1,
+      v,
       type: "attempt",
       item: item.id,
       topic: item.topic,
@@ -211,6 +212,53 @@
     return q;
   }
 
+  /* a written-answer item (no answers, a mark scheme): a text box that saves the answer for the
+     tutor to mark. No working here: the teach-back shows it after marking */
+  function buildOpen(item, number) {
+    const q = document.createElement("div");
+    q.className = "q open";
+    const stem = document.createElement("p");
+    stem.className = "stem";
+    stem.textContent = `${number}. ${item.stem}`;
+    q.appendChild(stem);
+    if (item.figure) {
+      const figure = document.createElement("div");
+      figure.className = "figure";
+      figure.innerHTML = item.figure;
+      q.appendChild(figure);
+    }
+    const label = document.createElement("label");
+    label.textContent = "Your answer ";
+    const box = document.createElement("textarea");
+    box.rows = 4;
+    label.appendChild(box);
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "check";
+    btn.textContent = "Save my answer";
+    const fb = document.createElement("p");
+    fb.className = "feedback";
+    fb.hidden = true;
+    q.append(label, btn, fb);
+    const ask = document.createElement("p");
+    ask.className = "ask";
+    const link = document.createElement("a");
+    link.target = "tutor";
+    link.href = chatHref(item);
+    link.textContent = "Ask the tutor";
+    ask.appendChild(link);
+    const marked = document.createElement("p");
+    marked.className = "marked";
+    marked.hidden = true;
+    const markLink = document.createElement("a");
+    markLink.target = "tutor";
+    markLink.href = chatHref(item);
+    markLink.textContent = "Get it marked by the tutor";
+    marked.appendChild(markLink);
+    q.append(ask, marked);
+    return q;
+  }
+
   /* a whole quiz of fresh items. picks is [{ code, topic }] in play order; the caller does the
      round robin. Every item is seeded so it can be rebuilt from its event. */
   function buildQuiz(gens, picks, label) {
@@ -259,11 +307,18 @@
   let quizCount = 0;
 
   function initQuiz(section, all) {
-    /* a short or extended item has no answers to check here: it is never asked in the quiz */
     const items = (all || []).filter(
       (i) => Array.isArray(i.answers) && i.answers.length > 0,
     );
-    if (!section || section.dataset.inited || !items.length) return;
+    /* a short or extended item has no answers to check here: it is saved for the tutor to mark */
+    const open = (all || []).filter(
+      (i) =>
+        !(Array.isArray(i.answers) && i.answers.length > 0) &&
+        typeof i.mark_scheme === "string" &&
+        i.mark_scheme !== "",
+    );
+    if (!section || section.dataset.inited || (!items.length && !open.length))
+      return;
     section.dataset.inited = "1";
     /* a lesson quiz and its fresh set share a data-code; the count keeps their radio groups apart */
     const quizN = ++quizCount;
@@ -404,6 +459,54 @@
           e.preventDefault();
           check();
         }
+      });
+    });
+
+    open.forEach((item, i) => {
+      const idx = items.length + i;
+      const q = buildOpen(item, idx + 1);
+      section.appendChild(q);
+      const box = q.querySelector("textarea");
+      const btn = q.querySelector(".check");
+      const fb = q.querySelector(".feedback");
+      const marked = q.querySelector(".marked");
+      const name = `sure-${section.dataset.code || "q"}-${quizN}-${idx}`;
+      const conf = document.createElement("span");
+      conf.className = "confidence";
+      conf.innerHTML =
+        `<label><input type="radio" name="${name}" value="sure"> Sure</label> ` +
+        `<label><input type="radio" name="${name}" value="notsure"> Not sure</label>`;
+      btn.parentNode.insertBefore(conf, btn);
+
+      /* no Enter handler: Enter in the box is a new line. A lost post stays retryable, because
+         the tutor will not mark an answer it has no attempt for */
+      btn.addEventListener("click", () => {
+        if (q.classList.contains("done") || btn.disabled) return;
+        const text = box.value.trim();
+        const c = conf.querySelector("input:checked");
+        fb.hidden = false;
+        if (text === "") {
+          fb.textContent = "Write an answer first, even a guess.";
+          return;
+        }
+        if (!c) {
+          fb.textContent = "Sure or not sure first";
+          return;
+        }
+        btn.disabled = true;
+        postAttempt(item, null, c.value === "sure", text, 2).then((saved) => {
+          if (!saved) {
+            fb.textContent = NOT_SAVED.trim();
+            btn.disabled = false;
+            return;
+          }
+          q.classList.add("done");
+          box.disabled = true;
+          for (const r of conf.querySelectorAll("input")) r.disabled = true;
+          fb.textContent =
+            "Saved. This page cannot mark a written answer. Open the tutor and explain your answer there, one point per line, to get it marked.";
+          marked.hidden = false;
+        });
       });
     });
     section.appendChild(summary);
