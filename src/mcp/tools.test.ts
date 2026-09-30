@@ -2,8 +2,14 @@ import { expect, test } from "bun:test";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { loadPacks } from "../api/case";
 import { loadTopics } from "../content/pack";
-import { appendEvent, readLines } from "../events/append";
+import {
+  appendEvent,
+  PROFILE_FILE,
+  readLines,
+  writeDataFile,
+} from "../events/append";
 import { EVENT_TYPES, type NewEvent } from "../events/types";
 import {
   MCP_WRITABLE,
@@ -31,6 +37,7 @@ function withTemp(fn: (dir: string, ctx: ToolContext) => Promise<void>) {
         dataDir: path.join(dir, "data"),
         subjects: new Map(topics.map((t) => [t.id, "maths"])),
         topics,
+        courses: [],
         origin: "http://127.0.0.1:4731",
         now: AT,
       });
@@ -318,5 +325,38 @@ test(
     for (const t of listed)
       expect(Object.keys(t).sort()).toEqual(["aliases", "id", "title"]);
     expect(v).not.toHaveProperty("items");
+  }),
+);
+
+test(
+  "read_state: the topic list narrows to the saved courses; a topic outside them still opens, answer-free",
+  withTemp(async (_dir, base) => {
+    const l = await loadPacks(root);
+    const ctx: ToolContext = {
+      ...base,
+      subjects: l.subjects,
+      topics: l.pack.topics,
+      courses: l.courses,
+    };
+    const ids = async () =>
+      (value(await call("read_state", {}, ctx)).topics as { id: string }[]).map(
+        (t) => t.id,
+      );
+    expect((await ids()).some((id) => id.startsWith("1MA1/"))).toBe(true);
+    writeDataFile(
+      ctx.dataDir,
+      PROFILE_FILE,
+      JSON.stringify({
+        weeklyTarget: 3,
+        courses: [{ spec: "8464", tier: "F" }],
+      }),
+    );
+    expect(await ids()).toEqual(["8464/4.1.1.2"]);
+    const v = value(await call("read_state", { topic: "1MA1/R4" }, ctx));
+    expect(v.topic).toBe("1MA1/R4");
+    const items = v.items as Record<string, unknown>[];
+    expect(items.map((i) => i.id)).toEqual(R4);
+    for (const i of items)
+      for (const k of HIDDEN) expect(i).not.toHaveProperty(k);
   }),
 );

@@ -77,6 +77,9 @@ test(
     expect(fs.existsSync(path.join(f, "content", "maths", "topics.json"))).toBe(
       true,
     );
+    expect(
+      fs.existsSync(path.join(f, "content", "maths", "courses.json")),
+    ).toBe(true);
     expect(fs.existsSync(path.join(f, "README.txt"))).toBe(true);
     expect(fs.statSync(path.join(f, "Start.command")).mode & 0o777).toBe(0o755);
     expect(fs.existsSync(path.join(f, "data"))).toBe(false);

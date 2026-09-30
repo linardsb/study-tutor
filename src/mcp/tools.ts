@@ -1,6 +1,8 @@
 import { postEvent, resolveTopic } from "../api/event";
+import { readProfile } from "../config";
 import { lessonFile, loadItems, toItemView } from "../content/pack";
-import type { Topic } from "../content/types";
+import { chosenOf, filterTopics } from "../content/profile";
+import type { Course, Topic } from "../content/types";
 import { readLines } from "../events/append";
 import { replay } from "../events/replay";
 import { EVENT_TYPES, type EventType, KEYS, parseEvent } from "../events/types";
@@ -14,6 +16,8 @@ export type ToolContext = {
   dataDir: string;
   subjects: ReadonlyMap<string, string>; // topic id → content/<subject>
   topics: readonly Topic[];
+  /** Every pack's courses: the topic list read_state offers narrows to the pupil's; a topic lookup does not. */
+  courses: readonly Course[];
   /** http://127.0.0.1:<port>, no trailing slash. */
   origin: string;
   now?: () => string;
@@ -79,11 +83,14 @@ const readState: Tool = {
     // replay, not currentState: a read tool writes nothing, state.json included (plan D5).
     const lines = readLines(ctx.dataDir);
     const state = replay(lines);
-    const topics = ctx.topics.map(({ id, title, aliases }) => ({
-      id,
-      title,
-      aliases,
-    }));
+    const chosen = chosenOf(readProfile(ctx.dataDir).courses, ctx.courses);
+    const topics = filterTopics(ctx.topics, chosen, ctx.courses).map(
+      ({ id, title, aliases }) => ({
+        id,
+        title,
+        aliases,
+      }),
+    );
     if (args.topic === undefined) return { ok: true, value: { state, topics } };
     const code = String(args.topic);
     const id = topicId(ctx, code);
