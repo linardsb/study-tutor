@@ -29,29 +29,56 @@ const SPARX = /^[UM]\d{3}$/;
 
 /**
  * The codes in pasted text, deterministic and blind to line breaks. A code is a Sparx-shaped token
- * (U349, M113) or a known topic id or alias, case-insensitive, with one trailing comma dropped. Its R/A/G
- * is the token directly before it when that is R, A or G; else the R/A/G of a code directly before it
- * that ends in a comma ("G U745, U736"); else null. Rows in text order, duplicates kept.
+ * (U349, M113) or a known topic id or alias, case-insensitive, with one trailing comma dropped. Two
+ * readings of the R/A/G are tried. Before: the token directly before the code when that is R, A or G,
+ * else the R/A/G of a code directly before it that ends in a comma ("G U745, U736"). After: the first
+ * R, A or G after the code and before the next code ("U349 Percentage of an amount R"). The reading that
+ * leaves fewer R/A/G tokens unused wins; on a tie where they disagree, every rating is null, so the pupil
+ * picks each one on the confirm list rather than getting ratings shifted by a row. Rows in text order,
+ * duplicates kept.
  */
 export function readCodes(text: string, known: readonly string[]): CodeRow[] {
   const byUpper = new Set(known.map((k) => k.toUpperCase()));
   const tokens = text.split(/\s+/).filter((t) => t !== "");
-  const rows: CodeRow[] = [];
-  let prev: { comma: boolean; rag: Rag | null } | null = null;
-  let before: string | undefined;
-  for (const token of tokens) {
+  const codes: { code: string; at: number; comma: boolean }[] = [];
+  for (const [at, token] of tokens.entries()) {
     const comma = token.endsWith(",");
     const code = (comma ? token.slice(0, -1) : token).toUpperCase();
-    if (SPARX.test(code) || byUpper.has(code)) {
-      let rag: Rag | null = null;
-      if (before !== undefined && RAGS.includes(before)) rag = before as Rag;
-      else if (prev?.comma) rag = prev.rag;
-      rows.push({ code, rag });
-      prev = { comma, rag };
-    } else prev = null;
-    before = token;
+    if (SPARX.test(code) || byUpper.has(code)) codes.push({ code, at, comma });
   }
-  return rows;
+  const rags = tokens.filter((t) => RAGS.includes(t)).length;
+
+  const before: (Rag | null)[] = [];
+  let usedBefore = 0;
+  for (const [i, c] of codes.entries()) {
+    const t = tokens[c.at - 1];
+    const prev = codes[i - 1];
+    let rag: Rag | null = null;
+    if (t !== undefined && RAGS.includes(t)) {
+      rag = t as Rag;
+      usedBefore += 1;
+    } else if (prev?.comma && prev.at === c.at - 1) rag = before[i - 1] ?? null;
+    before.push(rag);
+  }
+
+  const after: (Rag | null)[] = [];
+  let usedAfter = 0;
+  for (const [i, c] of codes.entries()) {
+    const end = codes[i + 1]?.at ?? tokens.length;
+    const t = tokens.slice(c.at + 1, end).find((x) => RAGS.includes(x));
+    if (t !== undefined) usedAfter += 1;
+    after.push((t as Rag | undefined) ?? null);
+  }
+
+  const unusedBefore = rags - usedBefore;
+  const unusedAfter = rags - usedAfter;
+  const tie =
+    unusedBefore === unusedAfter && before.some((r, i) => r !== after[i]);
+  const pick = unusedAfter < unusedBefore ? after : before;
+  return codes.map((c, i) => ({
+    code: c.code,
+    rag: tie ? null : (pick[i] ?? null),
+  }));
 }
 
 function prompt({ source }: IntakeReadInput): Message[] {
