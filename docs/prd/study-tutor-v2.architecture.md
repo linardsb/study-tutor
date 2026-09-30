@@ -138,7 +138,7 @@ Seed = hash(squad id, ISO week, topic), so identical numbers need no exchange. R
 pupil in `squad/<squad-id>/`, which any sync folder (Drive, OneDrive, iCloud) or a hand-passed
 `.squad.json` can carry. Each pupil writes only their own file. Answers PRD Q9: a shared folder is a
 convenience, not a requirement.
-Amended 2026-09-29, approved by the user: the parent may set one squad sync folder on the setup page, stored in `data/config.json`. When set, it replaces `squad/<squad-id>/`: the binary writes only the local pupil's file there and reads the others, every path realpath-pinned to that folder, slug-only names, no symlinks. It is the one exception to `data/` confinement and only the squad read and write path uses it.
+Amended 2026-09-29, approved by the user: the parent may set one squad sync folder on the setup page, stored in `data/config.json`. When set, it replaces `squad/<squad-id>/`: the binary writes only the local pupil's file there and reads the others, every path realpath-pinned to that folder, slug-only names, no symlinks, and never the tutor's own folder or anything inside it (0.1.2, M10). It is the one exception to `data/` confinement and only the squad read and write path uses it.
 
 **D10 Distribution and updates.**
 GitHub Releases, two zips (`windows`, `mac`). An update replaces `StudyTutor`, `app/` and `content/` and

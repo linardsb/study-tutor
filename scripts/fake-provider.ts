@@ -3,6 +3,9 @@
 // teach-back, Dan's given wrong answer, two codes for a school sheet (text or photo), one topic for
 // the intake interview, a fixed hint otherwise, or "not json" in not-json mode.
 // Run it: bun scripts/fake-provider.ts --mode not-json --delay 70000
+// --log <file> appends each request body as one JSON line, to check what reached the model.
+
+import { appendFileSync } from "node:fs";
 
 import { INTAKE_READ_MARK } from "../src/jobs/intake_read";
 import { INTERVIEW_MARK } from "../src/jobs/interview";
@@ -60,7 +63,11 @@ function contentFor(messages: Msg[], mode: FakeMode): string {
 }
 
 /** Starts the fake on a free port. `url` is the base URL to save as the provider's address. */
-export function startFakeProvider(opts: { delayMs?: number; mode: FakeMode }) {
+export function startFakeProvider(opts: {
+  delayMs?: number;
+  mode: FakeMode;
+  log?: string;
+}) {
   const server = Bun.serve({
     hostname: "127.0.0.1",
     port: 0,
@@ -69,6 +76,7 @@ export function startFakeProvider(opts: { delayMs?: number; mode: FakeMode }) {
       "/v1/chat/completions": {
         POST: async (req) => {
           const body = (await req.json()) as { messages?: Msg[] };
+          if (opts.log) appendFileSync(opts.log, `${JSON.stringify(body)}\n`);
           if (opts.delayMs) await Bun.sleep(opts.delayMs);
           return Response.json({
             choices: [
@@ -103,6 +111,6 @@ if (import.meta.main) {
     process.exit(1);
   }
   const delayMs = Number(flag("delay") ?? 0);
-  const fake = startFakeProvider({ mode, delayMs });
+  const fake = startFakeProvider({ mode, delayMs, log: flag("log") });
   console.log(`Fake provider (${mode}, ${delayMs} ms) at ${fake.url}`);
 }
