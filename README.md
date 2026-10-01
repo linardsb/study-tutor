@@ -21,6 +21,18 @@ squad file, and only if your child uses the squad with friends (see
 
 Setting it up takes about 15 minutes: download, first start and settings, 5 minutes each (an estimate).
 
+## Known limits in version 0.1.2
+
+- **Tested on an Intel Mac only.** The version for Macs with an Apple chip (M1 or later) and the
+  Windows version are built the same way but have not yet been run end to end. On those computers,
+  watch the first start, and if anything goes wrong, [tell us](https://github.com/linardsb/study-tutor/issues).
+  To check which Mac you have, open the Apple menu and choose **About This Mac**: it says **Chip**
+  (Apple) or **Processor** (Intel).
+- **Squad names must be different.** If two friends in one squad use the same name, their files
+  overwrite each other without a warning, and the squad total keeps changing. `Alex` and `alex` count
+  as the same name. Agree the names before anyone joins. See
+  [Studying with friends](#studying-with-friends-the-squad).
+
 ## Download
 
 - Windows: [StudyTutor-windows.zip](https://github.com/linardsb/study-tutor/releases/latest/download/StudyTutor-windows.zip)
