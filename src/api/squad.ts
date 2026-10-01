@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { checkSquadFolder, readProfile } from "../config";
@@ -5,6 +6,7 @@ import type { CasePack } from "../content/types";
 import {
   appendEvent,
   CONFIG_FILE,
+  ensureDataDir,
   listDataDir,
   makeDataDir,
   PROFILE_FILE,
@@ -25,6 +27,8 @@ import {
   MAX_ANSWER,
   MAX_WORKING,
   markRound,
+  nameTaken,
+  OWNER,
   PARENT_SLOTS,
   parseSquadFile,
   pool,
@@ -59,6 +63,7 @@ export type SquadView = {
   unreadable: number; // files in the folder left out: bad JSON, bad shape, a symlink, a copy of your own name
   shared: boolean; // mine's file is on disk and matches the event
   parentDone: boolean; // a parent-round teachback this ISO week
+  nameTaken: boolean; // another tutor's file carries this pupil's name: nothing is written until they pick another (F8)
 };
 type Refusal = { status: 400 | 409 | 500; body: { error: string } };
 
@@ -77,6 +82,29 @@ export function squadProfile(
   const squad = slug(p.squad);
   const pupil = slug(p.pupil);
   return squad !== null && pupil !== null ? { squad, pupil } : null;
+}
+
+const TAKEN_POST =
+  "Someone else in this squad uses your name. Pick another name first.";
+const TAKEN_JOIN =
+  "Someone in this squad already uses that name. Pick another one.";
+
+/**
+ * This tutor's squad owner id from profile.json, written into every squad file it writes so a file with
+ * the same pupil name from another tutor is told apart (F8). Null when none is saved yet; `mint` saves one.
+ */
+function ownerId(dataDir: string, mint: boolean): string | null {
+  const p = readProfile(dataDir);
+  if (typeof p.squadOwner === "string" && OWNER.test(p.squadOwner))
+    return p.squadOwner;
+  if (!mint) return null;
+  const squadOwner = randomUUID();
+  writeDataFile(
+    dataDir,
+    PROFILE_FILE,
+    `${JSON.stringify({ ...p, squadOwner }, null, 2)}\n`,
+  );
+  return squadOwner;
 }
 
 /**
@@ -173,6 +201,35 @@ function onDisk(p: Place | null, f: SquadFile): boolean {
   );
 }
 
+/** True when any file in the squad folder carries this pupil's name and another tutor wrote it. Never throws. */
+function takenIn(
+  p: Place | null,
+  pupil: string,
+  owner: string | null,
+  mine: SquadFile | null,
+  week: string,
+): boolean {
+  if (p === null) return false;
+  let files: string[];
+  try {
+    files = listDataDir(p.root, p.dir).files;
+  } catch {
+    return false;
+  }
+  // A kept-both copy (`alex 2.json`) carries the name inside, so every file is read, not only `<pupil>.json`.
+  return files.some((name) => {
+    if (!name.endsWith(".json")) return false;
+    const rel = relOf(p, name);
+    try {
+      if (fs.statSync(resolveInData(p.root, rel)).size > MAX_FILE) return false;
+      const f = parseSquadFile(readDataJson(p.root, rel));
+      return f !== null && f.pupil === pupil && nameTaken(f, owner, mine, week);
+    } catch {
+      return false;
+    }
+  });
+}
+
 type Friends = {
   members: SquadMember[];
   counted: SquadFile[];
@@ -185,6 +242,7 @@ function friends(
   profile: { squad: string; pupil: string },
   round: SquadRound,
   withAnswers: boolean,
+  taken: boolean,
 ): Friends {
   const out: Friends = { members: [], counted: [], unreadable: 0 };
   if (p === null) {
@@ -217,6 +275,8 @@ function friends(
     } catch {
       f = null;
     }
+    // The page says the name is taken instead of counting the other pupil's file as unreadable.
+    if (f !== null && f.pupil === profile.pupil && taken) continue;
     // Another squad's file has other seeds by construction: not a friend's round here.
     if (f === null || f.pupil === profile.pupil || f.squad !== profile.squad) {
       out.unreadable += 1;
@@ -269,6 +329,7 @@ export function getSquad(
     unreadable: 0,
     shared: false,
     parentDone: false,
+    nameTaken: false,
   };
   if (profile === null) return { status: 200, body: view };
   // profile.json exists, so data/ does: this never creates it.
@@ -285,14 +346,19 @@ export function getSquad(
   const title =
     pack.topics.find((t) => t.id === round.topic)?.title ?? round.topic;
   view.round = { ...round, title };
+  // A look at another week (heal false) never writes, so it never mints the owner either.
+  const owner = ownerId(dataDir, heal && e !== null);
   const mine =
-    e === null ? null : squadFile(e, profile.pupil, round.seeds, VERSION);
+    e === null
+      ? null
+      : squadFile(e, profile.pupil, round.seeds, VERSION, owner);
   view.mine = mine;
-  if (mine !== null) {
+  view.nameTaken = takenIn(where.place, profile.pupil, owner, mine, week);
+  if (mine !== null && !view.nameTaken) {
     view.shared =
       onDisk(where.place, mine) || (heal && writeMine(where.place, mine));
   }
-  const f = friends(where.place, profile, round, mine !== null);
+  const f = friends(where.place, profile, round, mine !== null, view.nameTaken);
   view.members = f.members;
   view.unreadable = f.unreadable;
   view.total = pool(mine === null ? f.counted : [mine, ...f.counted]);
@@ -348,6 +414,11 @@ export function postSquad(
     };
   if (mineEvent(events(dataDir), profile.squad, week) !== null)
     return { status: 409, body: { error: "You have done this week's round." } };
+  const place = squadPlace(dataDir, profile.squad).place;
+  const owner = ownerId(dataDir, true);
+  // Checked before the event: a round saved under a taken name could not be shared this week.
+  if (takenIn(place, profile.pupil, owner, null, week))
+    return { status: 409, body: { error: TAKEN_POST } };
   const marked = markRound(
     roll(round, pack),
     (answers as Obj[]).map((a) => ({
@@ -376,15 +447,16 @@ export function postSquad(
     return { status: 500, body: { error: "Could not save the round." } };
   }
   writeMine(
-    squadPlace(dataDir, profile.squad).place,
-    squadFile(saved as SquadV1, profile.pupil, round.seeds, VERSION),
+    place,
+    squadFile(saved as SquadV1, profile.pupil, round.seeds, VERSION, owner),
   );
   return { status: 201, body: getSquad(dataDir, pack, day, true).body };
 }
 
 /**
  * Squad id and pupil name into profile.json, every other key kept. Once this week's round is saved,
- * both stay as they are until next week: a new name would leave the old file behind as a friend.
+ * both stay as they are until next week: a new name would leave the old file behind as a friend. The
+ * exception is a taken name, whose file is the other pupil's. A new name another tutor uses is refused.
  */
 export function joinSquad(
   body: unknown,
@@ -402,11 +474,29 @@ export function joinSquad(
         error: "Use letters, numbers and dashes for the squad and your name.",
       },
     };
+  // The squad place realpaths data/, which a join may be the first to need.
+  ensureDataDir(dataDir);
   const now = squadProfile(dataDir);
+  const week = isoWeek(day);
+  const kept = readProfile(dataDir).squadOwner;
+  const owner =
+    typeof kept === "string" && OWNER.test(kept) ? kept : randomUUID();
+  const changed = now !== null && (now.squad !== squad || now.pupil !== pupil);
+  const nowTaken = () => {
+    if (now === null) return false;
+    const e = mineEvent(events(dataDir), now.squad, week);
+    return takenIn(
+      squadPlace(dataDir, now.squad).place,
+      now.pupil,
+      owner,
+      e === null ? null : squadFile(e, now.pupil, [], VERSION, owner),
+      week,
+    );
+  };
   if (
-    now !== null &&
-    (now.squad !== squad || now.pupil !== pupil) &&
-    mineEvent(events(dataDir), now.squad, isoWeek(day)) !== null
+    changed &&
+    mineEvent(events(dataDir), now.squad, week) !== null &&
+    !nowTaken()
   )
     return {
       status: 409,
@@ -415,7 +505,17 @@ export function joinSquad(
           "You have done this week's round, so your squad and name stay as they are until Monday.",
       },
     };
-  const profile = { ...readProfile(dataDir), squad, pupil };
+  if (
+    (now === null || changed) &&
+    takenIn(squadPlace(dataDir, squad).place, pupil, owner, null, week)
+  )
+    return { status: 409, body: { error: TAKEN_JOIN } };
+  const profile = {
+    ...readProfile(dataDir),
+    squad,
+    pupil,
+    squadOwner: owner,
+  };
   writeDataFile(dataDir, PROFILE_FILE, `${JSON.stringify(profile, null, 2)}\n`);
   return { status: 200, body: { profile: { squad, pupil } } };
 }

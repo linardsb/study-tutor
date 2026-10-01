@@ -8,6 +8,7 @@ import {
   comparable,
   daysLeft,
   markRound,
+  nameTaken,
   PARENT_SLOTS,
   parseSquadFile,
   pool,
@@ -17,6 +18,7 @@ import {
   type SquadFile,
   type SquadRound,
   slug,
+  squadFile,
   squadRound,
 } from "./squad";
 
@@ -255,4 +257,64 @@ test("roundOf: the parent's questions are never the pupil's, for every generator
         if (pupil.includes(s)) shared.push(`${week} ${t.id}: ${s}`);
     }
   expect(shared).toEqual([]);
+});
+
+test("nameTaken (F8): an owned file is taken iff its owner differs; an ownerless one only when it is this week's and not mine", () => {
+  const ME = "11111111-1111-4111-8111-111111111111";
+  const THEM = "22222222-2222-4222-8222-222222222222";
+  const WEEK = "2026-W41";
+  const parsed = (over: Record<string, unknown> = {}) =>
+    parseSquadFile(file(over)) as SquadFile;
+  const theirs = parsed({ owner: THEM });
+  // mine as getSquad builds it: the projection of my event, with my owner and this tutor's app
+  const event = {
+    v: 1 as const,
+    type: "squad" as const,
+    t: "2026-10-10T11:00:00Z",
+    squad: "year11-b",
+    week: WEEK,
+    topic: round.topic,
+    score: 1,
+    of: 5,
+    answers: parsed().answers,
+  };
+  const mine = squadFile(event, "alex", round.seeds, "0.1.3", ME);
+  expect(nameTaken(parsed({ owner: ME }), ME, mine, WEEK)).toBe(false);
+  expect(nameTaken(theirs, ME, mine, WEEK)).toBe(true);
+  expect(nameTaken(theirs, ME, null, WEEK)).toBe(true);
+  expect(nameTaken(theirs, null, null, WEEK)).toBe(true);
+  // an owned file is judged by owner alone, in any week
+  expect(
+    nameTaken(parsed({ owner: THEM, week: "2026-W40" }), ME, null, WEEK),
+  ).toBe(true);
+  // ownerless: an older week's is a stale own file, never taken
+  expect(nameTaken(parsed({ week: "2026-W40" }), ME, null, WEEK)).toBe(false);
+  expect(nameTaken(parsed({ week: "2026-W40" }), ME, mine, WEEK)).toBe(false);
+  // ownerless this week and no round of mine to match: taken
+  expect(nameTaken(parsed(), ME, null, WEEK)).toBe(true);
+  // ownerless this week and the same round as mine (0.1.2 wrote it): mine, whatever app and seeds say
+  expect(nameTaken(parsed(), ME, mine, WEEK)).toBe(false);
+  expect(nameTaken(parsed({ app: "0.1.2" }), ME, mine, WEEK)).toBe(false);
+  expect(
+    nameTaken(parsed(), ME, squadFile(event, "alex", [], "0.1.3", ME), WEEK),
+  ).toBe(false);
+  expect(
+    nameTaken(
+      parsed(),
+      null,
+      squadFile(event, "alex", round.seeds, "0.1.3"),
+      WEEK,
+    ),
+  ).toBe(false);
+  // ownerless this week, one answer or the score differs: another pupil's round
+  const other = file();
+  (other.answers as SquadAnswer[])[1] = {
+    answer: "7",
+    working: "",
+    correct: false,
+  };
+  expect(nameTaken(parseSquadFile(other) as SquadFile, ME, mine, WEEK)).toBe(
+    true,
+  );
+  expect(nameTaken(parsed({ topic: "1MA1/N1" }), ME, mine, WEEK)).toBe(true);
 });

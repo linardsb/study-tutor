@@ -8,8 +8,8 @@ GCSE revision that runs on your own computer. What is in it now:
 - **English Language and Literature (AQA, 8700 and 8702)**: the topics are listed so your child can
   track them, but there are no lessons or questions yet.
 
-More is added as pupils need it. Tell us which subjects and topics your child needs most by
-[opening an issue](https://github.com/linardsb/study-tutor/issues).
+More is added as pupils need it. Tell us which subjects and topics your child needs most: email
+[study.tutordan@gmail.com](mailto:study.tutordan@gmail.com).
 
 It works with no AI model at all. If you want the parts that use one, you add
 a key from a model provider you pay for, and the key stays on your computer.
@@ -21,17 +21,14 @@ squad file, and only if your child uses the squad with friends (see
 
 Setting it up takes about 15 minutes: download, first start and settings, 5 minutes each (an estimate).
 
-## Known limits in version 0.1.2
+## Known limits in version 0.1.3
 
 - **Tested on an Intel Mac only.** The version for Macs with an Apple chip (M1 or later) and the
   Windows version are built the same way but have not yet been run end to end. On those computers,
-  watch the first start, and if anything goes wrong, [tell us](https://github.com/linardsb/study-tutor/issues).
-  To check which Mac you have, open the Apple menu and choose **About This Mac**: it says **Chip**
-  (Apple) or **Processor** (Intel).
-- **Squad names must be different.** If two friends in one squad use the same name, their files
-  overwrite each other without a warning, and the squad total keeps changing. `Alex` and `alex` count
-  as the same name. Agree the names before anyone joins. See
-  [Studying with friends](#studying-with-friends-the-squad).
+  stay nearby for the first start. If it does not open, or something looks wrong, email
+  [study.tutordan@gmail.com](mailto:study.tutordan@gmail.com) with what you saw (a photo of the screen helps) and whether it
+  is a Mac or Windows. To check which Mac you have, open the Apple menu and choose **About This
+  Mac**: it says **Chip** (Apple) or **Processor** (Intel).
 
 ## Download
 
@@ -45,7 +42,7 @@ The Windows zip is about 41 MB and the Mac zip about 47 MB. Allow 5 minutes.
 Allow 5 minutes.
 
 1. Double-click `StudyTutor-mac.zip` to extract it. You get a folder called `StudyTutor` followed by a
-   version number, for example `StudyTutor-0.1.2`. Move that folder somewhere that is not synced (see
+   version number, for example `StudyTutor-0.1.3`. Move that folder somewhere that is not synced (see
    [Keep it out of OneDrive](#keep-it-out-of-onedrive-and-icloud)), such as a folder called `Tutor` in your
    home folder.
 2. Open the folder and double-click `Start.command`.
@@ -65,7 +62,7 @@ You only do steps 3 and 4 the first time for each version.
 Allow 5 minutes.
 
 1. Right-click `StudyTutor-windows.zip` and choose **Extract All**, then **Extract**. You get a folder
-   called `StudyTutor` followed by a version number, for example `StudyTutor-0.1.2`. Extract it
+   called `StudyTutor` followed by a version number, for example `StudyTutor-0.1.3`. Extract it
    somewhere that is not synced (see [Keep it out of OneDrive](#keep-it-out-of-onedrive-and-icloud)), such
    as `C:\Tutor`.
 2. Open that folder and double-click `Start.bat`.
@@ -135,8 +132,9 @@ The squad lets a few friends, each on their own computer, do the same five maths
 week and see how the group did. No one is ranked. The week ends on Sunday.
 
 1. Everyone opens **Squad** and types the same **Squad name**, for example `sackville-11c`. For **Your
-   name**, each pupil picks a name no one else in the squad uses. Two pupils with the same name
-   overwrite each other's file without a warning, and `Alex` and `alex` count as the same name.
+   name**, each pupil picks a name no one else in the squad uses. `Alex` and `alex` count as the same
+   name. If the name is already taken, the squad page says so and asks for another one. This check
+   needs every friend on version 0.1.3 or later.
 2. Each pupil does the week's round of five questions.
 3. The files are shared in one of two ways.
 
@@ -153,7 +151,8 @@ folder stays out of it. If the squad page says a file could not be written, chec
 running and the path in settings is still right.
 
 **What the squad file holds**: the squad name, your child's squad name, the week, the five answers
-with any working your child wrote, and which ones were right. It does not hold the key, other
+with any working your child wrote, which ones were right, and a random code that tells this tutor
+apart from a friend's with the same name. It does not hold the key, other
 progress or the courses. Anyone with the file can read it, so use a first name or a nickname, and a
 squad name that does not have to name the school.
 
@@ -177,7 +176,7 @@ Copy, do not move. Until step 5 the old folder still has everything, so you can 
 - The Mac or Windows warning from the first start comes back after each update, and so does the Windows
   firewall question. Answer them the same way.
 - If the tutor stops with "this version of the tutor would lower progress", start the old folder again
-  and tell us.
+  and email [study.tutordan@gmail.com](mailto:study.tutordan@gmail.com).
 
 ## Where the records live
 

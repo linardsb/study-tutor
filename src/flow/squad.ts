@@ -19,6 +19,9 @@ const SLUG = /^[a-z0-9][a-z0-9-]{0,31}$/;
 // Windows refuses these as a file or folder name, with or without an extension.
 const DEVICE = /^(con|nul|aux|prn|com[1-9]|lpt[1-9])$/;
 const WEEK = /^\d{4}-W\d{2}$/;
+/** A tutor's squad owner id: crypto.randomUUID's shape. */
+export const OWNER =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 /** "Year 11 B " → "year-11-b"; null when nothing valid remains. Both squad id and pupil name become path parts. */
 export function slug(x: unknown): string | null {
@@ -133,6 +136,7 @@ export type SquadFile = {
   answers: SquadAnswer[];
   score: number;
   of: number;
+  owner?: string; // the writing tutor's profile.squadOwner; absent in files from 0.1.2 and earlier
 };
 
 /** The pupil's file: a projection of the week's squad event, so it can be deleted and written again. */
@@ -141,10 +145,12 @@ export function squadFile(
   pupil: string,
   seeds: readonly number[],
   app: string,
+  owner?: string | null,
 ): SquadFile {
   return {
     v: 1,
     app,
+    ...(owner ? { owner } : {}),
     squad: e.squad,
     pupil,
     week: e.week,
@@ -199,7 +205,32 @@ export function parseSquadFile(x: unknown): SquadFile | null {
     answers,
     score: x.score as number,
     of: x.of as number,
+    ...(typeof x.owner === "string" && OWNER.test(x.owner)
+      ? { owner: x.owner }
+      : {}),
   };
+}
+
+// Seeds follow from squad, week and topic, so they are left out: a caller without the pack passes [].
+// Destructured, not overwritten: an ownerless file would otherwise put `owner` last and never match.
+const roundOnly = ({ app: _a, owner: _o, seeds: _s, ...r }: SquadFile) =>
+  JSON.stringify(r);
+const sameRound = (a: SquadFile, b: SquadFile) => roundOnly(a) === roundOnly(b);
+
+/**
+ * True when a file carrying this pupil's name was written by another tutor (F8: two pupils with one
+ * name). An owned file is taken when the owner differs. An ownerless file (a 0.1.2 tutor) is taken only
+ * when it is this week's and is not this pupil's own saved round; an older week's is a stale own file.
+ */
+export function nameTaken(
+  f: SquadFile,
+  owner: string | null,
+  mine: SquadFile | null,
+  week: string,
+): boolean {
+  if (f.owner !== undefined) return f.owner !== owner;
+  if (f.week !== week) return false;
+  return mine === null || !sameRound(f, mine);
 }
 
 /** Same week, topic and seeds as mine, and one answer per seed. */

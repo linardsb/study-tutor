@@ -2,8 +2,10 @@ import { expect, spyOn, test } from "bun:test";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { Course } from "../content/types";
 import { appendEvent, readLines } from "../events/append";
 import {
+  OWNER,
   PARENT_SLOTS,
   roll,
   roundOf,
@@ -15,6 +17,7 @@ import {
 import { VERSION } from "../updates";
 import { loadCasePack } from "./case";
 import { postConfig } from "./config";
+import { saveCourses } from "./courses";
 import { postEvent } from "./event";
 import { getSquad, joinSquad, postSquad, writeMine } from "./squad";
 
@@ -58,6 +61,10 @@ const squadLines = (data: string) =>
     .map((l) => JSON.parse(l))
     .filter((e) => e.type === "squad");
 const folder = (data: string) => path.join(data, "squad", "year11-b");
+const profileOf = (data: string) =>
+  JSON.parse(fs.readFileSync(path.join(data, "profile.json"), "utf8"));
+/** This tutor's squad owner id, minted at join (F8). */
+const ownerOf = (data: string) => profileOf(data).squadOwner as string;
 
 /** A friend's file as their tutor would write it: every answer given, `score` of them right. */
 function friendFile(pupil: string, score: number, over = {}): SquadFile {
@@ -125,6 +132,7 @@ test(
       weeklyTarget: 5,
       squad: "year11-b",
       pupil: "sam",
+      squadOwner: expect.stringMatching(OWNER),
     });
     const before = saved();
     expect(joinSquad({ squad: "b", pupil: "../x" }, data, DAY).status).toBe(
@@ -168,6 +176,7 @@ test(
       "sam",
       round.seeds,
       VERSION,
+      ownerOf(data),
     );
     expect(file).toEqual(expected);
     const view = (r.body as { mine: SquadFile; shared: boolean }).mine;
@@ -251,7 +260,8 @@ test.skipIf(process.platform === "win32")(
     put(data, "alex2.json", friendFile("alex", 5));
     put(data, "bad.json", "{");
     put(data, "shape.json", { v: 1 });
-    put(data, "me.json", friendFile("sam", 5));
+    // a copy of this tutor's own file (its owner), so the name is not taken (F8)
+    put(data, "me.json", friendFile("sam", 5, { owner: ownerOf(data) }));
     put(data, "old.json", friendFile("olly", 2, { week: "2026-W40" }));
     put(data, "notes.txt", "hello");
     put(data, "kit.json", friendFile("kit", 5, { squad: "year11-c" }));
@@ -264,6 +274,7 @@ test.skipIf(process.platform === "win32")(
     // alex2.json is the duplicate: alex.json sorts first by file name
     expect(r.body.members[0]?.answers?.[4]?.correct).toBe(false);
     expect(r.body.unreadable).toBe(6);
+    expect(r.body.nameTaken).toBe(false);
     expect(r.body.total).toEqual({ score: 7, of: 10, rounds: 2 });
   }),
 );
@@ -766,5 +777,226 @@ test.skipIf(process.platform === "win32")(
     }
     expect(fs.readdirSync(target)).toEqual([]);
     expect(fs.existsSync(data)).toBe(false);
+  }),
+);
+
+// F8: two pupils with one name in one squad. Each tutor stamps its files with profile.squadOwner.
+const THEM = "22222222-2222-4222-8222-222222222222";
+const TAKEN_POST = {
+  status: 409 as const,
+  body: {
+    error:
+      "Someone else in this squad uses your name. Pick another name first.",
+  },
+};
+const TAKEN_JOIN = {
+  status: 409 as const,
+  body: {
+    error: "Someone in this squad already uses that name. Pick another one.",
+  },
+};
+const own = (data: string) => path.join(folder(data), "sam.json");
+/** This tutor's own file as 0.1.2 wrote it: the same round, no owner, an older app. */
+function ownerless(f: SquadFile): SquadFile {
+  const { owner: _drop, ...rest } = f;
+  return { ...rest, app: "0.1.2" };
+}
+
+test(
+  "F8a. two tutors join as alex and Alex on one sync folder: the second poster is refused, and heal GETs on both never flip the file",
+  withTemp((dir, a) => {
+    const b = path.join(dir, "tutor2", "data");
+    fs.mkdirSync(path.dirname(b));
+    setSync(dir, a);
+    setSync(dir, b);
+    expect(joinSquad({ squad: "year11-b", pupil: "alex" }, a, DAY).status).toBe(
+      200,
+    );
+    expect(joinSquad({ squad: "year11-b", pupil: "Alex" }, b, DAY).status).toBe(
+      200,
+    );
+    expect(ownerOf(a)).not.toBe(ownerOf(b));
+    expect(postSquad({ week: WEEK, answers }, a, pack, DAY, AT).status).toBe(
+      201,
+    );
+    const wrong = answers.map((x) => ({ ...x, answer: "0" }));
+    expect(postSquad({ week: WEEK, answers: wrong }, b, pack, DAY, AT)).toEqual(
+      TAKEN_POST,
+    );
+    expect(squadLines(b)).toHaveLength(0);
+    const file = path.join(sync(dir), "alex.json");
+    const bytes = fs.readFileSync(file);
+    expect(JSON.parse(bytes.toString()).owner).toBe(ownerOf(a));
+    for (let k = 0; k < 3; k++) {
+      const va = getSquad(a, pack, DAY, true).body;
+      const vb = getSquad(b, pack, DAY, true).body;
+      expect([va.nameTaken, vb.nameTaken]).toEqual([false, true]);
+      expect(va.shared).toBe(true);
+      expect(vb.shared).toBe(false);
+      expect(va.total).toEqual({ score: 4, of: 5, rounds: 1 });
+      expect(va.unreadable).toBe(0);
+      expect(vb.unreadable).toBe(0);
+      expect(fs.readFileSync(file)).toEqual(bytes);
+    }
+    expect(fs.readdirSync(sync(dir))).toEqual(["alex.json"]);
+  }),
+);
+
+test(
+  "F8b. manual mode: a friend's alex file copied over ours, or kept beside it as `sam 2.json`, makes the name taken and is never healed back",
+  withTemp((_dir, data) => {
+    join(data);
+    post(data);
+    const ours = fs.readFileSync(own(data));
+    const friend = JSON.stringify(friendFile("sam", 3, { owner: THEM }));
+    fs.writeFileSync(own(data), friend);
+    for (const heal of [true, false, true]) {
+      const view = getSquad(data, pack, DAY, heal).body;
+      expect(view.nameTaken).toBe(true);
+      expect(view.shared).toBe(false);
+      expect(view.unreadable).toBe(0);
+      expect(view.total).toEqual({ score: 4, of: 5, rounds: 1 });
+      expect(fs.readFileSync(own(data), "utf8")).toBe(friend);
+    }
+    fs.writeFileSync(own(data), ours);
+    put(data, "sam 2.json", friendFile("sam", 3, { owner: THEM }));
+    const view = getSquad(data, pack, DAY, true).body;
+    expect(view.nameTaken).toBe(true);
+    expect(view.shared).toBe(false);
+    expect(fs.readFileSync(own(data))).toEqual(ours);
+  }),
+);
+
+test(
+  "F8c. ownerless files: our own 0.1.2 file this week is ours and gains the owner; another this-week round is taken; an older week is overwritten",
+  withTemp((_dir, data) => {
+    join(data);
+    post(data);
+    const mine = JSON.parse(fs.readFileSync(own(data), "utf8")) as SquadFile;
+    // an upgrade from 0.1.2: no owner in profile.json or in the file
+    const { squadOwner: _drop, ...old } = profileOf(data);
+    fs.writeFileSync(path.join(data, "profile.json"), JSON.stringify(old));
+    put(data, "sam.json", ownerless(mine));
+    const view = getSquad(data, pack, DAY, true).body;
+    expect(view.nameTaken).toBe(false);
+    expect(view.shared).toBe(true);
+    expect(ownerOf(data)).toMatch(OWNER);
+    const healed = JSON.parse(fs.readFileSync(own(data), "utf8"));
+    expect(healed).toEqual({ ...mine, owner: ownerOf(data) });
+    // an ownerless round this week that is not ours
+    const theirs = JSON.stringify(friendFile("sam", 2));
+    fs.writeFileSync(own(data), theirs);
+    expect(getSquad(data, pack, DAY, true).body.nameTaken).toBe(true);
+    expect(fs.readFileSync(own(data), "utf8")).toBe(theirs);
+  }),
+);
+
+test(
+  "F8c2. an ownerless this-week file refuses the post; an ownerless older-week file is overwritten by it",
+  withTemp((_dir, data) => {
+    join(data);
+    put(data, "sam.json", friendFile("sam", 2));
+    expect(getSquad(data, pack, DAY, true).body.nameTaken).toBe(true);
+    expect(post(data)).toEqual(TAKEN_POST);
+    expect(squadLines(data)).toHaveLength(0);
+    put(data, "sam.json", friendFile("sam", 2, { week: "2026-W40" }));
+    expect(getSquad(data, pack, DAY, true).body.nameTaken).toBe(false);
+    expect(post(data).status).toBe(201);
+    const file = JSON.parse(fs.readFileSync(own(data), "utf8"));
+    expect(file).toMatchObject({ week: WEEK, owner: ownerOf(data), score: 4 });
+  }),
+);
+
+test(
+  "F8d. join: a taken name is refused; a rename after this week's round is allowed only while the current name is taken",
+  withTemp((_dir, data) => {
+    put(data, "alex.json", friendFile("alex", 3, { owner: THEM }));
+    join(data);
+    const owner = ownerOf(data);
+    expect(joinSquad({ squad: "year11-b", pupil: "ALEX" }, data, DAY)).toEqual(
+      TAKEN_JOIN,
+    );
+    expect(profileOf(data).pupil).toBe("sam");
+    post(data);
+    expect(
+      joinSquad({ squad: "year11-b", pupil: "sammy" }, data, DAY).status,
+    ).toBe(409);
+    put(data, "sam 2.json", friendFile("sam", 3, { owner: THEM }));
+    expect(joinSquad({ squad: "year11-b", pupil: "alex" }, data, DAY)).toEqual(
+      TAKEN_JOIN,
+    );
+    expect(
+      joinSquad({ squad: "year11-b", pupil: "sammy" }, data, DAY).status,
+    ).toBe(200);
+    expect(profileOf(data)).toMatchObject({
+      pupil: "sammy",
+      squadOwner: owner,
+    });
+    const view = getSquad(data, pack, DAY, true).body;
+    expect(view.nameTaken).toBe(false);
+    expect(view.shared).toBe(true);
+    // the new name is not taken, so it stays until Monday
+    expect(
+      joinSquad({ squad: "year11-b", pupil: "sam3" }, data, DAY).status,
+    ).toBe(409);
+  }),
+);
+
+test(
+  "F8e. guard: with the name taken and no round of ours, a friend's answers stay withheld",
+  withTemp((_dir, data) => {
+    join(data);
+    put(data, "alex.json", friendFile("alex", 3));
+    put(data, "sam.json", friendFile("sam", 4, { owner: THEM }));
+    const view = getSquad(data, pack, DAY, true).body;
+    expect(view.nameTaken).toBe(true);
+    expect(view.mine).toBeNull();
+    expect(view.members).toEqual([{ pupil: "alex", comparable: true }]);
+    expect(JSON.stringify(view)).not.toContain("alex 0");
+    expect(JSON.stringify(view)).not.toContain("sam 0");
+  }),
+);
+
+test(
+  "F8f. the owner is minted only by a heal GET with a round this week; a look at another week writes nothing",
+  withTemp((_dir, data) => {
+    fs.mkdirSync(data);
+    const profile = path.join(data, "profile.json");
+    fs.writeFileSync(
+      profile,
+      JSON.stringify({ squad: "year11-b", pupil: "sam" }),
+    );
+    const bytes = fs.readFileSync(profile);
+    getSquad(data, pack, DAY, true); // no round yet
+    getSquad(data, pack, DAY, false);
+    expect(fs.readFileSync(profile)).toEqual(bytes);
+    const marked = postSquad({ week: WEEK, answers }, data, pack, DAY, AT);
+    expect(marked.status).toBe(201);
+    const after = fs.readFileSync(profile);
+    expect(ownerOf(data)).toMatch(OWNER);
+    getSquad(data, pack, "2026-10-03", false);
+    getSquad(data, pack, "2026-10-17", false);
+    expect(fs.readFileSync(profile)).toEqual(after);
+    // a 0.1.2 profile with a round in the log: a look at last week never mints
+    fs.writeFileSync(profile, bytes);
+    getSquad(data, pack, "2026-10-03", false);
+    expect(fs.readFileSync(profile)).toEqual(bytes);
+  }),
+);
+
+test(
+  "F8g. the setup form and the courses save keep squadOwner in profile.json",
+  withTemp((dir, data) => {
+    join(data);
+    const owner = ownerOf(data);
+    setSync(dir, data);
+    expect(ownerOf(data)).toBe(owner);
+    const courses: Course[] = [
+      { spec: "AA1", board: "B", title: "Untiered", tiers: [] },
+    ];
+    expect(
+      saveCourses({ courses: [{ spec: "AA1" }] }, data, courses).status,
+    ).toBe(200);
+    expect(profileOf(data)).toMatchObject({ squadOwner: owner, pupil: "sam" });
   }),
 );
