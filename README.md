@@ -1,13 +1,23 @@
 # Study tutor
 
-GCSE revision that runs on your own computer. Maths is ready now (Edexcel
-Foundation); science has started, and more subjects and boards are added as
-pupils need them. Tell us which ones your child needs.
+GCSE revision that runs on your own computer. What is in it now:
+
+- **Maths (Edexcel, 1MA1)**: Foundation is ready, with lessons and practice on 21 of its 38 topics.
+  Higher topics are listed on the map, but their lessons are not written yet.
+- **Combined Science (AQA Trilogy, 8464)**: started, with one lesson so far.
+- **English Language and Literature (AQA, 8700 and 8702)**: the topics are listed so your child can
+  track them, but there are no lessons or questions yet.
+
+More is added as pupils need it. Tell us which subjects and topics your child needs most by
+[opening an issue](https://github.com/linardsb/study-tutor/issues).
 
 It works with no AI model at all. If you want the parts that use one, you add
 a key from a model provider you pay for, and the key stays on your computer.
 Your child's progress is kept in one folder on your computer, and none of it
-is sent to us.
+is sent to us. If you add a model key, your child's questions, answers and photos of written work go
+to that model provider to be marked. Apart from that, the one thing that leaves the computer is the
+squad file, and only if your child uses the squad with friends (see
+[Studying with friends](#studying-with-friends-the-squad)).
 
 Setting it up takes about 15 minutes: download, first start and settings, 5 minutes each (an estimate).
 
@@ -79,6 +89,7 @@ The first time, the home page lists three steps. The first is **Open settings**,
 
 - **Provider**: pick the company whose model you pay for, or **No model**. With no model, lessons, practice
   and marking all work; only the parts that need a model are switched off.
+
 The next two fields appear once you pick a provider.
 
 - **Key**: paste the key from your provider's website. It is saved in the `data` folder on this computer
@@ -86,8 +97,53 @@ The next two fields appear once you pick a provider.
 - **Tokens per month**: the most the tutor may use in a month, which puts a limit on the bill. When it is
   reached, the parts that need a model stop until the next month; everything else carries on.
 - **Days a week with some practice**: the weekly target your child sees.
+- **Squad sync folder**: optional, and only for the squad. See
+  [Studying with friends](#studying-with-friends-the-squad).
 
 Click **Save**. You can come back to it from the **Settings** link at the bottom of the main page.
+
+## Choosing courses
+
+Allow 2 minutes. Your child does this, and you can help.
+
+The second step on the home page is **Start here**. The first thing it asks for is **Your courses**:
+tick each course your child takes and, for maths and science, pick **Foundation** or **Higher**. Then
+click **Save courses**. The map, the cold test and the topic lists then show only those courses.
+
+- Pick only the courses your child takes. English has no lessons yet, so ticking it only adds rows to
+  the map.
+- To change the courses later, open **Start here** and click **Change courses**. Progress on a course
+  you untick is kept, and comes back if you tick it again.
+- If you updated from version 0.1.1, the tutor does not ask for courses by itself. Open **Start here**
+  from the main page and choose them, or the map shows every topic of every subject.
+
+## Studying with friends (the squad)
+
+The squad lets a few friends, each on their own computer, do the same five maths questions each
+week and see how the group did. No one is ranked. The week ends on Sunday.
+
+1. Everyone opens **Squad** and types the same **Squad name**, for example `sackville-11c`. For **Your
+   name**, each pupil picks a name no one else in the squad uses. Two pupils with the same name
+   overwrite each other's file without a warning, and `Alex` and `alex` count as the same name.
+2. Each pupil does the week's round of five questions.
+3. The files are shared in one of two ways.
+
+**Without a shared folder.** After the round, your child clicks **Save my file**. You pass that file
+to each friend's parent, for example by email, and they put it in the folder the squad page shows. That
+folder only exists once your child has done their own round. You do this every week.
+
+**With a shared folder.** One parent makes a folder in Google Drive, OneDrive or iCloud Drive and
+shares it with the other families. Each parent then types that folder's full path into **Squad sync
+folder** on the settings page, for example `C:\Users\you\OneDrive\Squad` on Windows or
+`/Users/you/Library/Mobile Documents/com~apple~CloudDocs/Squad` on a Mac. The tutor writes your child's
+file there and reads the friends' files by itself. Only the squad folder is shared; the tutor's own
+folder stays out of it. If the squad page says a file could not be written, check the sync app is
+running and the path in settings is still right.
+
+**What the squad file holds**: the squad name, your child's squad name, the week, the five answers
+with any working your child wrote, and which ones were right. It does not hold the key, other
+progress or the courses. Anyone with the file can read it, so use a first name or a nickname, and a
+squad name that does not have to name the school.
 
 ## Updating to a new version
 
