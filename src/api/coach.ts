@@ -56,12 +56,14 @@ export function getCoach(
   if (!pack.topics.some((t) => t.id === topic))
     return { ready: false, reason: "no-topic" };
   const title = titleOf(pack, topic);
-  if (!triedTopics(readLines(dataDir), pack).some((t) => t.id === topic))
+  const log = readLines(dataDir);
+  if (!triedTopics(log, pack).some((t) => t.id === topic))
     return { ready: false, reason: "try-first", title };
   const item = pickItem(
     pack,
     topic,
     `${day}:${topic}:coach:${state.coach.shown}`,
+    log,
   );
   if (item === null) return { ready: false, reason: "no-item", title };
   // Named fields from the stripped view: answers, working, mark_scheme and misconceptions never reach the page here.

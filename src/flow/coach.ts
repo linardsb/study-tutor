@@ -9,7 +9,7 @@ import type { CasePack, Item, Misconception, Topic } from "../content/types";
 import { type NewEvent, parseEvent } from "../events/types";
 import { danWrongStep } from "../jobs/dan_wrong_step";
 import type { JobDeps } from "../jobs/define";
-import { jobItem } from "../jobs/view";
+import { hasAttempt, jobItem } from "../jobs/view";
 import { markAnswer } from "../marking/answer";
 import { findItem } from "./chat";
 import { hash } from "./detective";
@@ -41,21 +41,24 @@ export function triedTopics(log: readonly string[], pack: CasePack): Topic[] {
 
 /**
  * The item Dan tries: a generator roll with at least one named wrong answer (seed = hash(`${base}:${k}`),
- * k < ROLLS), else the items-file item with misconceptions at hash(base) % n, else null.
+ * k < ROLLS), else the items-file item with misconceptions at hash(base) % n, else null. An item or roll
+ * the log already holds an attempt for is skipped: Dan refuses it, so offering it again would dead-end.
  */
 export function pickItem(
   pack: CasePack,
   topic: string,
   base: string,
+  log: readonly string[] = [],
 ): Seeded | null {
   for (let k = 0; k < ROLLS; k += 1) {
     // hash is 32-bit unsigned, so every seed it makes passes findItem's bound.
     const rolled = findItem(pack, `${topic}#gen`, hash(`${base}:${k}`));
     if (rolled === null) break; // no generator for this topic
-    if (rolled.misconceptions.length > 0) return rolled;
+    if (rolled.misconceptions.length > 0 && !hasAttempt(log, rolled))
+      return rolled;
   }
   const items = (pack.items.get(topic) ?? []).filter(
-    (i) => i.misconceptions.length > 0,
+    (i) => i.misconceptions.length > 0 && !hasAttempt(log, i),
   );
   if (items.length === 0) return null;
   return items[hash(base) % items.length] ?? null;

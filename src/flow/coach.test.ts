@@ -283,3 +283,23 @@ test("rankFor and rank: 3 catches per rank, 5 ranks, toNext null at the top", ()
   expect(rank(4)).toEqual({ level: 1, name: "Learner", toNext: 2 });
   expect(rank(12)).toEqual({ level: 4, name: "Sorted", toNext: null });
 });
+
+test("pickItem: skips an item or roll already attempted, and gives null once all are (science loop)", () => {
+  const noGen: CasePack = { ...pack, gens: {} };
+  const file = pickItem(noGen, TOPIC, "b");
+  expect(file).not.toBeNull();
+  const tried = (i: Item & { seed?: number }) =>
+    JSON.stringify({ ...attemptLine({ id: i.id, topic: TOPIC }), t: NOW() });
+  const after = pickItem(noGen, TOPIC, "b", [tried(file as Item)]);
+  expect(after?.id).not.toBe(file?.id);
+
+  const all = (noGen.items.get(TOPIC) ?? []).map(tried);
+  expect(pickItem(noGen, TOPIC, "b", all)).toBeNull();
+
+  const gen = pickItem(pack, TOPIC, "b");
+  const line = JSON.stringify({
+    ...attemptLine({ id: `${TOPIC}#gen`, topic: TOPIC }, gen?.seed),
+    t: NOW(),
+  });
+  expect(pickItem(pack, TOPIC, "b", [line])?.seed).not.toBe(gen?.seed);
+});
