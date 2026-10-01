@@ -65,6 +65,7 @@ function view(over: Partial<SquadView> = {}): SquadView {
     unreadable: 0,
     shared: false,
     parentDone: false,
+    nameTaken: false,
     ...over,
   };
 }
@@ -121,7 +122,7 @@ type Page = {
     | "notSaved"
     | "parentDone",
     string
-  >;
+  > & { nameTaken: (name: string) => string };
 };
 const page = (globalThis as { squad?: Page }).squad as Page;
 const TEXT = page.TEXT;
@@ -347,4 +348,29 @@ test("8. the parent's questions are none of the pupil's, whose worked answers ar
   const parent = $$("#parent .q").map(stem);
   expect(pupil).toHaveLength(5);
   for (const s of parent) expect(pupil).not.toContain(s);
+});
+
+test("9. a taken name (F8): a save answered 409 reloads into the name sentence and the join form, squad kept, name empty and focused, no round", async () => {
+  calls.length = 0;
+  served.view = view();
+  served.squadStatus = 409;
+  await page.reload();
+  await until(() => $$("#round .q").length === 5);
+  served.view = view({ nameTaken: true });
+  for (let i = 0; i < 5; i++) answer("#round", i, right[i] as string, "");
+  await until(() => Boolean($("#join form")));
+  expect(posts("/api/squad")).toHaveLength(1);
+  expect(texts("#join p")).toEqual([
+    "Someone else in this squad already uses the name sam. Pick another name so your rounds do not get mixed up.",
+  ]);
+  expect(TEXT.nameTaken("sam")).toBe(texts("#join p")[0] as string);
+  const [squad, pupil] = $$("#join input") as [El, El];
+  expect(squad.value).toBe("year11-b");
+  expect(pupil.value).toBe("");
+  expect((doc() as unknown as { activeElement: unknown }).activeElement).toBe(
+    pupil,
+  );
+  for (const id of ["#week", "#round", "#compare", "#parent", "#share"])
+    expect($(id).children).toHaveLength(0);
+  served.squadStatus = 201;
 });

@@ -18,6 +18,8 @@
     squadLabel: "Squad name ",
     pupilLabel: "Your name ",
     join: "Join",
+    nameTaken: (name) =>
+      `Someone else in this squad already uses the name ${name}. Pick another name so your rounds do not get mixed up.`,
     week: "This week",
     notLoaded:
       "The squad page did not load. Check the tutor window is still open.",
@@ -207,10 +209,13 @@
     }
   }
 
-  function renderJoin(ids) {
+  /* taken: the saved profile when another tutor's file carries this name (F8); the squad stays, the name is asked again */
+  function renderJoin(ids, taken = null) {
     const form = el("form");
     form.appendChild(el("h2", "", TEXT.joinTitle));
-    form.appendChild(el("p", "note", TEXT.joinIntro));
+    form.appendChild(
+      el("p", "note", taken ? TEXT.nameTaken(taken.pupil) : TEXT.joinIntro),
+    );
     const field = (text, name) => {
       const label = el("label", "", text);
       const input = el("input");
@@ -249,6 +254,10 @@
       btn.disabled = false;
     });
     ids.join.appendChild(form);
+    if (taken) {
+      squad.value = taken.squad;
+      pupil.focus();
+    }
   }
 
   function renderWeek(holder, view) {
@@ -411,6 +420,10 @@
     clear(ids);
     if (view.profile === null) {
       renderJoin(ids);
+      return;
+    }
+    if (view.nameTaken) {
+      renderJoin(ids, view.profile);
       return;
     }
     renderWeek(ids.week, view);
