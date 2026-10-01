@@ -1,6 +1,6 @@
 Study tutor
 
-1. Extract the zip first. You should have a folder called StudyTutor followed by a version number, for example StudyTutor-0.1.2. Keep it out of OneDrive, iCloud Drive, Dropbox and Google Drive: its data folder holds your child's records and your model key, and a synced folder copies them online. Desktop and Documents are often synced without you knowing (OneDrive on Windows, iCloud on a Mac), so a folder of your own such as C:\Tutor, or Tutor in your home folder on a Mac, is safer.
+1. Extract the zip first. You should have a folder called StudyTutor followed by a version number, for example StudyTutor-0.1.3. Keep it out of OneDrive, iCloud Drive, Dropbox and Google Drive: its data folder holds your child's records and your model key, and a synced folder copies them online. Desktop and Documents are often synced without you knowing (OneDrive on Windows, iCloud on a Mac), so a folder of your own such as C:\Tutor, or Tutor in your home folder on a Mac, is safer.
 2. Mac: open Start.command. Windows: open Start.bat.
 3. A window opens with a line of text, then your browser opens on the tutor's page.
 4. When you are done, close the browser tab, then close the window from step 3 to stop. Mac: click Terminate if it asks.
@@ -22,3 +22,7 @@ Updating
 5. Only then delete this folder.
 
 Copy the data folder, do not move it. Do not copy the new folder over this one.
+
+Help
+
+If something goes wrong, email study.tutordan@gmail.com with what you saw (a photo of the screen helps) and whether it is a Mac or Windows.
